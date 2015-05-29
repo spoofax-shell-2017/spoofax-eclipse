@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+  <description name="Spoofax Eclipse">
+    Spoofax Eclipse update site
+  </description>
+  <feature url="features/org.metaborg.spoofax.eclipse.meta.feature_1.5.0.qualifier.jar" id="org.metaborg.spoofax.eclipse.meta.feature" version="1.5.0.qualifier">
+    <category name="org.metaborg.spoofax.eclipse.category"/>
+  </feature>
+  <feature url="features/org.metaborg.spoofax.eclipse.feature_1.5.0.qualifier.jar" id="org.metaborg.spoofax.eclipse.feature" version="1.5.0.qualifier">
+    <category name="org.metaborg.spoofax.eclipse.category"/>
+  </feature>
+  <category-def name="org.metaborg.spoofax.eclipse.category" label="Spoofax Eclipse">
+    <description>
+      Spoofax language workbench Eclipse plugin
+    </description>
+  </category-def>
+</site>

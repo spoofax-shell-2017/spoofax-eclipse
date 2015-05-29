@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+  id="org.metaborg.spoofax.eclipse.meta.feature"
+  plugin="org.metaborg.spoofax.eclipse.meta"
+  version="1.5.0.qualifier"
+  label="Spoofax Eclipse meta-tooling"
+>
+  <requires>
+    <import plugin="org.eclipse.ui"/>
+    <import plugin="org.eclipse.core.runtime"/>
+    <import plugin="org.eclipse.core.resources"/>
+    <import plugin="org.eclipse.ant.core"/>
+    <import plugin="org.eclipse.ui.console"/>
+    <import plugin="org.eclipse.jface"/>
+    <import plugin="org.eclipse.ui.workbench"/>
+    <import plugin="org.eclipse.ui.ide"/>
+    <import plugin="org.apache.ant" version="1.9.2" match="greaterOrEqual"/>
+  </requires>
+
+  <includes
+    id="org.metaborg.spoofax.eclipse.feature"
+    version="1.5.0.qualifier"
+    search-location="both"
+  />
+
+  <!-- Spoofax meta-tooling -->
+  <plugin
+    id="org.metaborg.spoofax.eclipse.meta"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.spoofax.eclipse.meta.legacy"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+
+  <!-- Meta languages, unpack plugins for access to jar, ctree, and packed.esv files. -->
+  <plugin
+    id="org.strategoxt.imp.editors.aterm"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.imp.editors.sdf"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.imp.editors.stratego"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.imp.editors.editorservice"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.imp.editors.template"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.meta.lang.nabl"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.meta.lang.ts"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.meta.lang.analysis"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="dynsem"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+</feature>

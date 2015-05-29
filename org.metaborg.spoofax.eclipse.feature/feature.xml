@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+  id="org.metaborg.spoofax.eclipse.feature"
+  plugin="org.metaborg.spoofax.eclipse"
+  version="1.5.0.qualifier"
+  label="Spoofax Eclipse runtime"
+>
+  <requires>
+    <import plugin="org.eclipse.core.runtime"/>
+    <import plugin="org.eclipse.core.filesystem"/>
+    <import plugin="org.eclipse.core.resources"/>
+    <import plugin="org.eclipse.ui"/>
+    <import plugin="org.eclipse.ui.workbench"/>
+    <import plugin="org.eclipse.ui.ide" version="3.10.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.ui.console" version="3.5.300" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.ui.editors"/>
+    <import plugin="org.eclipse.jface.text"/>
+    <import plugin="org.eclipse.core.commands"/>
+    <import plugin="org.eclipse.jface"/>
+    <import plugin="org.eclipse.osgi"/>
+    <import plugin="org.junit"/>
+  </requires>
+
+  <!-- Spoofax  -->
+  <plugin
+    id="org.metaborg.spoofax.core"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.spoofax.eclipse"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.spoofax.eclipse.util"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+
+  <!-- Metaborg libraries -->
+  <plugin
+    id="org.metaborg.util"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.terms"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.interpreter.library.index"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.runtime.task"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.meta.interpreter.framework"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+
+  <!-- Stratego interpreter and libraries -->
+  <plugin
+    id="org.spoofax.interpreter.core"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.interpreter"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.interpreter.library.jline"
+    version="1.5.0.qualifier"
+  />
+  <plugin
+    id="org.spoofax.interpreter.library.java"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.interpreter.library.xml"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.interpreter.library.interpreter"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+
+  <!-- Parser -->
+  <plugin
+    id="org.spoofax.jsglr"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.spoofax.interpreter.library.jsglr"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+
+  <!-- Other dependencies, unpack plugins for access to JAR files. -->
+  <plugin
+    id="org.spoofax.interpreter.externaldeps"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.imp.generator"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.imp.nativebundle"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.strategoxt.strj"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+</feature>
