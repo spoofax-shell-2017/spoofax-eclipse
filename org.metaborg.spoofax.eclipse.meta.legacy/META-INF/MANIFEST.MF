@@ -6,7 +6,7 @@ Bundle-Version: 1.5.0.qualifier
 Bundle-Activator: org.metaborg.spoofax.eclipse.meta.legacy.SpoofaxMetaLegacyPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.metaborg.spoofax.eclipse.util,
- org.spoofax.interpreter.externaldeps,
+ org.metaborg.spoofax.eclipse.externaldeps,
  org.strategoxt.strj,
  org.strategoxt.imp.generator,
  org.spoofax.interpreter.core,

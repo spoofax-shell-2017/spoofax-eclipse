@@ -14,16 +14,16 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.editors,
  org.eclipse.jface.text,
  org.spoofax.terms,
- org.spoofax.interpreter.externaldeps,
  org.metaborg.util,
  org.metaborg.spoofax.core,
  org.metaborg.runtime.task,
  org.spoofax.interpreter.library.index,
  org.spoofax.interpreter.core,
- org.metaborg.spoofax.eclipse.util
+ org.metaborg.spoofax.eclipse.util,
+ org.metaborg.spoofax.eclipse.externaldeps
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: metaborg.org
-Eclipse-RegisterBuddy: org.spoofax.interpreter.externaldeps, org.metaborg.util
+Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.util
 Export-Package: org.metaborg.spoofax.eclipse,
  org.metaborg.spoofax.eclipse.job,
  org.metaborg.spoofax.eclipse.nature,

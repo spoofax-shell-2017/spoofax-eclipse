@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>org.metaborg.spoofax.eclipse.externaldeps</artifactId>
+  <packaging>bundle</packaging>
+  <description>Bundle to import non-Eclipse external dependencies into Eclipse</description>
+  <url>https://github.com/metaborg/spoofax-eclipse</url>
+
+  <parent>
+    <groupId>org.metaborg</groupId>
+    <artifactId>org.metaborg.maven.parent</artifactId>
+    <version>1.5.0-SNAPSHOT</version>
+    <relativePath>../../spoofax-deploy/org.metaborg.maven.parent</relativePath>
+  </parent>
+
+  <dependencies>
+    <!-- Requirements for building/running languages -->
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>strategoxt-min-jar</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>make-permissive-jar</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>make-permissive-jar-installer</artifactId>
+      <version>${metaborg-version}</version>
+      <type>pom</type>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Requirements for org.spoofax.aterm -->
+    <dependency>
+      <groupId>com.github.ansell.jjtraveler</groupId>
+      <artifactId>jjtraveler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ansell.aterms</groupId>
+      <artifactId>shared-objects</artifactId>
+    </dependency>
+    <!-- Requirements for org.spoofax.interpreter.library.jline -->
+    <dependency>
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+    </dependency>
+    <!-- Requirements for org.metaborg.meta.interpreter.framework -->
+    <dependency>
+      <groupId>com.github.krukow</groupId>
+      <artifactId>clj-ds</artifactId>
+    </dependency>
+    <!-- General requirements for several libraries -->
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+    </dependency>
+    <!-- Guice and dependencies -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-multibindings</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+    </dependency>
+    <!-- Google Guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <!-- Apache Commons IO -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <!-- Apache Commons VFS -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-vfs2</artifactId>
+    </dependency>
+    <!-- Apache Commons lang -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <!-- Apache Commons logging, dependency for many apache commons libraries -->
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <!-- Kryo and dependencies -->
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>kryo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>reflectasm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>minlog</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.objenesis</groupId>
+      <artifactId>objenesis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <!-- Netflix Reactive Extensions for Java -->
+    <dependency>
+      <groupId>com.netflix.rxjava</groupId>
+      <artifactId>rxjava-core</artifactId>
+    </dependency>
+    <!-- Functional Java -->
+    <dependency>
+      <groupId>org.functionaljava</groupId>
+      <artifactId>functionaljava</artifactId>
+    </dependency>
+    <!-- Mustache -->
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+    </dependency>
+    <!-- Zip4j -->
+    <dependency>
+      <groupId>net.lingala.zip4j</groupId>
+      <artifactId>zip4j</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <!-- Generate MANIFEST.MF from project, to make project available to Eclipse plugins. -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <!-- Fix names not to include the groupId. -->
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Bundle-Name>${project.artifactId}</Bundle-Name>
+            <!-- Replace SNAPSHOT in the manifest version with given qualifier. -->
+            <Bundle-Version>$(replace;${project.version};-SNAPSHOT;.${forceContextQualifier})</Bundle-Version>
+            <!-- Embed dependencies into plugin bundle, so they are exportable. -->
+            <Embed-Dependency>
+              aopalliance,
+              asm,
+              clj-ds,
+              commons-io,
+              commons-lang3,
+              commons-logging,
+              commons-vfs2,
+              compiler,
+              functionaljava,
+              guava,
+              guice,
+              guice-multibindings,
+              jjtraveler,
+              jcl-over-slf4j,
+              jline,
+              kryo,
+              logback-classic,
+              logback-core,
+              make-permissive-jar,
+              minlog,
+              objenesis,
+              reflectasm,
+              rxjava-core,
+              shared-objects,
+              slf4j-api,
+              strategoxt-min-jar,
+              zip4j
+            </Embed-Dependency>
+            <!-- Export dependency packages -->
+            <Export-Package>
+              !com.google.common.base.internal,
+              !com.google.inject.internal.*,
+              !org.apache.commons.logging.impl,
+              ch.qos.logback.classic*,
+              ch.qos.logback.classic,
+              ch.qos.logback.core*,
+              ch.qos.logback.core,
+              com.esotericsoftware.kryo*,
+              com.esotericsoftware.kryo,
+              com.esotericsoftware.minlog*,
+              com.esotericsoftware.minlog,
+              com.esotericsoftware.reflectasm*,
+              com.esotericsoftware.reflectasm,
+              com.github.krukow.clj_ds,
+              com.github.krukow.clj_lang,
+              com.github.mustachejava*,
+              com.github.mustachejava,
+              com.google.common.*,
+              com.google.inject.*,
+              fj.*,
+              jjtraveler.*,
+              jline.*,
+              net.lingala.zip4j*,
+              net.lingala.zip4j,
+              org.aopalliance*,
+              org.apache.commons.io*,
+              org.apache.commons.io,
+              org.apache.commons.lang3*,
+              org.apache.commons.lang3,
+              org.apache.commons.logging,
+              org.apache.commons.vfs2*,
+              org.objectweb.asm*,
+              org.objectweb.asm,
+              org.objenesis*,
+              org.objenesis,
+              org.slf4j*,
+              org.slf4j,
+              org.strategoxt.*,
+              org.strategoxt.permissivegrammars,
+              rx.*,
+              shared.*
+            </Export-Package>
+            <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
+            <Import-Package>
+              !com.fasterxml.jackson*,
+              !com.google*,
+              !com.lmax.disruptor*,
+              !groovy.lang,
+              !org.jruby*,
+              !org.jruby,
+              !javax*,
+              !org.aopalliance*,
+              !org.apache*,
+              !org.codehaus.groovy*,
+              !org.codehaus.janino,
+              !org.codehaus.commons.compiler,
+              !org.spoofax,
+              !sun*,
+              *
+            </Import-Package>
+            <!-- Don't generate uses declarations in exported packages. -->
+            <_nouses>true</_nouses>
+            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
+              some libraries require. -->
+            <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
+          </instructions>
+        </configuration>
+      </plugin>
+      <!-- Add the generated MANIFEST.MF is used in the resulting JAR file. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${manifest-location}/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <developers>
+    <developer>
+      <name>Gabriël Konat</name>
+      <email>g.d.p.konat@tudelft.nl</email>
+      <organization>Delft University of Technology</organization>
+      <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:metaborg/mb-exec-deps.git</connection>
+    <developerConnection>scm:git:git@github.com:metaborg/mb-exec-deps.git</developerConnection>
+    <url>https://github.com/metaborg/mb-exec-deps</url>
+  </scm>
+</project>

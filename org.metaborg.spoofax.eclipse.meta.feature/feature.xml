@@ -37,47 +37,7 @@
 
   <!-- Meta languages, unpack plugins for access to jar, ctree, and packed.esv files. -->
   <plugin
-    id="org.strategoxt.imp.editors.aterm"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.strategoxt.imp.editors.sdf"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.strategoxt.imp.editors.stratego"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.strategoxt.imp.editors.editorservice"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.strategoxt.imp.editors.template"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.metaborg.meta.lang.nabl"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.metaborg.meta.lang.ts"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.metaborg.meta.lang.analysis"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="dynsem"
+    id="org.metaborg.meta.lang.sdf.eclipse"
     version="1.5.0.qualifier"
     unpack="true"
   />

@@ -8,7 +8,7 @@ Bundle-Vendor: metaborg.org
 Export-Package: org.metaborg.spoofax.eclipse.util
 Require-Bundle: org.metaborg.spoofax.core,
  org.spoofax.terms,
- org.spoofax.interpreter.externaldeps,
+ org.metaborg.spoofax.eclipse.externaldeps,
  org.eclipse.core.runtime,
  org.eclipse.core.commands,
  org.eclipse.core.resources,
