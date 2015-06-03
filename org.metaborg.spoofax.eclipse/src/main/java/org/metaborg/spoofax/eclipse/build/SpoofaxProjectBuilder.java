@@ -17,10 +17,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.spoofax.core.analysis.AnalysisFileResult;
 import org.metaborg.spoofax.core.analysis.AnalysisResult;
+import org.metaborg.spoofax.core.language.ILanguage;
 import org.metaborg.spoofax.core.language.ILanguageService;
 import org.metaborg.spoofax.core.messages.IMessage;
 import org.metaborg.spoofax.core.processing.BuildInput;
-import org.metaborg.spoofax.core.processing.BuildOutput;
+import org.metaborg.spoofax.core.processing.IBuildOutput;
 import org.metaborg.spoofax.core.processing.ISpoofaxBuilder;
 import org.metaborg.spoofax.core.resource.IResourceChange;
 import org.metaborg.spoofax.core.resource.ResourceChange;
@@ -28,6 +29,7 @@ import org.metaborg.spoofax.core.syntax.ParseResult;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
+import org.metaborg.util.iterators.Iterables2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -106,7 +108,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     return true;
                 }
             });
-            final BuildInput input = new BuildInput(location, languageService.getAllActive(), changes);
+            final Iterable<Iterable<ILanguage>> buildOrder = Iterables2.singleton(languageService.getAllActive());
+            final BuildInput input = new BuildInput(location, changes, buildOrder);
             build(project, input, monitor);
         } catch(CoreException e) {
             final String message = String.format("Failed to fully build project %s", project);
@@ -127,7 +130,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     return true;
                 }
             });
-            final BuildInput input = new BuildInput(location, languageService.getAllActive(), changes);
+            final Iterable<Iterable<ILanguage>> buildOrder = Iterables2.singleton(languageService.getAllActive());
+            final BuildInput input = new BuildInput(location, changes, buildOrder);
             build(project, input, monitor);
         } catch(CoreException e) {
             final String message = String.format("Failed to incrementally build project %s", project);
@@ -138,10 +142,10 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private void build(final IProject project, final BuildInput input, IProgressMonitor monitor) throws CoreException {
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
-                final BuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm> output = builder.build(input);
+                final IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm> output = builder.build(input);
 
                 MarkerUtils.clearAll(project);
-                for(FileObject resource : output.changedResources) {
+                for(FileObject resource : output.changedResources()) {
                     final IResource eclipseResource = resourceService.unresolve(resource);
                     if(eclipseResource == null) {
                         logger.error("Cannot clear markers for {}", resource);
@@ -150,7 +154,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     MarkerUtils.clearAll(eclipseResource);
                 }
 
-                for(ParseResult<IStrategoTerm> result : output.parseResults) {
+                for(ParseResult<IStrategoTerm> result : output.parseResults()) {
                     for(IMessage message : result.messages) {
                         final FileObject resource = message.source();
                         final IResource eclipseResource = resourceService.unresolve(resource);
@@ -162,11 +166,11 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     }
                 }
 
-                for(AnalysisResult<IStrategoTerm, IStrategoTerm> result : output.analysisResults) {
+                for(AnalysisResult<IStrategoTerm, IStrategoTerm> result : output.analysisResults()) {
                     for(AnalysisFileResult<IStrategoTerm, IStrategoTerm> fileResult : result.fileResults) {
                         for(IMessage message : fileResult.messages) {
                             final FileObject resource = message.source();
-                            if(output.removedResources.contains(resource.getName())) {
+                            if(output.removedResources().contains(resource.getName())) {
                                 // Analysis results contain removed resources, don't create markers for removed
                                 // resources.
                                 continue;
@@ -181,7 +185,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     }
                 }
 
-                for(IMessage message : output.extraMessages) {
+                for(IMessage message : output.extraMessages()) {
                     final FileObject resource = message.source();
                     final IResource eclipseResource = resourceService.unresolve(resource);
                     if(eclipseResource == null) {
