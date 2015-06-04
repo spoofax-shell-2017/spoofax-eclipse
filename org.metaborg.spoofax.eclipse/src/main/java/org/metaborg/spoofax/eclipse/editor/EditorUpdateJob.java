@@ -150,10 +150,12 @@ public class EditorUpdateJob<P, A> extends Job {
         if(thread == null) {
             return;
         }
-
+        
         logger.debug("Cancelling editor update job for {}, killing in {}ms", resource, killTimeMillis);
         threadKiller = new ThreadKillerJob(thread);
         threadKiller.schedule(killTimeMillis);
+        
+        thread.interrupt();
     }
 
 
