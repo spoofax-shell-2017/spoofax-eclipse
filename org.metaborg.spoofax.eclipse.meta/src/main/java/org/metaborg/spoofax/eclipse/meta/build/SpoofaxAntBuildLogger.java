@@ -15,6 +15,7 @@ public class SpoofaxAntBuildLogger extends DefaultLogger {
         super();
         console = ConsoleUtils.get("Spoofax language build");
         stream = new PrintStream(console.newMessageStream());
+        console.clearConsole();
         console.activate();
     }
 
