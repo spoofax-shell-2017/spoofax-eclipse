@@ -1,8 +1,12 @@
 package org.metaborg.spoofax.eclipse.editor;
 
 import org.apache.commons.vfs2.FileObject;
+import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -12,6 +16,7 @@ import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.metaborg.spoofax.core.completion.ICompletionService;
 import org.metaborg.spoofax.core.language.ILanguage;
@@ -26,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
+@SuppressWarnings("restriction")
 public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(SourceViewerConfiguration.class);
 
@@ -112,6 +118,14 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
         }
 
         return new SpoofaxTextHover<P, A>(analysisResultRequester, hoverService, resource);
+    }
+
+    public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
+        return new IInformationControlCreator() {
+            public IInformationControl createInformationControl(Shell parent) {
+                return new DefaultInformationControl(parent, new HTMLTextPresenter(true));
+            }
+        };
     }
 
     @Override public IReconciler getReconciler(ISourceViewer sourceViewer) {
