@@ -40,6 +40,7 @@ import org.metaborg.spoofax.core.style.ICategorizerService;
 import org.metaborg.spoofax.core.style.IStylerService;
 import org.metaborg.spoofax.core.syntax.FenceCharacters;
 import org.metaborg.spoofax.core.syntax.ISyntaxService;
+import org.metaborg.spoofax.core.tracing.spoofax.ISpoofaxHoverService;
 import org.metaborg.spoofax.core.tracing.spoofax.ISpoofaxReferenceResolver;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
@@ -69,6 +70,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
     private IStylerService<IStrategoTerm, IStrategoTerm> stylerService;
     private ICompletionService completionService;
     private ISpoofaxReferenceResolver referenceResolver;
+    private ISpoofaxHoverService hoverService;
 
     private ISpoofaxParseResultProcessor parseResultProcessor;
     private ISpoofaxAnalysisResultProcessor analysisResultProcessor;
@@ -233,6 +235,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
             injector.getInstance(Key.get(new TypeLiteral<IStylerService<IStrategoTerm, IStrategoTerm>>() {}));
         this.completionService = injector.getInstance(ICompletionService.class);
         this.referenceResolver = injector.getInstance(ISpoofaxReferenceResolver.class);
+        this.hoverService = injector.getInstance(ISpoofaxHoverService.class);
 
         this.parseResultProcessor = injector.getInstance(ISpoofaxParseResultProcessor.class);
         this.analysisResultProcessor = injector.getInstance(ISpoofaxAnalysisResultProcessor.class);
@@ -246,7 +249,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
         return new SpoofaxSourceViewerConfiguration<IStrategoTerm, IStrategoTerm>(resourceService, syntaxService,
-            parseResultProcessor, analysisResultProcessor, referenceResolver, completionService, this);
+            parseResultProcessor, analysisResultProcessor, referenceResolver, hoverService, completionService,
+            getPreferenceStore(), this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
