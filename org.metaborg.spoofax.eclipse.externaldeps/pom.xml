@@ -152,10 +152,10 @@
       <groupId>com.github.spullara.mustache.java</groupId>
       <artifactId>compiler</artifactId>
     </dependency>
-    <!-- Zip4j -->
+    <!-- JGraphT -->
     <dependency>
-      <groupId>net.lingala.zip4j</groupId>
-      <artifactId>zip4j</artifactId>
+      <groupId>org.javabits.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
     </dependency>
   </dependencies>
 
@@ -192,6 +192,7 @@
               guava,
               guice,
               guice-multibindings,
+              jgrapht-core,
               jjtraveler,
               jcl-over-slf4j,
               jline,
@@ -205,8 +206,7 @@
               rxjava-core,
               shared-objects,
               slf4j-api,
-              strategoxt-min-jar,
-              zip4j
+              strategoxt-min-jar
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
@@ -232,8 +232,6 @@
               fj.*,
               jjtraveler.*,
               jline.*,
-              net.lingala.zip4j*,
-              net.lingala.zip4j,
               org.aopalliance*,
               org.apache.commons.io*,
               org.apache.commons.io,
@@ -241,6 +239,8 @@
               org.apache.commons.lang3,
               org.apache.commons.logging,
               org.apache.commons.vfs2*,
+              org.jgrapht*,
+              org.jgrapht,
               org.objectweb.asm*,
               org.objectweb.asm,
               org.objenesis*,

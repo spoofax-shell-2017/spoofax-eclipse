@@ -6,10 +6,13 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.jface.text.hyperlink.URLHyperlinkDetector;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.metaborg.spoofax.core.SpoofaxException;
 import org.metaborg.spoofax.core.completion.ICompletionService;
 import org.metaborg.spoofax.core.language.ILanguage;
 import org.metaborg.spoofax.core.processing.parse.IParseResultRequester;
@@ -78,5 +81,24 @@ public class SpoofaxSourceViewerConfiguration extends SourceViewerConfiguration 
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
         return assistant;
+    }
+
+    @Override public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
+        final FileObject resource = editor.resource();
+        final ILanguage language = editor.language();
+
+        if(language == null) {
+            logger.warn(
+                "Identified language for {} is null, reference resolution is disabled until language is identified",
+                resource);
+            return new IHyperlinkDetector[] { new URLHyperlinkDetector() };
+        }
+
+        try {
+            return new IHyperlinkDetector[] { new SpoofaxHyperlinkDetector(resource, language, editor),
+                new URLHyperlinkDetector() };
+        } catch(SpoofaxException e) {
+            return null;
+        }
     }
 }

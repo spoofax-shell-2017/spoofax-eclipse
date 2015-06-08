@@ -93,6 +93,7 @@
     </menuContribution>
   </extension>
   
+  
   <!-- Nature, builder, and support commands -->
   <extension
     id="nature"

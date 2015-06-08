@@ -3,11 +3,6 @@ package org.metaborg.spoofax.eclipse.transform;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.metaborg.spoofax.core.language.ILanguage;
 import org.metaborg.spoofax.core.transform.ITransformerGoal;
 import org.metaborg.spoofax.core.transform.NamedGoal;
@@ -17,15 +12,12 @@ import org.metaborg.spoofax.core.transform.stratego.StrategoTransformerCommon;
 import org.metaborg.spoofax.core.transform.stratego.menu.Action;
 import org.metaborg.spoofax.core.transform.stratego.menu.MenusFacet;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.Inject;
 
 public class OpenEditorResultHandler implements IStrategoTransformerResultHandler {
-    private static final Logger logger = LoggerFactory.getLogger(OpenEditorResultHandler.class);
-
     private final IEclipseResourceService resourceService;
 
     private final StrategoTransformerCommon transformer;
@@ -44,19 +36,7 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource instanceof IFile) {
                 final IFile file = (IFile) eclipseResource;
-                // Run in the UI thread because we need to get the active workbench window and page.
-                final Display display = Display.getDefault();
-                display.asyncExec(new Runnable() {
-                    @Override public void run() {
-                        final IWorkbenchPage page =
-                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                        try {
-                            IDE.openEditor(page, file);
-                        } catch(PartInitException e) {
-                            logger.error("Cannot open editor", e);
-                        }
-                    }
-                });
+                EditorUtils.openEditor(file);
             }
         }
     }
