@@ -246,7 +246,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
         return new SpoofaxSourceViewerConfiguration<IStrategoTerm, IStrategoTerm>(resourceService, syntaxService,
-            parseResultProcessor, analysisResultProcessor, referenceResolver, completionService, this);
+            parseResultProcessor, analysisResultProcessor, referenceResolver, completionService, getPreferenceStore(),
+            this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
