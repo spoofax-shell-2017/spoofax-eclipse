@@ -34,12 +34,13 @@ import org.metaborg.spoofax.core.context.IContextService;
 import org.metaborg.spoofax.core.language.ILanguage;
 import org.metaborg.spoofax.core.language.ILanguageIdentifierService;
 import org.metaborg.spoofax.core.language.dialect.IDialectService;
-import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultUpdater;
+import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultProcessor;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultProcessor;
 import org.metaborg.spoofax.core.style.ICategorizerService;
 import org.metaborg.spoofax.core.style.IStylerService;
 import org.metaborg.spoofax.core.syntax.FenceCharacters;
 import org.metaborg.spoofax.core.syntax.ISyntaxService;
+import org.metaborg.spoofax.core.tracing.spoofax.ISpoofaxReferenceResolver;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -67,9 +68,10 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
     private ICategorizerService<IStrategoTerm, IStrategoTerm> categorizerService;
     private IStylerService<IStrategoTerm, IStrategoTerm> stylerService;
     private ICompletionService completionService;
+    private ISpoofaxReferenceResolver referenceResolver;
 
     private ISpoofaxParseResultProcessor parseResultProcessor;
-    private ISpoofaxAnalysisResultUpdater analysisResultUpdater;
+    private ISpoofaxAnalysisResultProcessor analysisResultProcessor;
     private GlobalSchedulingRules globalRules;
 
     private IJobManager jobManager;
@@ -164,6 +166,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         display.asyncExec(new Runnable() {
             @Override public void run() {
                 sourceViewerExt2.unconfigure();
+                setSourceViewerConfiguration(createSourceViewerConfiguration());
                 sourceViewer.configure(getSourceViewerConfiguration());
                 final SourceViewerDecorationSupport decorationSupport = getSourceViewerDecorationSupport(sourceViewer);
                 configureSourceViewerDecorationSupport(decorationSupport);
@@ -229,16 +232,21 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         this.stylerService =
             injector.getInstance(Key.get(new TypeLiteral<IStylerService<IStrategoTerm, IStrategoTerm>>() {}));
         this.completionService = injector.getInstance(ICompletionService.class);
+        this.referenceResolver = injector.getInstance(ISpoofaxReferenceResolver.class);
 
         this.parseResultProcessor = injector.getInstance(ISpoofaxParseResultProcessor.class);
-        this.analysisResultUpdater = injector.getInstance(ISpoofaxAnalysisResultUpdater.class);
+        this.analysisResultProcessor = injector.getInstance(ISpoofaxAnalysisResultProcessor.class);
         this.globalRules = injector.getInstance(GlobalSchedulingRules.class);
 
         this.jobManager = Job.getJobManager();
 
         setEditorContextMenuId("#SpoofaxEditorContext");
-        setSourceViewerConfiguration(new SpoofaxSourceViewerConfiguration(syntaxService, completionService,
-            parseResultProcessor, this));
+        setSourceViewerConfiguration(createSourceViewerConfiguration());
+    }
+
+    private SourceViewerConfiguration createSourceViewerConfiguration() {
+        return new SpoofaxSourceViewerConfiguration<IStrategoTerm, IStrategoTerm>(resourceService, syntaxService,
+            parseResultProcessor, analysisResultProcessor, referenceResolver, completionService, this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
@@ -346,12 +354,12 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         // race conditions.
         presentationMerger.invalidate();
         parseResultProcessor.invalidate(resource);
-        analysisResultUpdater.invalidate(resource);
+        analysisResultProcessor.invalidate(resource);
 
         final Job job =
             new EditorUpdateJob<IStrategoTerm, IStrategoTerm>(languageIdentifier, dialectService, contextService,
                 syntaxService, analysisService, categorizerService, stylerService, parseResultProcessor,
-                analysisResultUpdater, input, eclipseResource, resource, sourceViewer, document.get(),
+                analysisResultProcessor, input, eclipseResource, resource, sourceViewer, document.get(),
                 presentationMerger, instantaneous);
         job.setRule(new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource }));
         job.schedule(instantaneous ? 0 : 100);

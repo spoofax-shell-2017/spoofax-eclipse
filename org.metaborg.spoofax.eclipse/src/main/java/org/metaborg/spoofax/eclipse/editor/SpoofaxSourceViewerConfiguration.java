@@ -12,40 +12,45 @@ import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.metaborg.spoofax.core.SpoofaxException;
 import org.metaborg.spoofax.core.completion.ICompletionService;
 import org.metaborg.spoofax.core.language.ILanguage;
+import org.metaborg.spoofax.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.spoofax.core.processing.parse.IParseResultRequester;
 import org.metaborg.spoofax.core.syntax.ISyntaxService;
+import org.metaborg.spoofax.core.tracing.IReferenceResolver;
+import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.common.collect.Iterables;
 
-public class SpoofaxSourceViewerConfiguration extends SourceViewerConfiguration {
+public class SpoofaxSourceViewerConfiguration<P, A> extends SourceViewerConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(SourceViewerConfiguration.class);
 
-    private final ISyntaxService<IStrategoTerm> syntaxService;
+    private final IEclipseResourceService resourceService;
+    private final ISyntaxService<P> syntaxService;
+    private final IParseResultRequester<P> parseResultRequester;
+    private final IAnalysisResultRequester<P, A> analysisResultRequester;
+    private final IReferenceResolver<P, A> referenceResolver;
     private final ICompletionService completionService;
-
-    private final IParseResultRequester<?> parseResultRequester;
 
     private final SpoofaxEditor editor;
 
 
-    public SpoofaxSourceViewerConfiguration(ISyntaxService<IStrategoTerm> syntaxService,
-        ICompletionService completionService, IParseResultRequester<?> parseResultRequester, SpoofaxEditor editor) {
+    public SpoofaxSourceViewerConfiguration(IEclipseResourceService resourceService, ISyntaxService<P> syntaxService,
+        IParseResultRequester<P> parseResultRequester, IAnalysisResultRequester<P, A> analysisResultRequester,
+        IReferenceResolver<P, A> referenceResolver, ICompletionService completionService, SpoofaxEditor editor) {
         super();
 
+        this.resourceService = resourceService;
         this.syntaxService = syntaxService;
-        this.completionService = completionService;
-
         this.parseResultRequester = parseResultRequester;
+        this.analysisResultRequester = analysisResultRequester;
+        this.referenceResolver = referenceResolver;
+        this.completionService = completionService;
 
         this.editor = editor;
     }
-
 
     @Override public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new DefaultAnnotationHover();
@@ -94,11 +99,8 @@ public class SpoofaxSourceViewerConfiguration extends SourceViewerConfiguration 
             return new IHyperlinkDetector[] { new URLHyperlinkDetector() };
         }
 
-        try {
-            return new IHyperlinkDetector[] { new SpoofaxHyperlinkDetector(resource, language, editor),
-                new URLHyperlinkDetector() };
-        } catch(SpoofaxException e) {
-            return null;
-        }
+        return new IHyperlinkDetector[] {
+            new SpoofaxHyperlinkDetector<P, A>(resourceService, analysisResultRequester, referenceResolver, resource,
+                editor), new URLHyperlinkDetector() };
     }
 }
