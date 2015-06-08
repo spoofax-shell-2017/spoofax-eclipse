@@ -72,26 +72,12 @@
     unpack="false"
   />
   <plugin
-    id="org.spoofax.interpreter"
-    version="1.5.0.qualifier"
-    unpack="false"
-  />
-  <plugin
-    id="org.spoofax.interpreter.library.jline"
-    version="1.5.0.qualifier"
-  />
-  <plugin
     id="org.spoofax.interpreter.library.java"
     version="1.5.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.interpreter.library.xml"
-    version="1.5.0.qualifier"
-    unpack="false"
-  />
-  <plugin
-    id="org.spoofax.interpreter.library.interpreter"
     version="1.5.0.qualifier"
     unpack="false"
   />
