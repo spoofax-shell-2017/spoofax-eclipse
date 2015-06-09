@@ -5,12 +5,15 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModelExtension2;
+import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.metaborg.spoofax.core.SpoofaxException;
 import org.metaborg.spoofax.core.analysis.AnalysisFileResult;
 import org.metaborg.spoofax.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.spoofax.core.tracing.Hover;
 import org.metaborg.spoofax.core.tracing.IHoverService;
-import org.metaborg.spoofax.eclipse.util.RegionUtils;
+import org.metaborg.util.iterators.Iterables2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,32 +24,31 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
     private final IHoverService<P, A> hoverService;
 
     private final FileObject resource;
+    private final ISourceViewerExtension2 sourceViewer;
 
 
     public SpoofaxTextHover(IAnalysisResultRequester<P, A> analysisResultRequester, IHoverService<P, A> hoverService,
-        FileObject resource) {
+        FileObject resource, ISourceViewerExtension2 sourceViewer) {
         this.analysisResultRequester = analysisResultRequester;
         this.hoverService = hoverService;
 
         this.resource = resource;
+        this.sourceViewer = sourceViewer;
     }
 
 
-    @Override public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-        final Hover hover = hover(hoverRegion);
-        if(hover == null) {
-            return null;
+    @Override public String getHoverInfo(ITextViewer viewer, IRegion region) {
+        final StringBuilder stringBuilder = annotationHover(region);
+        final Hover hover = hover(region);
+        if(hover != null) {
+            stringBuilder.append("<br/>");
+            stringBuilder.append(hover.text);
         }
-        return hover.text;
+        return stringBuilder.toString();
     }
 
-    @Override public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-        // GTODO: prevent double call to hover service, requires knowledge of which method is called first.
-        final Hover hover = hover(new Region(offset, 0));
-        if(hover == null) {
-            return null;
-        }
-        return RegionUtils.fromCore(hover.region);
+    @Override public IRegion getHoverRegion(ITextViewer viewer, int offset) {
+        return new Region(offset, 1);
     }
 
 
@@ -68,5 +70,26 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
         }
 
         return null;
+    }
+
+    @SuppressWarnings("unchecked") private StringBuilder annotationHover(IRegion region) {
+        final IAnnotationModelExtension2 annotationModel =
+            (IAnnotationModelExtension2) sourceViewer.getVisualAnnotationModel();
+        final StringBuilder stringBuilder = new StringBuilder();
+        for(Annotation annotation : Iterables2.<Annotation>once(annotationModel.getAnnotationIterator(
+            region.getOffset(), region.getLength(), true, true))) {
+            // Ignore certain annotations types.
+            switch(annotation.getType()) {
+                case "org.eclipse.ui.workbench.texteditor.quickdiffDeletion":
+                case "org.eclipse.ui.workbench.texteditor.quickdiffChange":
+                case "org.eclipse.ui.workbench.texteditor.quickdiffAddition":
+                case "org.eclipse.ui.workbench.texteditor.quickdiffUnchanged":
+                    continue;
+                default:
+            }
+            stringBuilder.append(annotation.getText());
+            stringBuilder.append("<br/>");
+        }
+        return stringBuilder;
     }
 }

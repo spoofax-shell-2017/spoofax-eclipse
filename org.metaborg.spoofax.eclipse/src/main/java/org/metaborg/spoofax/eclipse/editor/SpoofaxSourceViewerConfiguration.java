@@ -15,6 +15,7 @@ import org.eclipse.jface.text.hyperlink.URLHyperlinkDetector;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -117,7 +118,8 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
             return null;
         }
 
-        return new SpoofaxTextHover<P, A>(analysisResultRequester, hoverService, resource);
+        return new SpoofaxTextHover<P, A>(analysisResultRequester, hoverService, resource,
+            (ISourceViewerExtension2) editor.sourceViewer());
     }
 
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
