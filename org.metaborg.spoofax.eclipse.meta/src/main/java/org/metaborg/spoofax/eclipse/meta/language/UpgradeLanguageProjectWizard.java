@@ -190,6 +190,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         BuilderUtils.removeFrom("org.eclipse.pde.SchemaBuilder", eclipseProject);
 
         NatureUtils.removeFrom("org.strategoxt.imp.metatooling.nature", eclipseProject);
+        NatureUtils.removeFrom("org.metaborg.spoofax.eclipse.meta.builder", eclipseProject);
         NatureUtils.removeFrom("org.eclipse.pde.PluginNature", eclipseProject);
 
         NatureUtils.addTo(SpoofaxNature.id, eclipseProject);

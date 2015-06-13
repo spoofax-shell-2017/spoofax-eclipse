@@ -35,7 +35,8 @@ public class BuilderUtils {
     }
 
     /**
-     * Adds builder to given project. Does nothing if builder has already been added to the project.
+     * Prepends builder with given id to the build specification of given project. Does nothing if builder has already
+     * been added to the project.
      * 
      * @param id
      *            Identifier of the builder to add.
@@ -51,9 +52,90 @@ public class BuilderUtils {
      * @see IncrementalProjectBuilder#AUTO_BUILD
      * @see IncrementalProjectBuilder#CLEAN_BUILD
      */
-    public static void addTo(String id, IProject project, int... triggers) throws CoreException {
+    public static void prepend(String id, IProject project, int... triggers) throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
+        addTo(id, project, 0, projectDesc, builders, triggers);
+    }
+
+    /**
+     * Appends builder with given id to the build specification of given project. Does nothing if builder has already
+     * been added to the project.
+     * 
+     * @param id
+     *            Identifier of the builder to add.
+     * @param project
+     *            Project to add the builder to.
+     * @param triggers
+     *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
+     *            configured (isConfigurable="true" in plugin.xml).
+     * @throws CoreException
+     *             When {@link IProject#getDescription} throws a CoreException.
+     * @see IncrementalProjectBuilder#FULL_BUILD
+     * @see IncrementalProjectBuilder#INCREMENTAL_BUILD
+     * @see IncrementalProjectBuilder#AUTO_BUILD
+     * @see IncrementalProjectBuilder#CLEAN_BUILD
+     */
+    public static void append(String id, IProject project, int... triggers) throws CoreException {
+        final IProjectDescription projectDesc = project.getDescription();
+        final ICommand[] builders = projectDesc.getBuildSpec();
+        addTo(id, project, builders.length, projectDesc, builders, triggers);
+    }
+
+    /**
+     * Adds builder with {@code id} to the build specification of given project, before builders of {@code beforeId}.
+     * Does nothing if builder has already been added to the project.
+     * 
+     * @param id
+     *            Identifier of the builder to add.
+     * @param project
+     *            Project to add the builder to.
+     * @param triggers
+     *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
+     *            configured (isConfigurable="true" in plugin.xml).
+     * @throws CoreException
+     *             When {@link IProject#getDescription} throws a CoreException.
+     * @see IncrementalProjectBuilder#FULL_BUILD
+     * @see IncrementalProjectBuilder#INCREMENTAL_BUILD
+     * @see IncrementalProjectBuilder#AUTO_BUILD
+     * @see IncrementalProjectBuilder#CLEAN_BUILD
+     */
+    public static void addBefore(String id, String beforeId, IProject project, int... triggers) throws CoreException {
+        final IProjectDescription projectDesc = project.getDescription();
+        final ICommand[] builders = projectDesc.getBuildSpec();
+        final int[] indexes = indexes(beforeId, builders);
+        final int index = Ints.min(indexes);
+        addTo(id, project, index, projectDesc, builders, triggers);
+    }
+
+    /**
+     * Adds builder with {@code id} to the build specification of given project, after builders of {@code afterId}. Does
+     * nothing if builder has already been added to the project.
+     * 
+     * @param id
+     *            Identifier of the builder to add.
+     * @param project
+     *            Project to add the builder to.
+     * @param triggers
+     *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
+     *            configured (isConfigurable="true" in plugin.xml).
+     * @throws CoreException
+     *             When {@link IProject#getDescription} throws a CoreException.
+     * @see IncrementalProjectBuilder#FULL_BUILD
+     * @see IncrementalProjectBuilder#INCREMENTAL_BUILD
+     * @see IncrementalProjectBuilder#AUTO_BUILD
+     * @see IncrementalProjectBuilder#CLEAN_BUILD
+     */
+    public static void addAfter(String id, String afterId, IProject project, int... triggers) throws CoreException {
+        final IProjectDescription projectDesc = project.getDescription();
+        final ICommand[] builders = projectDesc.getBuildSpec();
+        final int[] indexes = indexes(afterId, builders);
+        final int index = Ints.max(indexes);
+        addTo(id, project, index + 1, projectDesc, builders, triggers);
+    }
+
+    public static void addTo(String id, IProject project, int index, IProjectDescription projectDesc,
+        ICommand[] builders, int... triggers) throws CoreException {
         if(!contains(id, builders)) {
             final ICommand newBuilder = projectDesc.newCommand();
             newBuilder.setBuilderName(id);
@@ -72,7 +154,7 @@ public class BuilderUtils {
                 newBuilder.setBuilding(IncrementalProjectBuilder.CLEAN_BUILD,
                     ArrayUtils.contains(triggers, IncrementalProjectBuilder.CLEAN_BUILD));
             }
-            final ICommand[] newBuilders = ArrayUtils.add(builders, newBuilder);
+            final ICommand[] newBuilders = ArrayUtils.add(builders, index, newBuilder);
             projectDesc.setBuildSpec(newBuilders);
             project.setDescription(projectDesc, null);
         }

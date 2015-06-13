@@ -11,17 +11,20 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
 
     private static SpoofaxMetaPlugin plugin;
     private static BundleContext bundleContext;
+    private static Injector injector;
 
 
     @Override public void start(BundleContext context) throws Exception {
         super.start(context);
-        bundleContext = context;
         plugin = this;
+        bundleContext = context;
+        injector = SpoofaxPlugin.injector().createChildInjector(new SpoofaxEclipseMetaModule());
     }
 
     @Override public void stop(BundleContext context) throws Exception {
-        plugin = null;
+        injector = null;
         bundleContext = null;
+        plugin = null;
         super.stop(context);
     }
 
@@ -35,6 +38,6 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
     }
 
     public static Injector injector() {
-        return SpoofaxPlugin.injector();
+        return injector;
     }
 }
