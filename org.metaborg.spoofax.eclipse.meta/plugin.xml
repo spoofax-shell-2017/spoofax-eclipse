@@ -12,7 +12,22 @@
     </runtime>
     <builder id="org.metaborg.spoofax.eclipse.meta.builder.prejava" />
     <builder id="org.metaborg.spoofax.eclipse.meta.builder.postjava" />
+    <builder id="org.metaborg.spoofax.eclipse.meta.builder.generatesources" />
     <requires-nature id="org.metaborg.spoofax.eclipse.nature" />
+  </extension>
+  <extension
+    id="org.metaborg.spoofax.eclipse.meta.builder.generatesources"
+    name="Spoofax generate-sources meta builder"
+    point="org.eclipse.core.resources.builders"
+  >
+    <builder
+      callOnEmptyDelta="false"
+      hasNature="true"
+      isConfigurable="true"
+      supportsConfigurations="false"
+    >
+      <run class="org.metaborg.spoofax.eclipse.meta.build.GenerateSourcesBuilder"/>
+    </builder>
   </extension>
   <extension
     id="org.metaborg.spoofax.eclipse.meta.builder.prejava"
@@ -25,7 +40,7 @@
       isConfigurable="true"
       supportsConfigurations="false"
     >
-      <run class="org.metaborg.spoofax.eclipse.meta.build.SpoofaxPreJavaMetaProjectBuilder"/>
+      <run class="org.metaborg.spoofax.eclipse.meta.build.PreJavaBuilder"/>
     </builder>
   </extension>
   <extension
@@ -39,7 +54,7 @@
       isConfigurable="true"
       supportsConfigurations="false"
     >
-      <run class="org.metaborg.spoofax.eclipse.meta.build.SpoofaxPostJavaMetaProjectBuilder"/>
+      <run class="org.metaborg.spoofax.eclipse.meta.build.PostJavaBuilder"/>
     </builder>
   </extension>
   <extension point="org.eclipse.ui.commands">

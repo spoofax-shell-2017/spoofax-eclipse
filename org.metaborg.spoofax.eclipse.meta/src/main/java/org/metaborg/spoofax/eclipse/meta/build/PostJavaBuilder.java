@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
@@ -12,33 +13,40 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.metaborg.spoofax.core.language.ILanguageDiscoveryService;
+import org.metaborg.spoofax.core.project.IMavenProjectService;
+import org.metaborg.spoofax.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.language.LoadLanguageJob;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
+import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 
-public class SpoofaxPostJavaMetaProjectBuilder extends IncrementalProjectBuilder {
+public class PostJavaBuilder extends IncrementalProjectBuilder {
     public static final String id = SpoofaxMetaPlugin.id + ".builder.postjava";
 
-    private static final Logger logger = LoggerFactory.getLogger(SpoofaxPostJavaMetaProjectBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(PostJavaBuilder.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageDiscoveryService languageDiscoveryService;
+    private final IProjectService projectService;
+    private final IMavenProjectService mavenProjectService;
 
     private final GlobalSchedulingRules globalSchedulingRules;
 
     private final SpoofaxMetaBuilder builder;
 
 
-    public SpoofaxPostJavaMetaProjectBuilder() {
+    public PostJavaBuilder() {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.languageDiscoveryService = injector.getInstance(ILanguageDiscoveryService.class);
+        this.projectService = injector.getInstance(IProjectService.class);
+        this.mavenProjectService = injector.getInstance(IMavenProjectService.class);
         this.globalSchedulingRules = injector.getInstance(GlobalSchedulingRules.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
@@ -50,7 +58,7 @@ public class SpoofaxPostJavaMetaProjectBuilder extends IncrementalProjectBuilder
             if(kind != AUTO_BUILD) {
                 build(getProject(), monitor);
             }
-        } catch(IOException e) {
+        } catch(Exception e) {
             logger.error("Cannot build language project", e);
         } finally {
             // Always forget last build state to force a full build next time.
@@ -74,14 +82,33 @@ public class SpoofaxPostJavaMetaProjectBuilder extends IncrementalProjectBuilder
         logger.debug("Cleaning language project {}", project);
     }
 
-    private void build(IProject project, IProgressMonitor monitor) throws CoreException, IOException {
-        logger.debug("Building language project {}", project);
-
-
-        final FileObject projectResource = resourceService.resolve(project);
-        final Job languageLoadJob = new LoadLanguageJob(languageDiscoveryService, projectResource);
-        languageLoadJob.setRule(new MultiRule(new ISchedulingRule[] { globalSchedulingRules.startupReadLock(),
-            globalSchedulingRules.languageServiceLock() }));
-        languageLoadJob.schedule();
+    private void build(IProject eclipseProject, IProgressMonitor monitor) throws Exception {
+//        final FileObject location = resourceService.resolve(eclipseProject);
+//
+//        final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
+//        if(project == null) {
+//            logger.error("Cannot build language project, project for {} could not be retrieved", location);
+//            return;
+//        }
+//
+//        final MavenProject mavenProject = mavenProjectService.get(project);
+//        if(mavenProject == null) {
+//            logger.error("Cannot build language project, Maven project for {} could not be retrieved", project);
+//            return;
+//        }
+//
+//        logger.debug("Building language project {}", project);
+//        final MetaBuildInput input = MetaBuildInput.fromMavenProject(project, mavenProject);
+//        if(input == null) {
+//            logger.error("Cannot build language project, build input for {} could not be retrieved", mavenProject);
+//            return;
+//        }
+//        builder.compilePreJava(input, SpoofaxMetaPlugin.classLoader());
+//
+//
+//        final Job languageLoadJob = new LoadLanguageJob(languageDiscoveryService, location);
+//        languageLoadJob.setRule(new MultiRule(new ISchedulingRule[] { globalSchedulingRules.startupReadLock(),
+//            globalSchedulingRules.languageServiceLock() }));
+//        languageLoadJob.schedule();
     }
 }

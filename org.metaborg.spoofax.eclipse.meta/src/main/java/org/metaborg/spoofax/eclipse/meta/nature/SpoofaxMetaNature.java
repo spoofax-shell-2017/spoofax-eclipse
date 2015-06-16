@@ -6,8 +6,9 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.metaborg.spoofax.eclipse.build.SpoofaxProjectBuilder;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
-import org.metaborg.spoofax.eclipse.meta.build.SpoofaxPostJavaMetaProjectBuilder;
-import org.metaborg.spoofax.eclipse.meta.build.SpoofaxPreJavaMetaProjectBuilder;
+import org.metaborg.spoofax.eclipse.meta.build.GenerateSourcesBuilder;
+import org.metaborg.spoofax.eclipse.meta.build.PostJavaBuilder;
+import org.metaborg.spoofax.eclipse.meta.build.PreJavaBuilder;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 
 public class SpoofaxMetaNature implements IProjectNature {
@@ -17,15 +18,18 @@ public class SpoofaxMetaNature implements IProjectNature {
 
 
     @Override public void configure() throws CoreException {
-        BuilderUtils.addAfter(SpoofaxPreJavaMetaProjectBuilder.id, SpoofaxProjectBuilder.id, project,
+        BuilderUtils.addBefore(GenerateSourcesBuilder.id, SpoofaxProjectBuilder.id, project,
             IncrementalProjectBuilder.FULL_BUILD, IncrementalProjectBuilder.CLEAN_BUILD);
-        BuilderUtils.addAfter(SpoofaxPostJavaMetaProjectBuilder.id, "org.eclipse.jdt.core.javabuilder", project,
+        BuilderUtils.addAfter(PreJavaBuilder.id, SpoofaxProjectBuilder.id, project,
+            IncrementalProjectBuilder.FULL_BUILD, IncrementalProjectBuilder.CLEAN_BUILD);
+        BuilderUtils.addAfter(PostJavaBuilder.id, "org.eclipse.jdt.core.javabuilder", project,
             IncrementalProjectBuilder.FULL_BUILD, IncrementalProjectBuilder.CLEAN_BUILD);
     }
 
     @Override public void deconfigure() throws CoreException {
-        BuilderUtils.removeFrom(SpoofaxPreJavaMetaProjectBuilder.id, project);
-        BuilderUtils.removeFrom(SpoofaxPostJavaMetaProjectBuilder.id, project);
+        BuilderUtils.removeFrom(GenerateSourcesBuilder.id, project);
+        BuilderUtils.removeFrom(PreJavaBuilder.id, project);
+        BuilderUtils.removeFrom(PostJavaBuilder.id, project);
     }
 
     @Override public IProject getProject() {

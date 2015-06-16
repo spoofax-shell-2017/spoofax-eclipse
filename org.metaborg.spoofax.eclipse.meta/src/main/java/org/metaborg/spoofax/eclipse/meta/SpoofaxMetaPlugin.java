@@ -3,6 +3,7 @@ package org.metaborg.spoofax.eclipse.meta;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.BundleWiring;
 
 import com.google.inject.Injector;
 
@@ -39,5 +40,9 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
 
     public static Injector injector() {
         return injector;
+    }
+
+    public static ClassLoader classLoader() {
+        return bundleContext.getBundle().adapt(BundleWiring.class).getClassLoader();
     }
 }

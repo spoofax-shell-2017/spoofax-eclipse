@@ -2,7 +2,6 @@ package org.metaborg.spoofax.eclipse.meta.legacy;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.strategoxt.imp.metatooling.stratego.MetaSPILibrary;
 
 public class SpoofaxMetaLegacyPlugin implements BundleActivator {
     public static final String id = "org.metaborg.spoofax.eclipse.meta.legacy";
@@ -14,8 +13,6 @@ public class SpoofaxMetaLegacyPlugin implements BundleActivator {
     @Override public void start(BundleContext context) throws Exception {
         plugin = this;
         bundleContext = context;
-        
-        MetaSPILibrary.init();
     }
 
     @Override public void stop(BundleContext context) throws Exception {
