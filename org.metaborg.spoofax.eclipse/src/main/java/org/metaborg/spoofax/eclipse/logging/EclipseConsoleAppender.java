@@ -8,9 +8,9 @@ import org.metaborg.spoofax.eclipse.util.ConsoleUtils;
 
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.core.AppenderBase;
 
-public class EclipseConsoleAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+public class EclipseConsoleAppender extends AppenderBase<ILoggingEvent> {
     private PatternLayoutEncoder encoder;
     private String consoleName;
 

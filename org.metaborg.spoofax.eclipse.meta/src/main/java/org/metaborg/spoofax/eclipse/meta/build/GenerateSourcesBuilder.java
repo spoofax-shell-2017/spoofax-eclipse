@@ -84,7 +84,6 @@ public class GenerateSourcesBuilder extends IncrementalProjectBuilder {
             return;
         }
 
-        logger.debug("Building language project {}", project);
         final MetaBuildInput input = MetaBuildInput.fromMavenProject(project, mavenProject);
         if(input == null) {
             logger.error("Cannot build language project, build input for {} could not be retrieved", mavenProject);

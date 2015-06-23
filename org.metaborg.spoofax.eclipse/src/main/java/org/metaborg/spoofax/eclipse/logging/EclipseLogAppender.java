@@ -10,9 +10,9 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
-import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.core.AppenderBase;
 
-public class EclipseLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+public class EclipseLogAppender extends AppenderBase<ILoggingEvent> {
     private PatternLayoutEncoder encoder;
 
     private ILog log;

@@ -5,11 +5,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.spoofax.core.project.IMavenProjectService;
 import org.metaborg.spoofax.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
-import org.metaborg.spoofax.eclipse.meta.legacy.build.LegacyBuildProperties;
+import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BundleUtils;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
@@ -28,7 +28,9 @@ import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.strategoxt.imp.generator.sdf2imp;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 
 public class PreJavaBuilder extends IncrementalProjectBuilder {
@@ -102,17 +104,14 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
             return;
         }
 
-        // final ClassLoader classLoader = new URLClassLoader(classpaths());
-        // final Collection<URL> classpath = LegacyBuildProperties.classpaths();
-        final ClassLoader classLoader = new URLClassLoader(classpaths());
-        builder.compilePreJava(input, classLoader);
+        builder.compilePreJava(input, classpaths(), new EclipseAntLogger());
     }
 
     /**
      * @return List of classpath entries generated from installed Eclipse plugins.
      */
     private URL[] classpaths() throws MalformedURLException {
-        final Collection<URL> classpath = LegacyBuildProperties.classpaths();
+        final Collection<URL> classpath = strategoClasspaths();
         final Map<String, Bundle> bundles = BundleUtils.bundlesBySymbolicName(SpoofaxMetaPlugin.context());
 
         final Bundle antBundle = bundles.get("org.apache.ant");
@@ -175,5 +174,36 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
         }
 
         return classpath.toArray(new URL[0]);
+    }
+
+    public static Collection<URL> strategoClasspaths() throws MalformedURLException {
+        final Collection<URL> classpaths = Lists.newLinkedList();
+        classpaths.add(new File(strategoJar()).toURI().toURL());
+        classpaths.add(Paths.get(jars(), "make_permissive.jar").toFile().toURI().toURL());
+
+        return classpaths;
+    }
+
+    private static String strategoJar() {
+        String result = org.strategoxt.lang.Context.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        if(SystemUtils.IS_OS_WINDOWS) {
+            // Fix path on Windows.
+            result = result.substring(1);
+        }
+        if(!result.endsWith(".jar")) {
+            // Ensure correct JAR file at development time.
+            String result2 = result + "/../strategoxt.jar";
+            if(new File(result2).exists())
+                return result2;
+            result2 = result + "/java/strategoxt.jar";
+            if(new File(result2).exists())
+                return result2;
+        }
+        return result;
+    }
+
+    private static String jars() {
+        final String generatorPath = sdf2imp.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        return Paths.get(new File(generatorPath).getAbsolutePath(), "dist").toFile().getAbsolutePath();
     }
 }

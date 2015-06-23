@@ -83,32 +83,6 @@ public class PostJavaBuilder extends IncrementalProjectBuilder {
     }
 
     private void build(IProject eclipseProject, IProgressMonitor monitor) throws Exception {
-//        final FileObject location = resourceService.resolve(eclipseProject);
-//
-//        final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
-//        if(project == null) {
-//            logger.error("Cannot build language project, project for {} could not be retrieved", location);
-//            return;
-//        }
-//
-//        final MavenProject mavenProject = mavenProjectService.get(project);
-//        if(mavenProject == null) {
-//            logger.error("Cannot build language project, Maven project for {} could not be retrieved", project);
-//            return;
-//        }
-//
-//        logger.debug("Building language project {}", project);
-//        final MetaBuildInput input = MetaBuildInput.fromMavenProject(project, mavenProject);
-//        if(input == null) {
-//            logger.error("Cannot build language project, build input for {} could not be retrieved", mavenProject);
-//            return;
-//        }
-//        builder.compilePreJava(input, SpoofaxMetaPlugin.classLoader());
-//
-//
-//        final Job languageLoadJob = new LoadLanguageJob(languageDiscoveryService, location);
-//        languageLoadJob.setRule(new MultiRule(new ISchedulingRule[] { globalSchedulingRules.startupReadLock(),
-//            globalSchedulingRules.languageServiceLock() }));
-//        languageLoadJob.schedule();
+
     }
 }

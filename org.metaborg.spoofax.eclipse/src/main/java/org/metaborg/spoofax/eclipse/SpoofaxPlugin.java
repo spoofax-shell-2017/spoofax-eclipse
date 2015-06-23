@@ -16,9 +16,9 @@ import com.google.inject.Injector;
 public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     public static final String id = "org.metaborg.spoofax.eclipse";
 
-    private static SpoofaxPlugin plugin;
-    private static Logger logger;
-    private static Injector injector;
+    private static volatile SpoofaxPlugin plugin;
+    private static volatile Logger logger;
+    private static volatile Injector injector;
 
 
     @Override public void start(BundleContext context) throws Exception {
