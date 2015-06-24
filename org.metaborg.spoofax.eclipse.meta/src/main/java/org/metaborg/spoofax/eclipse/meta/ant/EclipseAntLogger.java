@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.build;
+package org.metaborg.spoofax.eclipse.meta.ant;
 
 import java.io.PrintStream;
 
@@ -6,16 +6,15 @@ import org.apache.tools.ant.DefaultLogger;
 import org.eclipse.ui.console.MessageConsole;
 import org.metaborg.spoofax.eclipse.util.ConsoleUtils;
 
-public class SpoofaxAntBuildLogger extends DefaultLogger {
+public class EclipseAntLogger extends DefaultLogger {
     private final MessageConsole console;
     private final PrintStream stream;
 
 
-    public SpoofaxAntBuildLogger() {
+    public EclipseAntLogger() {
         super();
         console = ConsoleUtils.get("Spoofax language build");
         stream = new PrintStream(console.newMessageStream());
-        console.clearConsole();
         console.activate();
     }
 

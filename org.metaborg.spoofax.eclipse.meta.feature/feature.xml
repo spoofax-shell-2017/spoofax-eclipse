@@ -25,12 +25,12 @@
 
   <!-- Spoofax meta-tooling -->
   <plugin
-    id="org.metaborg.spoofax.eclipse.meta"
+    id="org.metaborg.spoofax.meta.core"
     version="1.5.0.qualifier"
     unpack="false"
   />
   <plugin
-    id="org.metaborg.spoofax.eclipse.meta.legacy"
+    id="org.metaborg.spoofax.eclipse.meta"
     version="1.5.0.qualifier"
     unpack="false"
   />
@@ -73,6 +73,11 @@
   />
   <plugin
     id="org.metaborg.meta.lang.ts.eclipse"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.spoofax.meta.runtime.libraries.eclipse"
     version="1.5.0.qualifier"
     unpack="true"
   />

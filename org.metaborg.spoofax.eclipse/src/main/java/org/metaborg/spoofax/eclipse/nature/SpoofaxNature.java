@@ -14,7 +14,7 @@ public class SpoofaxNature implements IProjectNature {
 
 
     @Override public void configure() throws CoreException {
-        BuilderUtils.addTo(SpoofaxProjectBuilder.id, project);
+        BuilderUtils.prepend(SpoofaxProjectBuilder.id, project);
     }
 
     @Override public void deconfigure() throws CoreException {

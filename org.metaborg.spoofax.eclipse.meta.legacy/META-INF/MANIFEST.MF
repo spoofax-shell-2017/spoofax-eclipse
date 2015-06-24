@@ -15,4 +15,3 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org
-Export-Package: org.metaborg.spoofax.eclipse.meta.legacy.build

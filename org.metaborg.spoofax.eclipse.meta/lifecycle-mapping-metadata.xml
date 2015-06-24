@@ -1,0 +1,26 @@
+<lifecycleMappingMetadata>
+  <pluginExecutions>
+    <pluginExecution>
+      <pluginExecutionFilter>
+        <groupId>org.metaborg</groupId>
+        <artifactId>spoofax-maven-plugin</artifactId>
+        <versionRange>[1.5.0-SNAPSHOT,)</versionRange>
+        <goals>
+          <goal>initialize</goal>
+          <goal>generate-sources</goal>
+          <goal>pre-compile</goal>
+          <goal>post-compile</goal>
+          <goal>package</goal>
+          <goal>clean</goal>
+          <goal>run</goal>
+          <goal>transform</goal>
+        </goals>
+      </pluginExecutionFilter>
+      <action>
+        <configurator>
+          <id>org.metaborg.spoofax.eclipse.meta.maven.configurator</id>
+        </configurator>
+      </action>
+    </pluginExecution>
+  </pluginExecutions>
+</lifecycleMappingMetadata>

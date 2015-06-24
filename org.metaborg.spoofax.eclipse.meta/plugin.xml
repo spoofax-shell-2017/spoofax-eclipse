@@ -3,19 +3,21 @@
 <plugin>
   <!-- Nature, builder, and support commands -->
   <extension
-    id="nature"
+    id="org.metaborg.spoofax.eclipse.meta.nature"
     name="Spoofax meta nature"
     point="org.eclipse.core.resources.natures"
   >
     <runtime>
       <run class="org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature"/>
     </runtime>
-    <builder id="org.metaborg.spoofax.eclipse.meta.builder" />
+    <builder id="org.metaborg.spoofax.eclipse.meta.builder.prejava" />
+    <builder id="org.metaborg.spoofax.eclipse.meta.builder.postjava" />
+    <builder id="org.metaborg.spoofax.eclipse.meta.builder.generatesources" />
     <requires-nature id="org.metaborg.spoofax.eclipse.nature" />
   </extension>
   <extension
-    id="builder"
-    name="Spoofax meta builder"
+    id="org.metaborg.spoofax.eclipse.meta.builder.generatesources"
+    name="Spoofax generate-sources meta builder"
     point="org.eclipse.core.resources.builders"
   >
     <builder
@@ -24,7 +26,35 @@
       isConfigurable="true"
       supportsConfigurations="false"
     >
-      <run class="org.metaborg.spoofax.eclipse.meta.build.SpoofaxMetaProjectBuilder"/>
+      <run class="org.metaborg.spoofax.eclipse.meta.build.GenerateSourcesBuilder"/>
+    </builder>
+  </extension>
+  <extension
+    id="org.metaborg.spoofax.eclipse.meta.builder.prejava"
+    name="Spoofax pre-Java meta builder"
+    point="org.eclipse.core.resources.builders"
+  >
+    <builder
+      callOnEmptyDelta="false"
+      hasNature="true"
+      isConfigurable="true"
+      supportsConfigurations="false"
+    >
+      <run class="org.metaborg.spoofax.eclipse.meta.build.PreJavaBuilder"/>
+    </builder>
+  </extension>
+  <extension
+    id="org.metaborg.spoofax.eclipse.meta.builder.postjava"
+    name="Spoofax post-Java meta builder"
+    point="org.eclipse.core.resources.builders"
+  >
+    <builder
+      callOnEmptyDelta="false"
+      hasNature="true"
+      isConfigurable="true"
+      supportsConfigurations="false"
+    >
+      <run class="org.metaborg.spoofax.eclipse.meta.build.PostJavaBuilder"/>
     </builder>
   </extension>
   <extension point="org.eclipse.ui.commands">
@@ -39,6 +69,15 @@
     <handler
       commandId="org.metaborg.spoofax.eclipse.meta.command.nature.remove"
       class="org.metaborg.spoofax.eclipse.meta.nature.RemoveNatureHandler"
+    />
+  </extension>
+  
+  
+  <!-- M2E extensions -->
+  <extension point="org.eclipse.m2e.core.projectConfigurators">
+    <configurator
+      class="org.metaborg.spoofax.eclipse.meta.build.SpoofaxProjectConfigurator"
+      id="org.metaborg.spoofax.eclipse.meta.maven.configurator"
     />
   </extension>
   
