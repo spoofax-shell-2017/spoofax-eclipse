@@ -14,6 +14,11 @@
     <relativePath>../../spoofax-deploy/org.metaborg.maven.parent.plugin</relativePath>
   </parent>
 
+  <properties>
+    <language-unpack-location>${project.build.directory}/unpacked</language-unpack-location>
+    <language-unpack-markers-location>${project.build.directory}/unpacked-markers</language-unpack-markers-location>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -22,6 +27,7 @@
         <version>${metaborg-version}</version>
         <extensions>true</extensions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -44,8 +50,8 @@
               <actTransitively>false</actTransitively>
               <excludeTransitive>true</excludeTransitive>
               <includeTypes>spoofax-language</includeTypes>
-              <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
-              <markersDirectory>${project.build.directory}/unpacked-markers</markersDirectory>
+              <outputDirectory>${language-unpack-location}</outputDirectory>
+              <markersDirectory>${language-unpack-markers-location}</markersDirectory>
             </configuration>
           </execution>
         </executions>
