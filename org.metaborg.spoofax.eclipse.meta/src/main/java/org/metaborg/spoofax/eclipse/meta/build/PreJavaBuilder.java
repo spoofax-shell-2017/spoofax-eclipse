@@ -1,36 +1,24 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Map;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.spoofax.core.project.IMavenProjectService;
 import org.metaborg.spoofax.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.eclipse.util.BundleUtils;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
-import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.strategoxt.imp.generator.sdf2imp;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 
 public class PreJavaBuilder extends IncrementalProjectBuilder {
@@ -58,7 +46,7 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
         throws CoreException {
         try {
             if(kind != AUTO_BUILD) {
-                build(getProject(), monitor);
+                build(getProject());
             }
         } catch(Exception e) {
             logger.error("Cannot build language project", e);
@@ -71,7 +59,7 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
 
     @Override protected void clean(IProgressMonitor monitor) throws CoreException {
         try {
-            clean(getProject(), monitor);
+            clean(getProject());
         } catch(IOException e) {
             logger.error("Cannot clean language project", e);
         } finally {
@@ -80,11 +68,11 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private void clean(IProject project, IProgressMonitor monitor) throws CoreException, IOException {
+    private void clean(IProject project) throws CoreException, IOException {
         logger.debug("Cleaning language project {}", project);
     }
 
-    private void build(IProject eclipseProject, IProgressMonitor monitor) throws Exception {
+    private void build(IProject eclipseProject) throws Exception {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
         if(project == null) {

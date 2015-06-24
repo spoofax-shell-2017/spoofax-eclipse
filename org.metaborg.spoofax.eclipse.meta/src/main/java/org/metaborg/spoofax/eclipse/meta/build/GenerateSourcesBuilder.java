@@ -45,7 +45,7 @@ public class GenerateSourcesBuilder extends IncrementalProjectBuilder {
         throws CoreException {
         try {
             if(kind != AUTO_BUILD) {
-                build(getProject(), monitor);
+                build(getProject());
             }
         } catch(Exception e) {
             logger.error("Cannot build language project", e);
@@ -58,7 +58,7 @@ public class GenerateSourcesBuilder extends IncrementalProjectBuilder {
 
     @Override protected void clean(IProgressMonitor monitor) throws CoreException {
         try {
-            clean(getProject(), monitor);
+            clean(getProject());
         } catch(IOException e) {
             logger.error("Cannot clean language project", e);
         } finally {
@@ -67,11 +67,11 @@ public class GenerateSourcesBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private void clean(IProject project, IProgressMonitor monitor) throws CoreException, IOException {
+    private void clean(IProject project) throws CoreException, IOException {
         logger.debug("Cleaning language project {}", project);
     }
 
-    private void build(IProject eclipseProject, IProgressMonitor monitor) throws Exception {
+    private void build(IProject eclipseProject) throws Exception {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
         if(project == null) {
