@@ -10,7 +10,6 @@ Require-Bundle: org.eclipse.ui,
  org.metaborg.spoofax.meta.core,
  org.metaborg.spoofax.generator,
  org.metaborg.spoofax.eclipse,
- org.metaborg.spoofax.eclipse.meta.legacy,
  org.metaborg.spoofax.eclipse.externaldeps,
  org.spoofax.terms,
  org.eclipse.core.resources,
@@ -27,7 +26,8 @@ Require-Bundle: org.eclipse.ui,
  org.apache.ant,
  org.eclipse.ant.core,
  org.strategoxt.strj,
- org.strategoxt.imp.generator
+ org.strategoxt.imp.generator,
+ org.spoofax.interpreter.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org

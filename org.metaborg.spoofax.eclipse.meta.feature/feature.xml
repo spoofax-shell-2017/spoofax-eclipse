@@ -25,12 +25,12 @@
 
   <!-- Spoofax meta-tooling -->
   <plugin
-    id="org.metaborg.spoofax.eclipse.meta"
+    id="org.metaborg.spoofax.meta.core"
     version="1.5.0.qualifier"
     unpack="false"
   />
   <plugin
-    id="org.metaborg.spoofax.eclipse.meta.legacy"
+    id="org.metaborg.spoofax.eclipse.meta"
     version="1.5.0.qualifier"
     unpack="false"
   />
