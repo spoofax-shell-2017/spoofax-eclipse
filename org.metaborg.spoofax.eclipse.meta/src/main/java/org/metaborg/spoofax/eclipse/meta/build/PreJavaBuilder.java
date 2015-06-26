@@ -54,37 +54,6 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    @Override protected void clean(IProgressMonitor monitor) throws CoreException {
-        try {
-            clean(getProject(), monitor);
-        } catch(CoreException e) {
-            logger.error("Cannot clean language project", e);
-        } finally {
-            // Always forget last build state to force a full build next time.
-            forgetLastBuiltState();
-        }
-    }
-
-    private void clean(IProject project, IProgressMonitor monitor) throws CoreException {
-        logger.debug("Cleaning language project {}", project);
-        final FileObject location = resourceService.resolve(project);
-        final MetaBuildInput input = inputGenerator.buildInput(location);
-        if(input == null) {
-            return;
-        }
-
-        final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
-            @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
-                try {
-                    builder.clean(input.projectSettings);
-                } catch(Exception e) {
-                    throw new CoreException(StatusUtils.error(e));
-                }
-            }
-        };
-        ResourcesPlugin.getWorkspace().run(runnable, project, IWorkspace.AVOID_UPDATE, monitor);
-    }
-
     private void build(IProject project, IProgressMonitor monitor) throws CoreException {
         final FileObject location = resourceService.resolve(project);
         final MetaBuildInput input = inputGenerator.buildInput(location);
