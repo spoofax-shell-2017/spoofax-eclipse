@@ -33,26 +33,25 @@ import org.spoofax.terms.ParseError;
 import org.spoofax.terms.io.binary.TermReader;
 
 public class UpgradeLanguageProjectWizard extends Wizard {
+    private final IEclipseResourceService resourceService;
     private final IProject eclipseProject;
     private final FileObject project;
-    private final File projectFile;
     private final UpgradeLanguageProjectWizardPage page;
 
 
     public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService,
         ITermFactoryService termFactoryService, IProject eclipseProject) {
+        this.resourceService = resourceService;
         this.eclipseProject = eclipseProject;
         this.project = resourceService.resolve(eclipseProject);
-        this.projectFile = resourceService.localPath(project);
 
-        String name;
-        String id;
+        String groupId = "";
+        String id = "";
+        String version = "";
+        String name = "";
         try {
             final FileObject[] files = project.findFiles(new ContainsFileSelector("packed.esv"));
-            if(files.length == 0) {
-                name = "";
-                id = "";
-            } else {
+            if(files.length > 0) {
                 final FileObject esvFile = files[0];
                 final TermReader reader =
                     new TermReader(termFactoryService.getGeneric().getFactoryWithStorageType(IStrategoTerm.MUTABLE));
@@ -62,15 +61,21 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                 }
                 final IStrategoAppl esvTerm = (IStrategoAppl) term;
 
-                name = ESVReader.getProperty(esvTerm, "LanguageName");
+                groupId = ESVReader.getProperty(esvTerm, "LanguageGroupId");
                 id = ESVReader.getProperty(esvTerm, "LanguageId");
+                version = ESVReader.getProperty(esvTerm, "LanguageVersion");
+                name = ESVReader.getProperty(esvTerm, "LanguageName");
             }
         } catch(ParseError | IOException e) {
-            name = "";
-            id = "";
+
         }
 
-        this.page = new UpgradeLanguageProjectWizardPage(name, id);
+        groupId = groupId == null ? "" : groupId;
+        id = id == null ? "" : id;
+        version = version == null ? "" : version;
+        name = name == null ? "" : name;
+
+        this.page = new UpgradeLanguageProjectWizardPage(groupId, id, version, name);
 
         setNeedsProgressMonitor(true);
     }
@@ -81,13 +86,15 @@ public class UpgradeLanguageProjectWizard extends Wizard {
     }
 
     @Override public boolean performFinish() {
-        final String languageName = page.inputLanguageName.getText();
-        final String packageName = page.inputPackageName.getText();
+        final String groupId = page.inputGroupId.getText();
+        final String id = page.inputId.getText();
+        final String version = page.inputVersion.getText();
+        final String name = page.inputName.getText();
 
         final IRunnableWithProgress runnable = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
                 try {
-                    doUpgrade(monitor, languageName, packageName);
+                    doUpgrade(monitor, groupId, id, version, name);
                 } catch(Exception e) {
                     throw new InvocationTargetException(e);
                 } finally {
@@ -108,16 +115,17 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         return true;
     }
 
-    private void doUpgrade(IProgressMonitor monitor, final String name, final String id) throws Exception {
+    private void doUpgrade(IProgressMonitor monitor, final String groupId, final String id, final String version,
+        final String name) throws Exception {
         final IWorkspaceRunnable upgradeRunnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
                     workspaceMonitor.beginTask("Upgrading language project", 3);
-                    deleteUnused(name, id);
+                    deleteUnused(id, name);
                     workspaceMonitor.worked(1);
                     upgradeProject();
                     workspaceMonitor.worked(1);
-                    generateFiles(name, id);
+                    generateFiles(groupId, id, version, name);
                     workspaceMonitor.worked(1);
                 } catch(CoreException e) {
                     throw e;
@@ -130,7 +138,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
             IWorkspace.AVOID_UPDATE, monitor);
     }
 
-    private void deleteUnused(String name, String id) throws Exception {
+    private void deleteUnused(String id, String name) throws Exception {
         // Delete IMP classes
         final String impClassesLoc = id.replace(".", File.separator);
         final FileObject impClassesDir = project.resolveFile("editor/java/" + impClassesLoc);
@@ -195,19 +203,19 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
         NatureUtils.removeFrom(SpoofaxMetaNature.id, eclipseProject);
         NatureUtils.removeFrom(SpoofaxNature.id, eclipseProject);
-        
+
         NatureUtils.addTo(SpoofaxNature.id, eclipseProject);
         NatureUtils.addTo(SpoofaxMetaNature.id, eclipseProject);
         NatureUtils.addTo("org.eclipse.m2e.core.maven2Nature", eclipseProject);
     }
 
-    private void generateFiles(String name, String id) throws Exception {
-        final ProjectSettings settings = new ProjectSettings(name, projectFile);
-        settings.setId(id);
-        final NewProjectGenerator newProjectGenerator = new NewProjectGenerator(settings, new String[] { "dummy" });
+    private void generateFiles(String groupId, String id, String version, String name) throws Exception {
+        final ProjectSettings settings = new ProjectSettings(groupId, id, version, name, project);
+        final NewProjectGenerator newProjectGenerator =
+            new NewProjectGenerator(resourceService, settings, new String[] { "dummy" });
         newProjectGenerator.generateIgnoreFile();
         newProjectGenerator.generatePOM();
-        final ProjectGenerator projectGenerator = new ProjectGenerator(settings);
+        final ProjectGenerator projectGenerator = new ProjectGenerator(resourceService, settings);
         projectGenerator.generateAll();
     }
 }

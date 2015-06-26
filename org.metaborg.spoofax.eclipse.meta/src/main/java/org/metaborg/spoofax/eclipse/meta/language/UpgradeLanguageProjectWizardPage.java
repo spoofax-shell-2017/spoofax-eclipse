@@ -11,18 +11,24 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class UpgradeLanguageProjectWizardPage extends WizardPage {
-    private final String languageName;
-    private final String packageName;
+    private final String groupId;
+    private final String id;
+    private final String version;
+    private final String name;
 
-    public Text inputLanguageName;
-    public Text inputPackageName;
+    public Text inputGroupId;
+    public Text inputId;
+    public Text inputVersion;
+    public Text inputName;
 
 
-    public UpgradeLanguageProjectWizardPage(String languageName, String packageName) {
+    public UpgradeLanguageProjectWizardPage(String groupId, String id, String version, String name) {
         super("wizardPage");
 
-        this.languageName = languageName;
-        this.packageName = packageName;
+        this.groupId = groupId;
+        this.id = id;
+        this.version = version;
+        this.name = name;
 
         setTitle("Upgrade language project");
         setDescription("This wizard upgrades a language project to the newest version");
@@ -37,40 +43,60 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
         container.setLayout(layout);
 
         final Label description = new Label(container, SWT.NULL);
-        description.setText("Language name and id are retrieved from the packed.esv file if it exists.\n"
-            + "If it does not exist, please copy the language name and id from the main.esv file.");
+        description.setText("Language properties are retrieved from the packed.esv file if it exists.\n"
+            + "If it does not exist, please copy them from the generated.esv file.");
         GridData gridData = new GridData(GridData.VERTICAL_ALIGN_END);
         gridData.horizontalSpan = 2;
         gridData.horizontalAlignment = GridData.FILL;
         description.setLayoutData(gridData);
 
-        new Label(container, SWT.NULL).setText("&Language name:");
-        inputLanguageName = new Text(container, SWT.BORDER | SWT.SINGLE);
-        inputLanguageName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputLanguageName.setText(languageName);
-        inputLanguageName.addModifyListener(new ModifyListener() {
+        new Label(container, SWT.NULL).setText("&Group ID:");
+        inputGroupId = new Text(container, SWT.BORDER | SWT.SINGLE);
+        inputGroupId.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputGroupId.setText(groupId);
+        inputGroupId.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 onChange();
             }
         });
 
-        new Label(container, SWT.NULL).setText("&Language id:");
-        inputPackageName = new Text(container, SWT.BORDER | SWT.SINGLE);
-        inputPackageName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputPackageName.setText(packageName);
-        inputPackageName.addModifyListener(new ModifyListener() {
+        new Label(container, SWT.NULL).setText("&ID:");
+        inputId = new Text(container, SWT.BORDER | SWT.SINGLE);
+        inputId.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputId.setText(id);
+        inputId.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 onChange();
             }
         });
-        
+
+        new Label(container, SWT.NULL).setText("&Version:");
+        inputVersion = new Text(container, SWT.BORDER | SWT.SINGLE);
+        inputVersion.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputVersion.setText(version);
+        inputVersion.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                onChange();
+            }
+        });
+
+        new Label(container, SWT.NULL).setText("&Name:");
+        inputName = new Text(container, SWT.BORDER | SWT.SINGLE);
+        inputName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputName.setText(name);
+        inputName.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                onChange();
+            }
+        });
+
         setControl(container);
         onChange();
     }
 
 
     private void onChange() {
-        if(inputLanguageName.getText().isEmpty() || inputPackageName.getText().isEmpty()) {
+        if(inputName.getText().isEmpty() || inputId.getText().isEmpty()) {
             setPageComplete(false);
         } else {
             setPageComplete(true);
