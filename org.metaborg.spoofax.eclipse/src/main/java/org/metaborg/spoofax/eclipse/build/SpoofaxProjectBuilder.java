@@ -20,16 +20,15 @@ import org.metaborg.spoofax.core.analysis.AnalysisResult;
 import org.metaborg.spoofax.core.build.BuildInput;
 import org.metaborg.spoofax.core.build.IBuildOutput;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
-import org.metaborg.spoofax.core.language.ILanguage;
 import org.metaborg.spoofax.core.language.ILanguageService;
 import org.metaborg.spoofax.core.messages.IMessage;
+import org.metaborg.spoofax.core.project.IProjectService;
 import org.metaborg.spoofax.core.resource.IResourceChange;
 import org.metaborg.spoofax.core.resource.ResourceChange;
 import org.metaborg.spoofax.core.syntax.ParseResult;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
-import org.metaborg.util.iterators.Iterables2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -44,14 +43,16 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
 
     private final IEclipseResourceService resourceService;
     private final ILanguageService languageService;
+    private final IProjectService projectService;
     private final ISpoofaxBuilder builder;
 
 
     public SpoofaxProjectBuilder() {
         final Injector injector = SpoofaxPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
-        this.builder = injector.getInstance(ISpoofaxBuilder.class);
         this.languageService = injector.getInstance(ILanguageService.class);
+        this.projectService = injector.getInstance(IProjectService.class);
+        this.builder = injector.getInstance(ISpoofaxBuilder.class);
     }
 
 
@@ -97,29 +98,31 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private void fullBuild(IProject project, IProgressMonitor monitor) {
+    private void fullBuild(IProject eclipseProject, IProgressMonitor monitor) {
         try {
-            final FileObject location = resourceService.resolve(project);
+            final FileObject location = resourceService.resolve(eclipseProject);
+            final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
             final Collection<IResourceChange> changes = Lists.newLinkedList();
-            project.accept(new IResourceVisitor() {
+            eclipseProject.accept(new IResourceVisitor() {
                 @Override public boolean visit(IResource eclipseResource) throws CoreException {
                     final FileObject resource = resourceService.resolve(eclipseResource);
                     changes.add(new ResourceChange(resource));
                     return true;
                 }
             });
-            final Iterable<Iterable<ILanguage>> buildOrder = Iterables2.singleton(languageService.getAllActive());
-            final BuildInput input = new BuildInput(location, changes, buildOrder);
-            build(project, input, monitor);
+            // GTODO: only build with compile time dependency languages
+            final BuildInput input = new BuildInput(project, changes, languageService.getAllActive());
+            build(eclipseProject, input, monitor);
         } catch(CoreException e) {
-            final String message = String.format("Failed to fully build project %s", project);
+            final String message = String.format("Failed to fully build project %s", eclipseProject);
             logger.error(message, e);
         }
     }
 
-    private void incrBuild(IProject project, IResourceDelta delta, IProgressMonitor monitor) {
+    private void incrBuild(IProject eclipseProject, IResourceDelta delta, IProgressMonitor monitor) {
         try {
-            final FileObject location = resourceService.resolve(project);
+            final FileObject location = resourceService.resolve(eclipseProject);
+            final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
             final Collection<IResourceChange> changes = Lists.newLinkedList();
             delta.accept(new IResourceDeltaVisitor() {
                 @Override public boolean visit(IResourceDelta innerDelta) throws CoreException {
@@ -130,11 +133,11 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     return true;
                 }
             });
-            final Iterable<Iterable<ILanguage>> buildOrder = Iterables2.singleton(languageService.getAllActive());
-            final BuildInput input = new BuildInput(location, changes, buildOrder);
-            build(project, input, monitor);
+            // GTODO: only build with compile time dependency languages
+            final BuildInput input = new BuildInput(project, changes, languageService.getAllActive());
+            build(eclipseProject, input, monitor);
         } catch(CoreException e) {
-            final String message = String.format("Failed to incrementally build project %s", project);
+            final String message = String.format("Failed to incrementally build project %s", eclipseProject);
             logger.error(message, e);
         }
     }

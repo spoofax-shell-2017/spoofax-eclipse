@@ -76,7 +76,7 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
         final IAnnotationModelExtension2 annotationModel =
             (IAnnotationModelExtension2) sourceViewer.getVisualAnnotationModel();
         final StringBuilder stringBuilder = new StringBuilder();
-        for(Annotation annotation : Iterables2.<Annotation>once(annotationModel.getAnnotationIterator(
+        for(Annotation annotation : Iterables2.<Annotation>fromOnce(annotationModel.getAnnotationIterator(
             region.getOffset(), region.getLength(), true, true))) {
             // Ignore certain annotations types.
             switch(annotation.getType()) {

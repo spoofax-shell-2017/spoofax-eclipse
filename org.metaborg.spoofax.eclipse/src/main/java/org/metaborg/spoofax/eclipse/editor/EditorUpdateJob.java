@@ -140,7 +140,7 @@ public class EditorUpdateJob<P, A> extends Job {
             final String message = String.format("Failed to update editor for %s", resource);
             logger.error(message, e);
             return StatusUtils.silentError(message, e);
-        } catch(ThreadDeath e) {
+        } catch(Throwable e) {
             return StatusUtils.cancel();
         }
     }
