@@ -18,7 +18,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.metaborg.spoofax.core.esv.ESVReader;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
-import org.metaborg.spoofax.eclipse.nature.SpoofaxNature;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
@@ -201,12 +200,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         NatureUtils.removeFrom("org.metaborg.spoofax.eclipse.meta.builder", eclipseProject);
         NatureUtils.removeFrom("org.eclipse.pde.PluginNature", eclipseProject);
 
-        NatureUtils.removeFrom(SpoofaxMetaNature.id, eclipseProject);
-        NatureUtils.removeFrom(SpoofaxNature.id, eclipseProject);
-
-        NatureUtils.addTo(SpoofaxNature.id, eclipseProject);
-        NatureUtils.addTo(SpoofaxMetaNature.id, eclipseProject);
-        NatureUtils.addTo("org.eclipse.m2e.core.maven2Nature", eclipseProject);
+        SpoofaxMetaNature.add(eclipseProject);
     }
 
     private void generateFiles(String groupId, String id, String version, String name) throws Exception {

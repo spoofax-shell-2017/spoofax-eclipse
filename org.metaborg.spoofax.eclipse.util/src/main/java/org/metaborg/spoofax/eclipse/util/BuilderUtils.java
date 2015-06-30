@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.eclipse.util;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.ICommand;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
 public class BuilderUtils {
@@ -177,6 +179,42 @@ public class BuilderUtils {
         final int[] builderIndexes = indexes(id, builders);
         final ICommand[] newBuilders = ArrayUtils.removeAll(builders, builderIndexes);
         projectDesc.setBuildSpec(newBuilders);
+        project.setDescription(projectDesc, null);
+    }
+
+    /**
+     * Sorts builders using given sort order. Builders not part of the sort order are appended after sorted builders in
+     * the original order.
+     * 
+     * @param project
+     *            Project to check for the builder.
+     * @param sortOrder
+     *            Builder names that reperesent a sorting order.
+     * @throws When
+     *             {@link IProject#getDescription} throws a CoreException.
+     */
+    public static void sort(IProject project, String... sortOrder) throws CoreException {
+        final IProjectDescription projectDesc = project.getDescription();
+        final ICommand[] builders = projectDesc.getBuildSpec();
+        final Map<String, ICommand> buildersMap = Maps.newLinkedHashMap();
+        for(ICommand builder : builders) {
+            buildersMap.put(builder.getBuilderName(), builder);
+        }
+
+        final Collection<ICommand> newBuilders = Lists.newArrayListWithCapacity(builders.length);
+        for(String name : sortOrder) {
+            final ICommand builder = buildersMap.get(name);
+            if(builder != null) {
+                newBuilders.add(builder);
+                buildersMap.remove(name);
+            }
+        }
+
+        for(ICommand builder : buildersMap.values()) {
+            newBuilders.add(builder);
+        }
+
+        projectDesc.setBuildSpec(newBuilders.toArray(new ICommand[builders.length]));
         project.setDescription(projectDesc, null);
     }
 
