@@ -33,6 +33,6 @@ public class EclipseProjectService implements IProjectService {
             return null;
         }
         final FileObject location = resourceService.resolve(eclipseProject);
-        return new EclipseProject(location);
+        return new EclipseProject(location, eclipseProject);
     }
 }

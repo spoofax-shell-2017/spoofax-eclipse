@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -18,14 +17,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.spoofax.core.analysis.AnalysisFileResult;
 import org.metaborg.spoofax.core.analysis.AnalysisResult;
 import org.metaborg.spoofax.core.build.BuildInput;
+import org.metaborg.spoofax.core.build.BuildInputBuilder;
 import org.metaborg.spoofax.core.build.IBuildOutput;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
-import org.metaborg.spoofax.core.language.ILanguageService;
+import org.metaborg.spoofax.core.build.dependency.IDependencyService;
+import org.metaborg.spoofax.core.build.paths.ILanguagePathService;
 import org.metaborg.spoofax.core.messages.IMessage;
 import org.metaborg.spoofax.core.project.IProjectService;
 import org.metaborg.spoofax.core.resource.IResourceChange;
-import org.metaborg.spoofax.core.resource.ResourceChange;
 import org.metaborg.spoofax.core.syntax.ParseResult;
+import org.metaborg.spoofax.core.transform.CompileGoal;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
@@ -42,16 +43,18 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private static final Logger logger = LoggerFactory.getLogger(SpoofaxProjectBuilder.class);
 
     private final IEclipseResourceService resourceService;
-    private final ILanguageService languageService;
+    private final ILanguagePathService languagePathService;
     private final IProjectService projectService;
+    private final IDependencyService dependencyService;
     private final ISpoofaxBuilder builder;
 
 
     public SpoofaxProjectBuilder() {
         final Injector injector = SpoofaxPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
-        this.languageService = injector.getInstance(ILanguageService.class);
+        this.languagePathService = injector.getInstance(ILanguagePathService.class);
         this.projectService = injector.getInstance(IProjectService.class);
+        this.dependencyService = injector.getInstance(IDependencyService.class);
         this.builder = injector.getInstance(ISpoofaxBuilder.class);
     }
 
@@ -102,16 +105,17 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         try {
             final FileObject location = resourceService.resolve(eclipseProject);
             final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
-            final Collection<IResourceChange> changes = Lists.newLinkedList();
-            eclipseProject.accept(new IResourceVisitor() {
-                @Override public boolean visit(IResource eclipseResource) throws CoreException {
-                    final FileObject resource = resourceService.resolve(eclipseResource);
-                    changes.add(new ResourceChange(resource));
-                    return true;
-                }
-            });
-            // GTODO: only build with compile time dependency languages
-            final BuildInput input = new BuildInput(project, changes, languageService.getAllActive());
+
+            final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
+            // @formatter:off
+            final BuildInput input = inputBuilder
+                .withDefaultIncludeLocations(true)
+                .withResourcesFromDefaultSourceLocations(true)
+                .addGoal(new CompileGoal())
+                .build(dependencyService, languagePathService)
+                ;
+            // @formatter:on
+
             build(eclipseProject, input, monitor);
         } catch(CoreException e) {
             final String message = String.format("Failed to fully build project %s", eclipseProject);
@@ -123,6 +127,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         try {
             final FileObject location = resourceService.resolve(eclipseProject);
             final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
+
             final Collection<IResourceChange> changes = Lists.newLinkedList();
             delta.accept(new IResourceDeltaVisitor() {
                 @Override public boolean visit(IResourceDelta innerDelta) throws CoreException {
@@ -133,8 +138,17 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                     return true;
                 }
             });
-            // GTODO: only build with compile time dependency languages
-            final BuildInput input = new BuildInput(project, changes, languageService.getAllActive());
+
+            final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
+            // @formatter:off
+            final BuildInput input = inputBuilder
+                .withDefaultIncludeLocations(true)
+                .withResourceChanges(changes)
+                .addGoal(new CompileGoal())
+                .build(dependencyService, languagePathService)
+                ;
+            // @formatter:on
+
             build(eclipseProject, input, monitor);
         } catch(CoreException e) {
             final String message = String.format("Failed to incrementally build project %s", eclipseProject);
