@@ -192,10 +192,10 @@ public class UpgradeLanguageProjectWizard extends Wizard {
     }
 
     private void upgradeProject() throws Exception {
+        // Remove legacy builders and natures
         BuilderUtils.removeFrom("org.eclipse.ui.externaltools.ExternalToolBuilder", eclipseProject);
         BuilderUtils.removeFrom("org.eclipse.pde.ManifestBuilder", eclipseProject);
         BuilderUtils.removeFrom("org.eclipse.pde.SchemaBuilder", eclipseProject);
-
         NatureUtils.removeFrom("org.strategoxt.imp.metatooling.nature", eclipseProject);
         NatureUtils.removeFrom("org.metaborg.spoofax.eclipse.meta.builder", eclipseProject);
         NatureUtils.removeFrom("org.eclipse.pde.PluginNature", eclipseProject);

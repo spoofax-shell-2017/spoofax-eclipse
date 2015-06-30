@@ -5,7 +5,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.language.LanguageChangeProcessor;
 import org.metaborg.spoofax.eclipse.logging.LoggingConfiguration;
-import org.metaborg.util.log.SystemRedirectLogger;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +25,6 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         plugin = this;
 
         LoggingConfiguration.configure(SpoofaxPlugin.class, "/logback.xml");
-        // Make sure to redirect after logging configuration, so that logback still outputs to the original System.out.
-        SystemRedirectLogger.redirect();
 
         logger = LoggerFactory.getLogger(SpoofaxPlugin.class);
         logger.debug("Starting Spoofax plugin");

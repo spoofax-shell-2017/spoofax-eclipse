@@ -4,7 +4,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.metaborg.spoofax.core.build.SpoofaxBuilder;
 import org.metaborg.spoofax.eclipse.build.SpoofaxProjectBuilder;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.build.GenerateSourcesBuilder;
