@@ -2,8 +2,8 @@ package org.metaborg.spoofax.eclipse.util;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
-import org.metaborg.spoofax.core.messages.ISourceRegion;
-import org.metaborg.spoofax.core.messages.SourceRegion;
+import org.metaborg.spoofax.core.source.ISourceRegion;
+import org.metaborg.spoofax.core.source.SourceRegion;
 
 /**
  * Utility functions for converting regions.

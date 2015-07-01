@@ -6,7 +6,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.metaborg.spoofax.core.messages.ISourceLocation;
+import org.metaborg.spoofax.core.source.ISourceLocation;
 import org.metaborg.spoofax.core.tracing.Resolution;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
