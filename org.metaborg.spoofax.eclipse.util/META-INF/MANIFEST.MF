@@ -16,4 +16,5 @@ Require-Bundle: org.metaborg.spoofax.core,
  org.eclipse.ui.workbench,
  org.eclipse.ui.console,
  org.eclipse.jface.text,
- org.eclipse.core.expressions
+ org.eclipse.core.expressions,
+ org.metaborg.core

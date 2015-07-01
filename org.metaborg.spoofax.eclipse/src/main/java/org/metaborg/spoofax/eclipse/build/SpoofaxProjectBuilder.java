@@ -25,6 +25,7 @@ import org.metaborg.spoofax.core.build.paths.ILanguagePathService;
 import org.metaborg.spoofax.core.messages.IMessage;
 import org.metaborg.spoofax.core.project.IProjectService;
 import org.metaborg.spoofax.core.resource.IResourceChange;
+import org.metaborg.spoofax.core.resource.SpoofaxIgnoredDirectories;
 import org.metaborg.spoofax.core.syntax.ParseResult;
 import org.metaborg.spoofax.core.transform.CompileGoal;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
@@ -90,7 +91,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
                 @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                     MarkerUtils.clearAllRec(project);
                     final FileObject location = resourceService.resolve(project);
-                    builder.clean(location);
+                    builder.clean(location, SpoofaxIgnoredDirectories.excludeFileSelector());
                 }
             };
             final IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -111,6 +112,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             final BuildInput input = inputBuilder
                 .withDefaultIncludeLocations(true)
                 .withResourcesFromDefaultSourceLocations(true)
+                .withSelector(SpoofaxIgnoredDirectories.includeFileSelector())
                 .addGoal(new CompileGoal())
                 .build(dependencyService, languagePathService)
                 ;
