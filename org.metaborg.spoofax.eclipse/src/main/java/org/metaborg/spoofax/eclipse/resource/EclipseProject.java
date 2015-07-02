@@ -1,7 +1,7 @@
 package org.metaborg.spoofax.eclipse.resource;
 
 import org.apache.commons.vfs2.FileObject;
-import org.metaborg.spoofax.core.project.IProject;
+import org.metaborg.core.project.IProject;
 
 public class EclipseProject implements IProject {
     public final FileObject location;

@@ -10,12 +10,12 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Display;
-import org.metaborg.spoofax.core.SpoofaxException;
-import org.metaborg.spoofax.core.completion.ICompletion;
-import org.metaborg.spoofax.core.completion.ICompletionService;
-import org.metaborg.spoofax.core.language.ILanguage;
-import org.metaborg.spoofax.core.processing.parse.IParseResultRequester;
-import org.metaborg.spoofax.core.syntax.ParseResult;
+import org.metaborg.core.SpoofaxException;
+import org.metaborg.core.completion.ICompletion;
+import org.metaborg.core.completion.ICompletionService;
+import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.processing.parse.IParseResultRequester;
+import org.metaborg.core.syntax.ParseResult;
 
 import rx.Observable;
 import rx.Observable.OnSubscribe;

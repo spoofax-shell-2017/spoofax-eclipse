@@ -4,9 +4,9 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.ui.IEditorInput;
-import org.metaborg.spoofax.core.SpoofaxRuntimeException;
-import org.metaborg.spoofax.core.resource.IResourceChange;
-import org.metaborg.spoofax.core.resource.IResourceService;
+import org.metaborg.core.SpoofaxRuntimeException;
+import org.metaborg.core.resource.IResourceChange;
+import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 /**

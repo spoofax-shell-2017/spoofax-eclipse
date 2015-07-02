@@ -2,8 +2,8 @@ package org.metaborg.spoofax.eclipse.build;
 
 import java.util.Collection;
 
-import org.metaborg.spoofax.core.build.IdentifiedResourceChange;
-import org.metaborg.spoofax.core.resource.IResourceChange;
+import org.metaborg.core.build.IdentifiedResourceChange;
+import org.metaborg.core.resource.IResourceChange;
 
 public class BuildChanges {
     public final Collection<IResourceChange> parseTableChanges;

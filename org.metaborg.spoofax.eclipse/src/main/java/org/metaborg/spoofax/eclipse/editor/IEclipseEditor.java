@@ -5,7 +5,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.ui.IEditorInput;
-import org.metaborg.spoofax.core.editor.IEditor;
+import org.metaborg.core.editor.IEditor;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 

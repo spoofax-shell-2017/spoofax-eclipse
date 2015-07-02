@@ -2,7 +2,7 @@ package org.metaborg.spoofax.eclipse.job;
 
 import java.util.concurrent.ConcurrentMap;
 
-import org.metaborg.spoofax.core.context.IContext;
+import org.metaborg.core.context.IContext;
 
 import com.google.common.collect.Maps;
 

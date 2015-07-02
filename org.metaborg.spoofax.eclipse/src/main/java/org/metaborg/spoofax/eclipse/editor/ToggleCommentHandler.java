@@ -19,8 +19,8 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.metaborg.spoofax.core.SpoofaxRuntimeException;
-import org.metaborg.spoofax.core.editor.IEditor;
+import org.metaborg.core.SpoofaxRuntimeException;
+import org.metaborg.core.editor.IEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

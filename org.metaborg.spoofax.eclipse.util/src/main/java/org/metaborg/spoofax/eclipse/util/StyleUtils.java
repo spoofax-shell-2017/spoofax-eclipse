@@ -9,9 +9,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.metaborg.spoofax.core.source.ISourceRegion;
-import org.metaborg.spoofax.core.style.IRegionStyle;
-import org.metaborg.spoofax.core.style.IStyle;
+import org.metaborg.core.source.ISourceRegion;
+import org.metaborg.core.style.IRegionStyle;
+import org.metaborg.core.style.IStyle;
 
 import com.google.common.collect.Lists;
 

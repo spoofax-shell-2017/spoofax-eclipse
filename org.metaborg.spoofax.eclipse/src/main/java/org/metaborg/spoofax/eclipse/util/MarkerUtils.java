@@ -3,9 +3,9 @@ package org.metaborg.spoofax.eclipse.util;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.metaborg.spoofax.core.messages.IMessage;
-import org.metaborg.spoofax.core.messages.MessageSeverity;
-import org.metaborg.spoofax.core.messages.MessageType;
+import org.metaborg.core.messages.IMessage;
+import org.metaborg.core.messages.MessageSeverity;
+import org.metaborg.core.messages.MessageType;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 
 /**

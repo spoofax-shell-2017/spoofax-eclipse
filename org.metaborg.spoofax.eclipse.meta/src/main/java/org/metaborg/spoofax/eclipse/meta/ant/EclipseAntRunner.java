@@ -9,7 +9,7 @@ import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.BuildLogger;
 import org.eclipse.ant.core.AntRunner;
 import org.eclipse.core.runtime.CoreException;
-import org.metaborg.spoofax.core.resource.IResourceService;
+import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.ant.IAntRunner;
 

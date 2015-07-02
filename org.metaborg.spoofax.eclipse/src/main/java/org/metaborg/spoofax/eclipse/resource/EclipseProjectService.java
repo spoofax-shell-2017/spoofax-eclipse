@@ -2,8 +2,8 @@ package org.metaborg.spoofax.eclipse.resource;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
-import org.metaborg.spoofax.core.project.IProject;
-import org.metaborg.spoofax.core.project.IProjectService;
+import org.metaborg.core.project.IProject;
+import org.metaborg.core.project.IProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

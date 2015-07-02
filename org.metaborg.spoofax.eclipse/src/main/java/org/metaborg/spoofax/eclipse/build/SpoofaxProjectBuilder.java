@@ -14,20 +14,20 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.metaborg.spoofax.core.analysis.AnalysisFileResult;
-import org.metaborg.spoofax.core.analysis.AnalysisResult;
-import org.metaborg.spoofax.core.build.BuildInput;
-import org.metaborg.spoofax.core.build.BuildInputBuilder;
-import org.metaborg.spoofax.core.build.IBuildOutput;
+import org.metaborg.core.analysis.AnalysisFileResult;
+import org.metaborg.core.analysis.AnalysisResult;
+import org.metaborg.core.build.BuildInput;
+import org.metaborg.core.build.BuildInputBuilder;
+import org.metaborg.core.build.IBuildOutput;
+import org.metaborg.core.build.dependency.IDependencyService;
+import org.metaborg.core.build.paths.ILanguagePathService;
+import org.metaborg.core.messages.IMessage;
+import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.resource.IResourceChange;
+import org.metaborg.core.syntax.ParseResult;
+import org.metaborg.core.transform.CompileGoal;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
-import org.metaborg.spoofax.core.build.dependency.IDependencyService;
-import org.metaborg.spoofax.core.build.paths.ILanguagePathService;
-import org.metaborg.spoofax.core.messages.IMessage;
-import org.metaborg.spoofax.core.project.IProjectService;
-import org.metaborg.spoofax.core.resource.IResourceChange;
 import org.metaborg.spoofax.core.resource.SpoofaxIgnoredDirectories;
-import org.metaborg.spoofax.core.syntax.ParseResult;
-import org.metaborg.spoofax.core.transform.CompileGoal;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
@@ -105,7 +105,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private void fullBuild(IProject eclipseProject, IProgressMonitor monitor) {
         try {
             final FileObject location = resourceService.resolve(eclipseProject);
-            final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
+            final org.metaborg.core.project.IProject project = projectService.get(location);
 
             final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
             // @formatter:off
@@ -128,7 +128,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private void incrBuild(IProject eclipseProject, IResourceDelta delta, IProgressMonitor monitor) {
         try {
             final FileObject location = resourceService.resolve(eclipseProject);
-            final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
+            final org.metaborg.core.project.IProject project = projectService.get(location);
 
             final Collection<IResourceChange> changes = Lists.newLinkedList();
             delta.accept(new IResourceDeltaVisitor() {

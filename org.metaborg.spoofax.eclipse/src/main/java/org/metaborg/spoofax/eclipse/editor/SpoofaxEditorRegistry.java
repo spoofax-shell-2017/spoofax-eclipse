@@ -16,7 +16,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.metaborg.spoofax.core.editor.IEditor;
+import org.metaborg.core.editor.IEditor;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

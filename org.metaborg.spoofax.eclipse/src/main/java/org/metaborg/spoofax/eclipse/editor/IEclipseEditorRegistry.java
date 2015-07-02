@@ -1,6 +1,6 @@
 package org.metaborg.spoofax.eclipse.editor;
 
-import org.metaborg.spoofax.core.editor.IEditorRegistry;
+import org.metaborg.core.editor.IEditorRegistry;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 

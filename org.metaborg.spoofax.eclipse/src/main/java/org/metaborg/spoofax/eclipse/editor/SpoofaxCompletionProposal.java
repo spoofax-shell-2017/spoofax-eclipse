@@ -13,11 +13,11 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.metaborg.spoofax.core.completion.ICompletion;
-import org.metaborg.spoofax.core.completion.ICompletionItem;
-import org.metaborg.spoofax.core.completion.ICursorCompletionItem;
-import org.metaborg.spoofax.core.completion.IPlaceholderCompletionItem;
-import org.metaborg.spoofax.core.completion.ITextCompletionItem;
+import org.metaborg.core.completion.ICompletion;
+import org.metaborg.core.completion.ICompletionItem;
+import org.metaborg.core.completion.ICursorCompletionItem;
+import org.metaborg.core.completion.IPlaceholderCompletionItem;
+import org.metaborg.core.completion.ITextCompletionItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

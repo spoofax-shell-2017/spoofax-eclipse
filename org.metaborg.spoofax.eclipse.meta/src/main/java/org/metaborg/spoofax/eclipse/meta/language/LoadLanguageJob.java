@@ -4,7 +4,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.metaborg.spoofax.core.language.ILanguageDiscoveryService;
+import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

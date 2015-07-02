@@ -2,8 +2,8 @@ package org.metaborg.spoofax.eclipse.meta.build;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.maven.project.MavenProject;
-import org.metaborg.spoofax.core.project.IMavenProjectService;
-import org.metaborg.spoofax.core.project.IProjectService;
+import org.metaborg.core.project.IMavenProjectService;
+import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.generator.project.ProjectException;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class MetaBuildInputGenerator {
 
 
     public MetaBuildInput buildInput(FileObject location) {
-        final org.metaborg.spoofax.core.project.IProject project = projectService.get(location);
+        final org.metaborg.core.project.IProject project = projectService.get(location);
         if(project == null) {
             logger.error("Cannot build language project, project for {} could not be retrieved", location);
             return null;

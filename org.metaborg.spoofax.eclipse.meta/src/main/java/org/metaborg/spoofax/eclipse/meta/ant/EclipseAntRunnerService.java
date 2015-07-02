@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.tools.ant.BuildListener;
-import org.metaborg.spoofax.core.resource.IResourceService;
+import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.ant.IAntRunner;
 import org.metaborg.spoofax.meta.core.ant.IAntRunnerService;

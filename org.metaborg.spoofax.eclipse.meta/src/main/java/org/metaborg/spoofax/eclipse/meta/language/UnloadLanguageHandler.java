@@ -8,7 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
-import org.metaborg.spoofax.core.language.ILanguageService;
+import org.metaborg.core.language.ILanguageService;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
