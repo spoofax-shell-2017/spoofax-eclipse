@@ -4,7 +4,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.ui.IEditorInput;
-import org.metaborg.core.SpoofaxRuntimeException;
+import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.resource.IResourceChange;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -37,7 +37,7 @@ public interface IEclipseResourceService extends IResourceService {
      * @param delta
      *            Eclipse Resource delta to convert.
      * @return Resource change, or null if the Eclipse delta does not indicate a change.
-     * @throws SpoofaxRuntimeException
+     * @throws MetaborgRuntimeException
      *             When Eclipse resource delta could not be converted.
      */
     public abstract @Nullable IResourceChange resolve(IResourceDelta delta);

@@ -19,7 +19,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.metaborg.core.SpoofaxRuntimeException;
+import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.editor.IEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class ToggleCommentHandler extends AbstractHandler {
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
         final IEditorPart part = HandlerUtil.getActiveEditor(event);
         if(!(part instanceof IEditor)) {
-            throw new SpoofaxRuntimeException("Editor is not a Spoofax editor");
+            throw new MetaborgRuntimeException("Editor is not a Spoofax editor");
         }
         final SpoofaxEditor editor = (SpoofaxEditor) part;
         final IDocument document = editor.document();

@@ -7,9 +7,9 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.metaborg.core.SpoofaxException;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.AnalysisFileResult;
-import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
+import org.metaborg.core.build.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.tracing.IReferenceResolver;
 import org.metaborg.core.tracing.Resolution;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -52,7 +52,7 @@ public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
             }
             final IHyperlink hyperlink = new SpoofaxHyperlink(resourceService, resolution, resource, editor);
             return new IHyperlink[] { hyperlink };
-        } catch(SpoofaxException e) {
+        } catch(MetaborgException e) {
             final String message = String.format("Reference resolution for %s failed unexpectedly", resource);
             logger.error(message, e);
         }

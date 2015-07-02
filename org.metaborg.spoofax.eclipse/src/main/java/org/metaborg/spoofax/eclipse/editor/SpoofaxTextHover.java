@@ -8,9 +8,9 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModelExtension2;
 import org.eclipse.jface.text.source.ISourceViewerExtension2;
-import org.metaborg.core.SpoofaxException;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.AnalysisFileResult;
-import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
+import org.metaborg.core.build.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.tracing.Hover;
 import org.metaborg.core.tracing.IHoverService;
 import org.metaborg.util.iterators.Iterables2;
@@ -64,7 +64,7 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
                 return null;
             }
             return hover;
-        } catch(SpoofaxException e) {
+        } catch(MetaborgException e) {
             final String message = String.format("Hover information creation for %s failed unexpectedly", resource);
             logger.error(message, e);
         }

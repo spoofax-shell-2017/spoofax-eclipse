@@ -10,11 +10,11 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Display;
-import org.metaborg.core.SpoofaxException;
+import org.metaborg.core.MetaborgException;
+import org.metaborg.core.build.processing.parse.IParseResultRequester;
 import org.metaborg.core.completion.ICompletion;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.language.ILanguage;
-import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.ParseResult;
 
 import rx.Observable;
@@ -96,7 +96,7 @@ public class SpoofaxContentAssistProcessor implements IContentAssistProcessor {
         final Iterable<ICompletion> completions;
         try {
             completions = completionService.get(parseResult, offset);
-        } catch(SpoofaxException e) {
+        } catch(MetaborgException e) {
             return null;
         }
 

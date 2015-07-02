@@ -11,7 +11,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
-import org.metaborg.core.SpoofaxRuntimeException;
+import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.resource.IResourceChange;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
@@ -57,7 +57,7 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
             default:
                 final String message = String.format("Unhandled resource delta type: %s", eclipseKind);
                 logger.error(message);
-                throw new SpoofaxRuntimeException(message);
+                throw new MetaborgRuntimeException(message);
         }
 
         return new ResourceChange(resource, kind);

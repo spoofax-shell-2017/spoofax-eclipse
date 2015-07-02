@@ -14,11 +14,13 @@ import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
-import org.metaborg.core.SpoofaxException;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.AnalysisException;
 import org.metaborg.core.analysis.AnalysisFileResult;
 import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.analysis.IAnalysisService;
+import org.metaborg.core.build.processing.analyze.IAnalysisResultUpdater;
+import org.metaborg.core.build.processing.parse.IParseResultUpdater;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguage;
@@ -27,8 +29,6 @@ import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.messages.MessageFactory;
 import org.metaborg.core.messages.MessageType;
-import org.metaborg.core.processing.analyze.IAnalysisResultUpdater;
-import org.metaborg.core.processing.parse.IParseResultUpdater;
 import org.metaborg.core.style.ICategorizerService;
 import org.metaborg.core.style.IRegionCategory;
 import org.metaborg.core.style.IRegionStyle;
@@ -116,7 +116,7 @@ public class EditorUpdateJob<P, A> extends Job {
                 threadKiller.cancel();
             }
             return status;
-        } catch(SpoofaxException | CoreException e) {
+        } catch(MetaborgException | CoreException e) {
             if(monitor.isCanceled())
                 return StatusUtils.cancel();
 
@@ -159,13 +159,13 @@ public class EditorUpdateJob<P, A> extends Job {
     }
 
 
-    private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws SpoofaxException, CoreException {
+    private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException, CoreException {
         final Display display = Display.getDefault();
 
         // Identify language
         final ILanguage parserLanguage = languageIdentifierService.identify(resource);
         if(parserLanguage == null) {
-            throw new SpoofaxException("Language could not be identified");
+            throw new MetaborgException("Language could not be identified");
         }
         ILanguage baseLanguage = dialectService.getBase(parserLanguage);
         final ILanguage language;
