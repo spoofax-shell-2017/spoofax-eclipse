@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.eclipse;
 
 import org.apache.commons.vfs2.FileSystemManager;
+import org.metaborg.core.MetaborgModule;
 import org.metaborg.core.editor.IEditorRegistry;
 import org.metaborg.core.project.IMavenProjectService;
 import org.metaborg.core.project.IProjectService;
@@ -36,6 +37,23 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
     }
 
 
+    @Override protected void configure() {
+        super.configure();
+
+        bind(GlobalSchedulingRules.class).in(Singleton.class);
+        bind(LanguageChangeProcessor.class).in(Singleton.class);
+
+        bind(SpoofaxEditorRegistry.class).in(Singleton.class);
+        bind(IEditorRegistry.class).to(SpoofaxEditorRegistry.class);
+        bind(IEclipseEditorRegistry.class).to(SpoofaxEditorRegistry.class);
+        bind(IEclipseEditorRegistryInternal.class).to(SpoofaxEditorRegistry.class);
+    }
+
+
+    /**
+     * Overrides {@link MetaborgModule#bindResource()} to provide an Eclipse resource manager and filesystem
+     * implementation.
+     */
     @Override protected void bindResource() {
         bind(EclipseResourceService.class).in(Singleton.class);
         bind(IResourceService.class).to(EclipseResourceService.class);
@@ -44,25 +62,22 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
         bind(FileSystemManager.class).toProvider(EclipseFileSystemManagerProvider.class).in(Singleton.class);
     }
 
+    /**
+     * Overrides {@link MetaborgModule#bindProject()} for non-dummy implementation of project and Maven project service.
+     */
     @Override protected void bindProject() {
         bind(IProjectService.class).to(EclipseProjectService.class).in(Singleton.class);
         bind(IMavenProjectService.class).to(MavenProjectService.class).in(Singleton.class);
     }
 
+    /**
+     * Overrides {@link SpoofaxModule#bindTransformerResultHandlers()} for transformation handlers that open new
+     * editors.
+     */
     @Override protected void bindTransformerResultHandlers(
         MapBinder<Class<? extends ITransformerGoal>, ITransformerResultHandler<IStrategoTerm>> binder) {
         bind(OpenEditorResultHandler.class).in(Singleton.class);
         binder.addBinding(NamedGoal.class).to(OpenEditorResultHandler.class);
         binder.addBinding(CompileGoal.class).to(OpenEditorResultHandler.class);
-    }
-
-    @Override protected void bindOther() {
-        bind(GlobalSchedulingRules.class).in(Singleton.class);
-        bind(LanguageChangeProcessor.class).in(Singleton.class);
-
-        bind(SpoofaxEditorRegistry.class).in(Singleton.class);
-        bind(IEditorRegistry.class).to(SpoofaxEditorRegistry.class);
-        bind(IEclipseEditorRegistry.class).to(SpoofaxEditorRegistry.class);
-        bind(IEclipseEditorRegistryInternal.class).to(SpoofaxEditorRegistry.class);
     }
 }
