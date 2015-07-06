@@ -7,6 +7,11 @@ import org.eclipse.core.runtime.Status;
  * Utility functions for creating {@link IStatus} instances.
  */
 public final class StatusUtils {
+    public static ValueStatus value(Object value) {
+        return new ValueStatus(value);
+    }
+
+
     public static IStatus success() {
         return new Status(IStatus.OK, "org.metaborg.spoofax.eclipse", IStatus.OK, "", null);
     }
@@ -41,7 +46,7 @@ public final class StatusUtils {
         return new Status(IStatus.WARNING, "org.metaborg.spoofax.eclipse", IStatus.ERROR, message, t);
     }
 
-    
+
     public static IStatus silentError() {
         return new Status(IStatus.OK, "org.metaborg.spoofax.eclipse", IStatus.ERROR, "", null);
     }
@@ -57,7 +62,7 @@ public final class StatusUtils {
     public static IStatus silentError(String message, Throwable t) {
         return new Status(IStatus.OK, "org.metaborg.spoofax.eclipse", IStatus.ERROR, message, t);
     }
-    
+
 
     public static IStatus error() {
         return new Status(IStatus.ERROR, "org.metaborg.spoofax.eclipse", IStatus.ERROR, "", null);

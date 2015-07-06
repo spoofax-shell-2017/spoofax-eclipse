@@ -10,7 +10,7 @@ import org.eclipse.jface.text.source.IAnnotationModelExtension2;
 import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.AnalysisFileResult;
-import org.metaborg.core.build.processing.analyze.IAnalysisResultRequester;
+import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.tracing.Hover;
 import org.metaborg.core.tracing.IHoverService;
 import org.metaborg.util.iterators.Iterables2;

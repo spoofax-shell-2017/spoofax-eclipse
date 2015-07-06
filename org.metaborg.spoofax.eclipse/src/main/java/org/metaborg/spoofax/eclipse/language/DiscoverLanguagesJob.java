@@ -21,6 +21,9 @@ import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Job for discovering languages at startup.
+ */
 public class DiscoverLanguagesJob extends Job {
     private static final Logger logger = LoggerFactory.getLogger(DiscoverLanguagesJob.class);
 

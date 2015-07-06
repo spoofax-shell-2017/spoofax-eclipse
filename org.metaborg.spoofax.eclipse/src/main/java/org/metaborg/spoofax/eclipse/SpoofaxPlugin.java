@@ -2,9 +2,10 @@ package org.metaborg.spoofax.eclipse;
 
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.metaborg.core.processing.IProcessorRunner;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
-import org.metaborg.spoofax.eclipse.language.LanguageChangeProcessor;
 import org.metaborg.spoofax.eclipse.logging.LoggingConfiguration;
+import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +31,12 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger.debug("Starting Spoofax plugin");
 
         injector = Guice.createInjector(new SpoofaxEclipseModule());
+        // Eagerly initialize processor runner so that language changes are processed.
+        injector.getInstance(IProcessorRunner.class);
+        // Eagerly register editor registry so that editor changes are processsed.
         injector.getInstance(IEclipseEditorRegistryInternal.class).register();
-        injector.getInstance(LanguageChangeProcessor.class).discover();
+        // Discover languages at startup.
+        injector.getInstance(EclipseProcessor.class).discoverLanguages();
     }
 
     @Override public void stop(BundleContext context) throws Exception {

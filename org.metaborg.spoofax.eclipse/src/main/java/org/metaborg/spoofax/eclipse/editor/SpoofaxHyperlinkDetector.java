@@ -9,7 +9,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.AnalysisFileResult;
-import org.metaborg.core.build.processing.analyze.IAnalysisResultRequester;
+import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.tracing.IReferenceResolver;
 import org.metaborg.core.tracing.Resolution;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
