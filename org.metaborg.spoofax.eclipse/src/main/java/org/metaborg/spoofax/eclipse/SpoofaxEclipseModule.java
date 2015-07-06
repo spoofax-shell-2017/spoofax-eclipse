@@ -47,11 +47,6 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
 
         bind(GlobalSchedulingRules.class).in(Singleton.class);
         bind(EclipseLanguageChangeProcessor.class).in(Singleton.class);
-
-        bind(SpoofaxEditorRegistry.class).in(Singleton.class);
-        bind(IEditorRegistry.class).to(SpoofaxEditorRegistry.class);
-        bind(IEclipseEditorRegistry.class).to(SpoofaxEditorRegistry.class);
-        bind(IEclipseEditorRegistryInternal.class).to(SpoofaxEditorRegistry.class);
     }
 
 
@@ -102,5 +97,15 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
      */
     @Override protected void bindLanguageChangeProcessing() {
         bind(ILanguageChangeProcessor.class).to(EclipseLanguageChangeProcessor.class).in(Singleton.class);
+    }
+
+    /**
+     * Overrides {@link MetaborgModule#bindEditor()} to provide an Eclipse editor registry implementation.
+     */
+    @Override protected void bindEditor() {
+        bind(SpoofaxEditorRegistry.class).in(Singleton.class);
+        bind(IEditorRegistry.class).to(SpoofaxEditorRegistry.class);
+        bind(IEclipseEditorRegistry.class).to(SpoofaxEditorRegistry.class);
+        bind(IEclipseEditorRegistryInternal.class).to(SpoofaxEditorRegistry.class);
     }
 }
