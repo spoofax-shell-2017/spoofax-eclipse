@@ -81,9 +81,10 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
         binder.addBinding(CompileGoal.class).to(OpenEditorResultHandler.class);
     }
 
-    @Override protected void bindProcessing() {
-        super.bindProcessing();
-
+    /**
+     * Overrides {@link SpoofaxModule#bindProcessor()} with an Eclipse-specific processor.
+     */
+    @Override protected void bindProcessor() {
         bind(EclipseProcessor.class).in(Singleton.class);
         bind(ISpoofaxProcessor.class).to(EclipseProcessor.class);
         bind(IProcessor.class).to(EclipseProcessor.class);
