@@ -32,7 +32,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
     private final BuildInput input;
     private final ICancellationToken cancellationToken;
     private final Ref<IBuildOutput<P, A, T>> outputRef;
-    
+
     private @Nullable IProgressReporter progressReporter;
 
 
@@ -44,7 +44,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
         this.input = input;
         this.cancellationToken = cancellationToken;
         this.outputRef = outputRef;
-        
+
         this.progressReporter = progressReporter;
     }
 
@@ -53,12 +53,17 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
         if(progressReporter == null) {
             progressReporter = new EclipseProgressReporter(monitor);
         }
-        
+
         final IBuildOutput<P, A, T> output = builder.build(input, progressReporter, cancellationToken);
         final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAll(eclipseProject);
 
         for(FileObject resource : output.changedResources()) {
+            if(output.includedResources().contains(resource.getName())) {
+                // Don't clear markers for included resources.
+                continue;
+            }
+
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
                 logger.error("Cannot clear markers for {}", resource);
@@ -68,6 +73,11 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
         }
 
         for(ParseResult<P> result : output.parseResults()) {
+            if(output.includedResources().contains(result.source.getName())) {
+                // Don't create markers for included resources.
+                continue;
+            }
+
             for(IMessage message : result.messages) {
                 final FileObject resource = message.source();
                 final IResource eclipseResource = resourceService.unresolve(resource);
@@ -81,6 +91,11 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
 
         for(AnalysisResult<P, A> result : output.analysisResults()) {
             for(AnalysisFileResult<P, A> fileResult : result.fileResults) {
+                if(output.includedResources().contains(fileResult.source.getName())) {
+                    // Don't create markers for included resources.
+                    continue;
+                }
+
                 for(IMessage message : fileResult.messages) {
                     final FileObject resource = message.source();
                     if(output.removedResources().contains(resource.getName())) {
@@ -100,6 +115,11 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
 
         for(IMessage message : output.extraMessages()) {
             final FileObject resource = message.source();
+            if(output.includedResources().contains(resource.getName())) {
+                // Don't create markers for included resources.
+                continue;
+            }
+
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
                 logger.error("Cannot create marker for {}", resource);

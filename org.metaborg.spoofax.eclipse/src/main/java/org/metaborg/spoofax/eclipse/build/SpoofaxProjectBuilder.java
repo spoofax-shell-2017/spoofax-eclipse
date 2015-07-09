@@ -12,11 +12,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.BuildInputBuilder;
+import org.metaborg.core.build.BuildState;
 import org.metaborg.core.build.CleanInput;
+import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.build.dependency.IDependencyService;
 import org.metaborg.core.build.paths.ILanguagePathService;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.resource.IResourceChange;
+import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.transform.CompileGoal;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessorRunner;
 import org.metaborg.spoofax.core.resource.SpoofaxIgnoredDirectories;
@@ -25,6 +27,7 @@ import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
@@ -35,6 +38,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private final IProjectService projectService;
     private final IDependencyService dependencyService;
     private final ISpoofaxProcessorRunner processorRunner;
+
+    private final Map<IProject, BuildState> state = Maps.newHashMap();
 
 
     public SpoofaxProjectBuilder() {
@@ -65,6 +70,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         } catch(InterruptedException e) {
             // Interrupted, build state is invalid, redo entire build next time.
             forgetLastBuiltState();
+            state.remove(project);
         }
 
         // Return value is used to declare dependencies on other projects, but right now this is
@@ -98,7 +104,11 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        processorRunner.build(input, new EclipseProgressReporter(monitor)).schedule();
+        final IBuildOutput<?, ?, ?> output =
+            processorRunner.build(input, new EclipseProgressReporter(monitor)).schedule().block().result();
+        if(output != null) {
+            state.put(eclipseProject, output.state());
+        }
     }
 
     private void incrBuild(IProject eclipseProject, IResourceDelta delta, IProgressMonitor monitor)
@@ -106,10 +116,10 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
 
-        final Collection<IResourceChange> changes = Lists.newLinkedList();
+        final Collection<ResourceChange> changes = Lists.newLinkedList();
         delta.accept(new IResourceDeltaVisitor() {
             @Override public boolean visit(IResourceDelta innerDelta) throws CoreException {
-                final IResourceChange change = resourceService.resolve(innerDelta);
+                final ResourceChange change = resourceService.resolve(innerDelta);
                 if(change != null) {
                     changes.add(change);
                 }
@@ -120,6 +130,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
         final BuildInput input = inputBuilder
+            .withState(state.get(eclipseProject))
             .withDefaultIncludeLocations(true)
             .withResourceChanges(changes)
             .addTransformGoal(new CompileGoal())
@@ -127,9 +138,12 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        processorRunner.build(input, new EclipseProgressReporter(monitor)).schedule();
+        final IBuildOutput<?, ?, ?> output =
+            processorRunner.build(input, new EclipseProgressReporter(monitor)).schedule().block().result();
+        if(output != null) {
+            state.put(eclipseProject, output.state());
+        }
     }
-
 
     private void clean(final IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException {
         final FileObject location = resourceService.resolve(eclipseProject);

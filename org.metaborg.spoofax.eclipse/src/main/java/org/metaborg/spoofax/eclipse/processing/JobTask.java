@@ -50,7 +50,8 @@ public class JobTask<T> implements ITask<T> {
         return null;
     }
 
-    @Override public void block() throws InterruptedException {
+    @Override public ITask<T> block() throws InterruptedException {
         job.join();
+        return this;
     }
 }

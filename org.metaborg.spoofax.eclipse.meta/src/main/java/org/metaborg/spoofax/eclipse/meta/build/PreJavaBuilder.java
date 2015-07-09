@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -54,7 +55,7 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private void build(IProject project, IProgressMonitor monitor) throws CoreException {
+    private void build(final IProject project, IProgressMonitor monitor) throws CoreException {
         final FileObject location = resourceService.resolve(project);
         final MetaBuildInput input = inputGenerator.buildInput(location);
         if(input == null) {
@@ -67,6 +68,8 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
                     builder.compilePreJava(input, AntClasspathGenerator.classpaths(), new EclipseAntLogger());
                 } catch(Exception e) {
                     throw new CoreException(StatusUtils.error(e));
+                } finally {
+                    project.refreshLocal(IResource.DEPTH_INFINITE, workspaceMonitor);
                 }
             }
         };

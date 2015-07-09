@@ -26,6 +26,7 @@ public class ThreadKillerJob extends Job {
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         logger.warn("Killing {}", thread);
+        thread.interrupt();
         thread.stop();
         return StatusUtils.success();
     }

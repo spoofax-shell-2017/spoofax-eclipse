@@ -5,7 +5,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
-import org.metaborg.core.resource.IResourceChange;
+import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
@@ -40,7 +40,7 @@ public interface IEclipseResourceService extends IResourceService {
      * @throws MetaborgRuntimeException
      *             When Eclipse resource delta could not be converted.
      */
-    public abstract @Nullable IResourceChange resolve(IResourceDelta delta);
+    public abstract @Nullable ResourceChange resolve(IResourceDelta delta);
 
     /**
      * Converts a VFS resource into an Eclipse resource, if possible

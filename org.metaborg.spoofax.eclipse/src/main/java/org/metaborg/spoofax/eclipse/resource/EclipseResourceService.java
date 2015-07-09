@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
-import org.metaborg.core.resource.IResourceChange;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
 import org.metaborg.core.resource.ResourceService;
@@ -37,7 +36,7 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
         return resolve("eclipse://" + resource.getFullPath().toString());
     }
 
-    @Override public @Nullable IResourceChange resolve(IResourceDelta delta) {
+    @Override public @Nullable ResourceChange resolve(IResourceDelta delta) {
         final FileObject resource = resolve(delta.getResource());
         final int eclipseKind = delta.getKind();
         final ResourceChangeKind kind;

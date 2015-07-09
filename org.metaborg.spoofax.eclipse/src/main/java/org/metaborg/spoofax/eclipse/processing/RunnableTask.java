@@ -66,7 +66,8 @@ public class RunnableTask<T> implements ITask<T> {
         return valueRef.get();
     }
 
-    @Override public void block() throws InterruptedException {
+    @Override public ITask<T> block() throws InterruptedException {
         // Does nothing, schedule already blocks.
+        return this;
     }
 }
