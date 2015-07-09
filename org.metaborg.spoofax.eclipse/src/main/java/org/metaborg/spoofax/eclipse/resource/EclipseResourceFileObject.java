@@ -235,4 +235,8 @@ public class EclipseResourceFileObject extends AbstractFileObject {
         final IFile file = (IFile) resource;
         return file.getContents();
     }
+
+    @Override protected long doGetLastModifiedTime() throws Exception {
+        return resource.getModificationStamp();
+    }
 }

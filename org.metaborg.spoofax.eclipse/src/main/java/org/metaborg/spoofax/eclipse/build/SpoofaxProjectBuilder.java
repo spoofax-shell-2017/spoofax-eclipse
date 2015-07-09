@@ -79,12 +79,15 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     }
 
     @Override protected void clean(IProgressMonitor monitor) throws CoreException {
+        final IProject project = getProject();
+
         try {
-            clean(getProject(), monitor);
+            clean(project, monitor);
         } catch(InterruptedException e) {
             // Ignore
         } finally {
             forgetLastBuiltState();
+            state.remove(project);
         }
     }
 
