@@ -99,7 +99,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
         final BuildInput input = inputBuilder
-            .withDefaultIncludeFiles(true)
+            .withDefaultIncludePaths(true)
             .withSourcesFromDefaultSourceLocations(true)
             .withSelector(SpoofaxIgnoredDirectories.includeFileSelector())
             .addTransformGoal(new CompileGoal())
@@ -134,7 +134,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         // @formatter:off
         final BuildInput input = inputBuilder
             .withState(state.get(eclipseProject))
-            .withDefaultIncludeFiles(true)
+            .withDefaultIncludePaths(true)
             .withSourceChanges(changes)
             .addTransformGoal(new CompileGoal())
             .build(dependencyService, languagePathService)
