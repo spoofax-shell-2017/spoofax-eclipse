@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.dialect.IDialectProcessor;
+import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.osgi.framework.Bundle;
@@ -29,12 +30,15 @@ public class DiscoverLanguagesJob extends Job {
 
     private final IEclipseResourceService resourceService;
     private final ILanguageDiscoveryService languageDiscoveryService;
+    private final IProjectService projectService;
     private final IDialectProcessor dialectProcessor;
 
 
     public DiscoverLanguagesJob(IEclipseResourceService resourceService,
-        ILanguageDiscoveryService languageDiscoveryService, IDialectProcessor dialectProcessor) {
+        ILanguageDiscoveryService languageDiscoveryService, IProjectService projectService,
+        IDialectProcessor dialectProcessor) {
         super("Loading all Spoofax languages in workspace");
+        this.projectService = projectService;
         setPriority(Job.LONG);
 
         this.resourceService = resourceService;
@@ -78,7 +82,7 @@ public class DiscoverLanguagesJob extends Job {
                 }
 
                 try {
-                    dialectProcessor.loadAll(location);
+                    dialectProcessor.loadAll(projectService.get(location));
                 } catch(Exception e) {
                     final String message = String.format("Could not load dialects at location %s", location);
                     logger.error(message, e);

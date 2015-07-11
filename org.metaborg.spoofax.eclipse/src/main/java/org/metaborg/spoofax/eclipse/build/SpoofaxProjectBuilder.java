@@ -21,7 +21,7 @@ import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.transform.CompileGoal;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessorRunner;
-import org.metaborg.spoofax.core.resource.SpoofaxIgnoredDirectories;
+import org.metaborg.spoofax.core.resource.SpoofaxIgnoresSelector;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -101,7 +101,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         final BuildInput input = inputBuilder
             .withDefaultIncludePaths(true)
             .withSourcesFromDefaultSourceLocations(true)
-            .withSelector(SpoofaxIgnoredDirectories.includeFileSelector())
+            .withSelector(new SpoofaxIgnoresSelector())
             .addTransformGoal(new CompileGoal())
             .build(dependencyService, languagePathService)
             ;
@@ -151,7 +151,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private void clean(final IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
-        final CleanInput input = new CleanInput(project, SpoofaxIgnoredDirectories.excludeFileSelector());
+        final CleanInput input = new CleanInput(project, new SpoofaxIgnoresSelector());
 
         processorRunner.clean(input, new EclipseProgressReporter(monitor)).schedule();
     }
