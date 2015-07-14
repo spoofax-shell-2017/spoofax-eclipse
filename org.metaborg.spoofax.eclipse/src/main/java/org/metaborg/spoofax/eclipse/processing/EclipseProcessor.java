@@ -18,10 +18,12 @@ import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
 import org.metaborg.spoofax.eclipse.build.BuildRunnable;
 import org.metaborg.spoofax.eclipse.build.CleanRunnable;
+import org.metaborg.spoofax.eclipse.build.ProcessDialectsRunnable;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.DiscoverLanguagesJob;
 import org.metaborg.spoofax.eclipse.language.LanguageChangeJob;
@@ -39,8 +41,8 @@ import com.google.inject.Inject;
 public class EclipseProcessor implements ISpoofaxProcessor {
     private final IEclipseResourceService resourceService;
     private final ILanguageDiscoveryService languageDiscoveryService;
-    private final IProjectService projectService;
     private final IDialectProcessor dialectProcessor;
+    private final IProjectService projectService;
     private final ISpoofaxBuilder builder;
     private final ILanguageChangeProcessor processor;
 
@@ -51,13 +53,13 @@ public class EclipseProcessor implements ISpoofaxProcessor {
 
 
     @Inject public EclipseProcessor(IEclipseResourceService resourceService,
-        ILanguageDiscoveryService languageDiscoveryService, IProjectService projectService,
-        IDialectProcessor dialectProcessor, ISpoofaxBuilder builder, ILanguageChangeProcessor processor,
+        ILanguageDiscoveryService languageDiscoveryService, IDialectProcessor dialectProcessor,
+        IProjectService projectService, ISpoofaxBuilder builder, ILanguageChangeProcessor processor,
         GlobalSchedulingRules globalRules) {
         this.resourceService = resourceService;
         this.languageDiscoveryService = languageDiscoveryService;
-        this.projectService = projectService;
         this.dialectProcessor = dialectProcessor;
+        this.projectService = projectService;
         this.builder = builder;
         this.processor = processor;
 
@@ -86,6 +88,18 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         return task;
     }
 
+
+    @Override public ITask<?> updateDialects(org.metaborg.core.project.IProject project,
+        Iterable<ResourceChange> changes) {
+        final CancellationToken cancellationToken = new CancellationToken();
+        final IWorkspaceRunnable runnable =
+            new ProcessDialectsRunnable(dialectProcessor, project, changes, null, cancellationToken);
+        final ITask<?> task =
+            new RunnableTask<>(workspace, runnable, getProject(project), null, cancellationToken, null);
+        return task;
+    }
+
+
     @Override public ITask<?> languageChange(LanguageChange change) {
         final CancellationToken cancellationToken = new CancellationToken();
         final Job job = new LanguageChangeJob(processor, change);
@@ -94,6 +108,7 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         final ITask<?> task = new JobTask<Object>(job, cancellationToken);
         return task;
     }
+
 
     public void discoverLanguages() {
         final Job job =

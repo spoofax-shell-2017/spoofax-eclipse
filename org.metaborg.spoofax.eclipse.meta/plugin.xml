@@ -71,17 +71,8 @@
       class="org.metaborg.spoofax.eclipse.meta.nature.RemoveNatureHandler"
     />
   </extension>
-  
-  
-  <!-- M2E extensions -->
-  <extension point="org.eclipse.m2e.core.projectConfigurators">
-    <configurator
-      class="org.metaborg.spoofax.eclipse.meta.build.SpoofaxProjectConfigurator"
-      id="org.metaborg.spoofax.eclipse.meta.maven.configurator"
-    />
-  </extension>
-  
-  
+
+
   <!-- Language project commands -->
   <extension point="org.eclipse.ui.commands">
     <command id="org.metaborg.spoofax.eclipse.meta.command.language.load" name="Load language"/>

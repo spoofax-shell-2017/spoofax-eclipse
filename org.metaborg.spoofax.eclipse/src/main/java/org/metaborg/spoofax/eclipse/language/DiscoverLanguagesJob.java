@@ -16,6 +16,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.resource.ResourceChange;
+import org.metaborg.core.resource.ResourceChangeKind;
+import org.metaborg.core.resource.ResourceUtils;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.osgi.framework.Bundle;
@@ -71,9 +74,9 @@ public class DiscoverLanguagesJob extends Job {
         }
 
         logger.debug("Loading dynamic languages and dialects");
-        for(final IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if(project.isOpen()) {
-                final FileObject location = resourceService.resolve(project);
+        for(final IProject eclipseProject : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            if(eclipseProject.isOpen()) {
+                final FileObject location = resourceService.resolve(eclipseProject);
                 try {
                     languageDiscoveryService.discover(location);
                 } catch(Exception e) {
@@ -82,7 +85,11 @@ public class DiscoverLanguagesJob extends Job {
                 }
 
                 try {
-                    dialectProcessor.loadAll(projectService.get(location));
+                    final org.metaborg.core.project.IProject project = projectService.get(location);
+                    final Iterable<FileObject> resources = ResourceUtils.find(location);
+                    final Iterable<ResourceChange> creations =
+                        ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
+                    dialectProcessor.update(project, creations);
                 } catch(Exception e) {
                     final String message = String.format("Could not load dialects at location %s", location);
                     logger.error(message, e);

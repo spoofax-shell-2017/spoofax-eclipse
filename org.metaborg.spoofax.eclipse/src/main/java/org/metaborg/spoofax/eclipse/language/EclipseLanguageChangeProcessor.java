@@ -17,6 +17,7 @@ import org.metaborg.core.language.ILanguageCache;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.LanguageFileSelector;
 import org.metaborg.core.language.ResourceExtensionFacet;
+import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.LanguageChangeProcessor;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -46,9 +47,9 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
 
 
     @Inject public EclipseLanguageChangeProcessor(IEclipseResourceService resourceService,
-        ILanguageIdentifierService languageIdentifier, org.metaborg.core.editor.IEditorRegistry editorRegistry,
-        Set<ILanguageCache> languageCaches) {
-        super(editorRegistry, languageCaches);
+        ILanguageIdentifierService languageIdentifier, IDialectProcessor dialectProcessor,
+        org.metaborg.core.editor.IEditorRegistry editorRegistry, Set<ILanguageCache> languageCaches) {
+        super(dialectProcessor, editorRegistry, languageCaches);
 
         this.resourceService = resourceService;
         this.languageIdentifier = languageIdentifier;
@@ -100,7 +101,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             final Set<String> oldExtensions = Sets.newHashSet(oldResourceExtensionsFacet.extensions());
             final Set<String> newExtensions = Sets.newHashSet(newResourceExtensionsFacet.extensions());
             final Set<String> removeExtensions = Sets.difference(oldExtensions, newExtensions);
-            final Set<String> addExtensions = Sets.difference(newExtensions, removeExtensions);
+            final Set<String> addExtensions = Sets.difference(newExtensions, oldExtensions);
             if(removeExtensions.size() > 0) {
                 logger.debug("Unassociating extension(s) {} from Spoofax editor", Joiner.on(", ")
                     .join(removeExtensions));

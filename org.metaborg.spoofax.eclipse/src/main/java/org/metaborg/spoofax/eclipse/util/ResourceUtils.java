@@ -46,30 +46,6 @@ public class ResourceUtils {
     }
 
     /**
-     * Returns all resources in the workspace using given file selector.
-     * 
-     * @param resourceService
-     *            Resource service
-     * @param selector
-     *            Selector used to filter resources.
-     * @param workspaceRoot
-     *            Eclipse workspace root resource.
-     * @return Collection of all resources in the workspace.
-     * @throws FileSystemException
-     *             When an error occurs while finding all resources.
-     */
-    public static Collection<FileObject> projectResources(IEclipseResourceService resourceService,
-        FileSelector selector, IProject project) throws FileSystemException {
-        final Collection<FileObject> resources = Lists.newLinkedList();
-        if(project.exists() && project.isOpen()) {
-            final FileObject projectResource = resourceService.resolve(project);
-            final FileObject[] projectResources = projectResource.findFiles(selector);
-            Collections.addAll(resources, projectResources);
-        }
-        return resources;
-    }
-
-    /**
      * Converts Apache VFS resources on the Eclipse filesystem, to Eclipse resources.
      * 
      * @param resourceService

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
@@ -19,18 +20,24 @@ import org.metaborg.core.build.dependency.IDependencyService;
 import org.metaborg.core.build.paths.ILanguagePathService;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.ResourceChange;
+import org.metaborg.core.resource.ResourceChangeKind;
+import org.metaborg.core.resource.ResourceUtils;
 import org.metaborg.core.transform.CompileGoal;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessorRunner;
 import org.metaborg.spoofax.core.resource.SpoofaxIgnoresSelector;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(SpoofaxProjectBuilder.class);
+
     public static final String id = SpoofaxPlugin.id + ".builder";
 
     private final IEclipseResourceService resourceService;
@@ -69,8 +76,11 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             }
         } catch(InterruptedException e) {
             // Interrupted, build state is invalid, redo entire build next time.
-            forgetLastBuiltState();
-            state.remove(project);
+            invalidate(project);
+        } catch(FileSystemException e) {
+            // Exception, build state is invalid, redo entire build next time.
+            invalidate(project);
+            logger.error("Build failed", e);
         }
 
         // Return value is used to declare dependencies on other projects, but right now this is
@@ -86,15 +96,19 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         } catch(InterruptedException e) {
             // Ignore
         } finally {
-            forgetLastBuiltState();
-            state.remove(project);
+            invalidate(project);
         }
     }
 
 
-    private void fullBuild(IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException {
+    private void fullBuild(IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException,
+        FileSystemException {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
+
+        final Iterable<FileObject> resources = ResourceUtils.find(location);
+        final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
+        processorRunner.updateDialects(project, creations).schedule().block();
 
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
@@ -130,6 +144,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             }
         });
 
+        processorRunner.updateDialects(project, changes).schedule().block();
+
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
         final BuildInput input = inputBuilder
@@ -148,11 +164,18 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         }
     }
 
+
     private void clean(final IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
         final CleanInput input = new CleanInput(project, new SpoofaxIgnoresSelector());
 
         processorRunner.clean(input, new EclipseProgressReporter(monitor)).schedule();
+    }
+
+
+    private void invalidate(IProject project) {
+        forgetLastBuiltState();
+        state.remove(project);
     }
 }
