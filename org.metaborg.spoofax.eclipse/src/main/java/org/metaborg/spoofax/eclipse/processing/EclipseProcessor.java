@@ -14,6 +14,7 @@ import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.LanguageChange;
 import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.CancellationToken;
+import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.processing.ITask;
@@ -70,8 +71,10 @@ public class EclipseProcessor implements ISpoofaxProcessor {
 
 
     @Override public ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> build(BuildInput input,
-        @Nullable IProgressReporter progressReporter) {
-        final CancellationToken cancellationToken = new CancellationToken();
+        @Nullable IProgressReporter progressReporter, @Nullable ICancellationToken cancellationToken) {
+        if(cancellationToken == null) {
+            cancellationToken = new CancellationToken();
+        }
         final Ref<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> outputRef = new Ref<>();
         final IWorkspaceRunnable runnable =
             new BuildRunnable<>(resourceService, builder, input, progressReporter, cancellationToken, outputRef);
@@ -80,8 +83,11 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         return task;
     }
 
-    @Override public ITask<?> clean(CleanInput input, @Nullable IProgressReporter progressReporter) {
-        final CancellationToken cancellationToken = new CancellationToken();
+    @Override public ITask<?> clean(CleanInput input, @Nullable IProgressReporter progressReporter,
+        @Nullable ICancellationToken cancellationToken) {
+        if(cancellationToken == null) {
+            cancellationToken = new CancellationToken();
+        }
         final IWorkspaceRunnable runnable = new CleanRunnable<>(builder, input, progressReporter, cancellationToken);
         final ITask<?> task =
             new RunnableTask<>(workspace, runnable, getProject(input.project), null, cancellationToken, null);

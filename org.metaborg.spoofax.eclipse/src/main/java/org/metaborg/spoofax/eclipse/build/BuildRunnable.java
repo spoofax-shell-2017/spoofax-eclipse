@@ -54,7 +54,13 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
             progressReporter = new EclipseProgressReporter(monitor);
         }
 
-        final IBuildOutput<P, A, T> output = builder.build(input, progressReporter, cancellationToken);
+        final IBuildOutput<P, A, T> output;
+        try {
+            output = builder.build(input, progressReporter, cancellationToken);
+        } catch(InterruptedException e) {
+            return;
+        }
+        
         final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAll(eclipseProject);
 

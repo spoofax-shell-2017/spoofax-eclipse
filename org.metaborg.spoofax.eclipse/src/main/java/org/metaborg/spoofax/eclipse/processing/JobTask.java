@@ -2,7 +2,7 @@ package org.metaborg.spoofax.eclipse.processing;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.metaborg.core.processing.CancellationToken;
+import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.spoofax.eclipse.util.ValueStatus;
 
@@ -11,10 +11,10 @@ import org.metaborg.spoofax.eclipse.util.ValueStatus;
  */
 public class JobTask<T> implements ITask<T> {
     private final Job job;
-    private final CancellationToken cancellationToken;
+    private final ICancellationToken cancellationToken;
 
 
-    public JobTask(Job job, CancellationToken cancellationToken) {
+    public JobTask(Job job, ICancellationToken cancellationToken) {
         this.job = job;
         this.cancellationToken = cancellationToken;
     }
@@ -34,6 +34,10 @@ public class JobTask<T> implements ITask<T> {
         job.cancel();
         cancellationToken.cancel();
         // TODO: kill after timeout
+    }
+
+    @Override public boolean cancelled() {
+        return cancellationToken.cancelled();
     }
 
     @Override public boolean completed() {

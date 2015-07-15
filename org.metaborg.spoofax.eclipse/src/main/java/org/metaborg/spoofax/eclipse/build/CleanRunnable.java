@@ -38,6 +38,9 @@ public class CleanRunnable<P, A, T> implements IWorkspaceRunnable {
         final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAllRec(eclipseProject);
 
-        builder.clean(input, progressReporter, cancellationToken);
+        try {
+            builder.clean(input, progressReporter, cancellationToken);
+        } catch(InterruptedException e) {
+        }
     }
 }
