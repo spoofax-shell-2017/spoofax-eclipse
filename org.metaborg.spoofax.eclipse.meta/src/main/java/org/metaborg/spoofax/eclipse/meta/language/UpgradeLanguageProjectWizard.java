@@ -2,10 +2,13 @@ package org.metaborg.spoofax.eclipse.meta.language;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.vfs2.AllFileSelector;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.maven.Maven;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -15,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.m2e.core.MavenPlugin;
 import org.metaborg.spoofax.core.esv.ESVReader;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
@@ -119,10 +123,12 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         final IWorkspaceRunnable upgradeRunnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
-                    workspaceMonitor.beginTask("Upgrading language project", 3);
+                    workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
                     workspaceMonitor.worked(1);
                     upgradeProject();
+                    workspaceMonitor.worked(1);
+                    upgradeClasspath();
                     workspaceMonitor.worked(1);
                     generateFiles(groupId, id, version, name);
                     workspaceMonitor.worked(1);
@@ -201,6 +207,47 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         NatureUtils.removeFrom("org.eclipse.pde.PluginNature", eclipseProject);
 
         SpoofaxMetaNature.add(eclipseProject);
+    }
+
+    private void upgradeClasspath() throws Exception {
+        final FileObject classpath = project.resolveFile(".classpath");
+        classpath.createFile();
+        final OutputStream stream = classpath.getContent().getOutputStream();
+        try(final PrintWriter writer = new PrintWriter(stream)) {
+            // @formatter:off
+            writer.print(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+                "<classpath>\n" + 
+                "    <classpathentry kind=\"con\"\n" + 
+                "        path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7\">\n" + 
+                "        <attributes>\n" + 
+                "            <attribute name=\"maven.pomderived\" value=\"true\" />\n" + 
+                "        </attributes>\n" + 
+                "    </classpathentry>\n" + 
+                "    <classpathentry kind=\"src\" output=\"target/classes\" path=\"editor/java\">\n" + 
+                "        <attributes>\n" + 
+                "            <attribute name=\"optional\" value=\"true\" />\n" + 
+                "            <attribute name=\"maven.pomderived\" value=\"true\" />\n" + 
+                "        </attributes>\n" + 
+                "    </classpathentry>\n" + 
+                "    <classpathentry kind=\"src\" output=\"target/test-classes\"\n" + 
+                "        path=\"src/test/java\">\n" + 
+                "        <attributes>\n" + 
+                "            <attribute name=\"optional\" value=\"true\" />\n" + 
+                "            <attribute name=\"maven.pomderived\" value=\"true\" />\n" + 
+                "        </attributes>\n" + 
+                "    </classpathentry>\n" + 
+                "    <classpathentry kind=\"con\"\n" + 
+                "        path=\"org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER\">\n" + 
+                "        <attributes>\n" + 
+                "            <attribute name=\"maven.pomderived\" value=\"true\" />\n" + 
+                "        </attributes>\n" + 
+                "    </classpathentry>\n" + 
+                "    <classpathentry kind=\"output\" path=\"target/classes\" />\n" + 
+                "</classpath>\n" 
+            );
+            // @formatter:on
+        }
     }
 
     private void generateFiles(String groupId, String id, String version, String name) throws Exception {
