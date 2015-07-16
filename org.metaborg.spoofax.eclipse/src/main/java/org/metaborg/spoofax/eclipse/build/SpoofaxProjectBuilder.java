@@ -79,10 +79,10 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             }
         } catch(InterruptedException e) {
             // Interrupted, build state is invalid, redo build next time.
-            keepState(project);
+            keepState();
         } catch(FileSystemException e) {
             // Exception, build state is invalid, redo build next time.
-            keepState(project);
+            keepState();
             logger.error("Build failed", e);
         }
 
@@ -128,7 +128,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             processorRunner.build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor))
                 .schedule().block();
         if(task.cancelled()) {
-            keepState(eclipseProject);
+            keepState();
         } else {
             final IBuildOutput<?, ?, ?> output = task.result();
             if(output != null) {
@@ -170,7 +170,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             processorRunner.build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor))
                 .schedule().block();
         if(task.cancelled()) {
-            keepState(eclipseProject);
+            keepState();
         } else {
             final IBuildOutput<?, ?, ?> output = task.result();
             if(output != null) {
@@ -195,7 +195,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         state.remove(project);
     }
 
-    private void keepState(IProject project) {
+    private void keepState() {
         rememberLastBuiltState();
     }
 }
