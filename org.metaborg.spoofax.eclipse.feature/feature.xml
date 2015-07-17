@@ -23,6 +23,11 @@
 
   <!-- Spoofax  -->
   <plugin
+    id="org.metaborg.core"
+    version="1.5.0.qualifier"
+    unpack="false"
+  />
+  <plugin
     id="org.metaborg.spoofax.core"
     version="1.5.0.qualifier"
     unpack="false"
