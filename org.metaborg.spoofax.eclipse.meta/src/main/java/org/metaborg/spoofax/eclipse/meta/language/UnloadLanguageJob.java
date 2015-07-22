@@ -4,7 +4,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class UnloadLanguageJob extends Job {
 
 
     @Override protected IStatus run(IProgressMonitor monitor) {
-        final ILanguage language = languageService.get(location.getName());
+        final ILanguageImpl language = languageService.get(location.getName());
         if(language != null) {
             languageService.remove(language);
         } else {

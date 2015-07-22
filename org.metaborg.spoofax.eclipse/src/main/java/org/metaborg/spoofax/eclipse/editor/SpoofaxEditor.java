@@ -31,7 +31,7 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.style.ICategorizerService;
@@ -85,7 +85,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
     private FileObject resource;
     private IResource eclipseResource;
     private IDocument document;
-    private ILanguage language;
+    private ILanguageImpl language;
     private ISourceViewer sourceViewer;
     private ISourceViewerExtension2 sourceViewerExt2;
     private ITextViewerExtension4 textViewerExt4;
@@ -109,7 +109,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         return resource;
     }
 
-    @Override public @Nullable ILanguage language() {
+    @Override public @Nullable ILanguageImpl language() {
         if(!checkInitialized()) {
             return null;
         }

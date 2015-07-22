@@ -3,7 +3,7 @@ package org.metaborg.spoofax.eclipse.transform;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NamedGoal;
 import org.metaborg.core.transform.TransformResult;
@@ -41,13 +41,13 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
         }
     }
 
-    private boolean openEditor(FileObject resource, ILanguage language, ITransformerGoal goal) {
+    private boolean openEditor(FileObject resource, ILanguageImpl language, ITransformerGoal goal) {
         if(resource == null) {
             return false;
         }
 
         if(goal instanceof NamedGoal) {
-            final MenusFacet facet = language.facet(MenusFacet.class);
+            final MenusFacet facet = language.facets(MenusFacet.class);
             if(facet == null) {
                 return false;
             }

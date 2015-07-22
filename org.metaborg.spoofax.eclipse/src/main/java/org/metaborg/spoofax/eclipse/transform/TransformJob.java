@@ -11,7 +11,7 @@ import org.metaborg.core.analysis.AnalysisFileResult;
 import org.metaborg.core.context.ContextException;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
@@ -72,7 +72,7 @@ public class TransformJob<P, A, T> extends Job {
             return StatusUtils.error(message);
         }
 
-        final ILanguage language = langaugeIdentifierService.identify(resource);
+        final ILanguageImpl language = langaugeIdentifierService.identify(resource);
         if(language == null) {
             final String message =
                 String.format("Transformation failed, language of %s cannot be identified", resource);
@@ -80,7 +80,7 @@ public class TransformJob<P, A, T> extends Job {
             return StatusUtils.error(message);
         }
 
-        final MenusFacet facet = language.facet(MenusFacet.class);
+        final MenusFacet facet = language.facets(MenusFacet.class);
         if(facet == null) {
             final String message = String.format("Transformation failed, %s does not have a menus facet", language);
             logger.error(message);
@@ -104,7 +104,7 @@ public class TransformJob<P, A, T> extends Job {
         }
     }
 
-    private IStatus transform(IProgressMonitor monitor, FileObject resource, ILanguage language, Action action,
+    private IStatus transform(IProgressMonitor monitor, FileObject resource, ILanguageImpl language, Action action,
         String text) throws IOException, ContextException, TransformerException {
         if(monitor.isCanceled())
             return StatusUtils.cancel();

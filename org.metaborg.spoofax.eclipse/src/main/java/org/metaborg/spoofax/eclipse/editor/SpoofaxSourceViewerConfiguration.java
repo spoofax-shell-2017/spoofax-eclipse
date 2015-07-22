@@ -20,7 +20,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.metaborg.core.completion.ICompletionService;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.ISyntaxService;
@@ -65,7 +65,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
     }
 
     @Override public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType) {
-        final ILanguage language = editor.language();
+        final ILanguageImpl language = editor.language();
         if(language == null) {
             logger.warn("Identified language for {} is null, toggle comment is disabled until language is identified",
                 editor.resource());
@@ -76,7 +76,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
 
     @Override public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         final FileObject resource = editor.resource();
-        final ILanguage language = editor.language();
+        final ILanguageImpl language = editor.language();
         final IDocument document = editor.document();
         if(language == null) {
             logger.warn("Identified language for {} is null, content assist is disabled until language is identified",
@@ -94,7 +94,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
 
     @Override public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
         final FileObject resource = editor.resource();
-        final ILanguage language = editor.language();
+        final ILanguageImpl language = editor.language();
 
         if(language == null) {
             logger.warn(
@@ -110,7 +110,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
 
     @Override public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         final FileObject resource = editor.resource();
-        final ILanguage language = editor.language();
+        final ILanguageImpl language = editor.language();
 
         if(language == null) {
             logger.warn("Identified language for {} is null, hover tooltips are disabled until language is identified",

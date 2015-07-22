@@ -12,7 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.PlatformUI;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageCache;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.LanguageFileSelector;
@@ -60,11 +60,11 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
     }
 
 
-    @Override public void added(ILanguage language) {
+    @Override public void added(ILanguageImpl language) {
         logger.debug("Running language added job for {}", language);
 
         // Add editor associations
-        final ResourceExtensionFacet resourceExtensionsFacet = language.facet(ResourceExtensionFacet.class);
+        final ResourceExtensionFacet resourceExtensionsFacet = language.facets(ResourceExtensionFacet.class);
         if(resourceExtensionsFacet == null) {
             final String message =
                 String.format("Cannot create editor association for %s, no resource extensions facet was found",
@@ -83,16 +83,16 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
         super.added(language);
     }
 
-    @Override public void reloadedActive(ILanguage oldLanguage, ILanguage newLanguage) {
+    @Override public void reloadedActive(ILanguageImpl oldLanguage, ILanguageImpl newLanguage) {
         logger.debug("Running language reloaded job for {}", newLanguage);
 
         // Update editor associations
-        final ResourceExtensionFacet oldResourceExtensionsFacet = oldLanguage.facet(ResourceExtensionFacet.class);
+        final ResourceExtensionFacet oldResourceExtensionsFacet = oldLanguage.facets(ResourceExtensionFacet.class);
         if(oldResourceExtensionsFacet == null) {
             logger
                 .error("Cannot update editor association for {}, no resource extensions facet was found", oldLanguage);
         }
-        final ResourceExtensionFacet newResourceExtensionsFacet = newLanguage.facet(ResourceExtensionFacet.class);
+        final ResourceExtensionFacet newResourceExtensionsFacet = newLanguage.facets(ResourceExtensionFacet.class);
         if(oldResourceExtensionsFacet == null) {
             logger
                 .error("Cannot update editor association for {}, no resource extensions facet was found", newLanguage);
@@ -120,11 +120,11 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
         super.reloadedActive(oldLanguage, newLanguage);
     }
 
-    @Override public void removed(ILanguage language) {
+    @Override public void removed(ILanguageImpl language) {
         logger.debug("Running language removed job for {}", language);
 
         // Remove editor associations
-        final ResourceExtensionFacet resourceExtensionsFacet = language.facet(ResourceExtensionFacet.class);
+        final ResourceExtensionFacet resourceExtensionsFacet = language.facets(ResourceExtensionFacet.class);
         if(resourceExtensionsFacet == null) {
             final String message =
                 String.format("Cannot remove editor association for %s, no resource extensions facet was found",
