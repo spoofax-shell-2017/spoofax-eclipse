@@ -27,7 +27,7 @@ public class UnloadLanguageJob extends Job {
 
 
     @Override protected IStatus run(IProgressMonitor monitor) {
-        final ILanguageImpl language = languageService.get(location.getName());
+        final ILanguageImpl language = languageService.getComponent(location.getName());
         if(language != null) {
             languageService.remove(language);
         } else {

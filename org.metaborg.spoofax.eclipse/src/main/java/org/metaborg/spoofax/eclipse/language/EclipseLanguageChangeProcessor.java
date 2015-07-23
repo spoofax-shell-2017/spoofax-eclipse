@@ -83,7 +83,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
         super.added(language);
     }
 
-    @Override public void reloadedActive(ILanguageImpl oldLanguage, ILanguageImpl newLanguage) {
+    @Override public void reload(ILanguageImpl oldLanguage, ILanguageImpl newLanguage) {
         logger.debug("Running language reloaded job for {}", newLanguage);
 
         // Update editor associations
@@ -117,7 +117,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             });
         }
 
-        super.reloadedActive(oldLanguage, newLanguage);
+        super.reload(oldLanguage, newLanguage);
     }
 
     @Override public void removed(ILanguageImpl language) {
