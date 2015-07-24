@@ -12,9 +12,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.PlatformUI;
-import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageCache;
+import org.metaborg.core.language.ILanguageComponent;
 import org.metaborg.core.language.ILanguageIdentifierService;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.LanguageFileSelector;
 import org.metaborg.core.language.ResourceExtensionFacet;
 import org.metaborg.core.language.dialect.IDialectProcessor;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -60,18 +62,11 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
     }
 
 
-    @Override public void added(ILanguageImpl language) {
-        logger.debug("Running language added job for {}", language);
+    @Override public void addedComponent(ILanguageComponent component) {
+        logger.debug("Running component added job for {}", component);
 
-        // Add editor associations
-        final ResourceExtensionFacet resourceExtensionsFacet = language.facets(ResourceExtensionFacet.class);
-        if(resourceExtensionsFacet == null) {
-            final String message =
-                String.format("Cannot create editor association for %s, no resource extensions facet was found",
-                    language);
-            logger.error(message);
-        } else {
-            final Iterable<String> extensions = resourceExtensionsFacet.extensions();
+        final Set<String> extensions = getExtensions(component);
+        if(!extensions.isEmpty()) {
             logger.debug("Associating extension(s) {} to Spoofax editor", Joiner.on(", ").join(extensions));
             display.asyncExec(new Runnable() {
                 @Override public void run() {
@@ -80,26 +75,14 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             });
         }
 
-        super.added(language);
+        super.addedComponent(component);
     }
 
-    @Override public void reload(ILanguageImpl oldLanguage, ILanguageImpl newLanguage) {
-        logger.debug("Running language reloaded job for {}", newLanguage);
-
-        // Update editor associations
-        final ResourceExtensionFacet oldResourceExtensionsFacet = oldLanguage.facets(ResourceExtensionFacet.class);
-        if(oldResourceExtensionsFacet == null) {
-            logger
-                .error("Cannot update editor association for {}, no resource extensions facet was found", oldLanguage);
-        }
-        final ResourceExtensionFacet newResourceExtensionsFacet = newLanguage.facets(ResourceExtensionFacet.class);
-        if(oldResourceExtensionsFacet == null) {
-            logger
-                .error("Cannot update editor association for {}, no resource extensions facet was found", newLanguage);
-        }
-        if(oldResourceExtensionsFacet != null && newResourceExtensionsFacet != null) {
-            final Set<String> oldExtensions = Sets.newHashSet(oldResourceExtensionsFacet.extensions());
-            final Set<String> newExtensions = Sets.newHashSet(newResourceExtensionsFacet.extensions());
+    @Override public void reloadedComponent(ILanguageComponent oldComponent, ILanguageComponent newComponent) {
+        logger.debug("Running component reloaded job for {}", newComponent);
+        final Set<String> oldExtensions = getExtensions(oldComponent);
+        final Set<String> newExtensions = getExtensions(newComponent);
+        if(!oldExtensions.isEmpty() || !newExtensions.isEmpty()) {
             final Set<String> removeExtensions = Sets.difference(oldExtensions, newExtensions);
             final Set<String> addExtensions = Sets.difference(newExtensions, oldExtensions);
             if(removeExtensions.size() > 0) {
@@ -117,21 +100,14 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             });
         }
 
-        super.reload(oldLanguage, newLanguage);
+        super.reloadedComponent(oldComponent, newComponent);
     }
 
-    @Override public void removed(ILanguageImpl language) {
-        logger.debug("Running language removed job for {}", language);
+    @Override protected void removedComponent(ILanguageComponent component) {
+        logger.debug("Running component removed job for {}", component);
 
-        // Remove editor associations
-        final ResourceExtensionFacet resourceExtensionsFacet = language.facets(ResourceExtensionFacet.class);
-        if(resourceExtensionsFacet == null) {
-            final String message =
-                String.format("Cannot remove editor association for %s, no resource extensions facet was found",
-                    language);
-            logger.error(message);
-        } else {
-            final Iterable<String> extensions = resourceExtensionsFacet.extensions();
+        final Set<String> extensions = getExtensions(component);
+        if(!extensions.isEmpty()) {
             logger.debug("Unassociating extension(s) {} from Spoofax editor", Joiner.on(", ").join(extensions));
             display.asyncExec(new Runnable() {
                 @Override public void run() {
@@ -140,9 +116,10 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             });
         }
 
-        super.removed(language);
+        super.removedComponent(component);
+    }
 
-        // Remove markers
+    @Override public void removedImpl(ILanguageImpl language) {
         try {
             final Collection<FileObject> resources =
                 ResourceUtils.workspaceResources(resourceService,
@@ -161,5 +138,16 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             final String message = String.format("Cannot retrieve all workspace resources for %s", language);
             logger.error(message, e);
         }
+
+        super.removedImpl(language);
+    }
+
+
+    private Set<String> getExtensions(ILanguageComponent component) {
+        final Set<String> extensions = Sets.newHashSet();
+        for(ResourceExtensionFacet facet : component.facets(ResourceExtensionFacet.class)) {
+            Iterables.addAll(extensions, facet.extensions());
+        }
+        return extensions;
     }
 }

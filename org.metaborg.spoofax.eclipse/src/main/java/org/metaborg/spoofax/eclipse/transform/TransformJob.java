@@ -80,7 +80,7 @@ public class TransformJob<P, A, T> extends Job {
             return StatusUtils.error(message);
         }
 
-        final MenusFacet facet = language.facets(MenusFacet.class);
+        final MenusFacet facet = language.facet(MenusFacet.class);
         if(facet == null) {
             final String message = String.format("Transformation failed, %s does not have a menus facet", language);
             logger.error(message);

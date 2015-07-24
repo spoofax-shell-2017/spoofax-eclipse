@@ -71,7 +71,7 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
             return new IContributionItem[0];
         }
 
-        final MenusFacet facet = language.facets(MenusFacet.class);
+        final MenusFacet facet = language.facet(MenusFacet.class);
         if(facet == null) {
             logger.error("Cannot create menu items; cannot find menus facet in {}", language);
             return new IContributionItem[0];

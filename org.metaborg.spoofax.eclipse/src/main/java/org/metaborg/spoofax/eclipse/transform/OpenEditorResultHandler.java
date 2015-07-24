@@ -47,7 +47,7 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
         }
 
         if(goal instanceof NamedGoal) {
-            final MenusFacet facet = language.facets(MenusFacet.class);
+            final MenusFacet facet = language.facet(MenusFacet.class);
             if(facet == null) {
                 return false;
             }
