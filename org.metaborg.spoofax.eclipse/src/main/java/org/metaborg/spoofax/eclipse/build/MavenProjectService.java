@@ -9,8 +9,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
-import org.metaborg.core.project.IMavenProjectService;
 import org.metaborg.core.project.IProject;
+import org.metaborg.spoofax.core.project.IMavenProjectService;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 

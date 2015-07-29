@@ -17,7 +17,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
+import org.metaborg.core.language.LanguageIdentifier;
+import org.metaborg.core.language.LanguageVersion;
 import org.metaborg.spoofax.core.esv.ESVReader;
+import org.metaborg.spoofax.core.project.SpoofaxProjectSettings;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -26,7 +29,7 @@ import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.generator.NewProjectGenerator;
 import org.metaborg.spoofax.generator.ProjectGenerator;
-import org.metaborg.spoofax.generator.project.ProjectSettings;
+import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
 import org.metaborg.util.resource.ContainsFileSelector;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -34,7 +37,6 @@ import org.spoofax.terms.ParseError;
 import org.spoofax.terms.io.binary.TermReader;
 
 public class UpgradeLanguageProjectWizard extends Wizard {
-    private final IEclipseResourceService resourceService;
     private final IProject eclipseProject;
     private final FileObject project;
     private final UpgradeLanguageProjectWizardPage page;
@@ -42,7 +44,6 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
     public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService,
         ITermFactoryService termFactoryService, IProject eclipseProject) {
-        this.resourceService = resourceService;
         this.eclipseProject = eclipseProject;
         this.project = resourceService.resolve(eclipseProject);
 
@@ -248,13 +249,15 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         }
     }
 
-    private void generateFiles(String groupId, String id, String version, String name) throws Exception {
-        final ProjectSettings settings = new ProjectSettings(groupId, id, version, name, project);
-        final NewProjectGenerator newProjectGenerator =
-            new NewProjectGenerator(resourceService, settings, new String[] { "dummy" });
-        newProjectGenerator.generateIgnoreFile();
-        newProjectGenerator.generatePOM();
-        final ProjectGenerator projectGenerator = new ProjectGenerator(resourceService, settings);
-        projectGenerator.generateAll();
+    private void generateFiles(String groupId, String id, String versionString, String name) throws Exception {
+        final LanguageVersion version = LanguageVersion.parse(versionString);
+        final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
+        final SpoofaxProjectSettings settings = new SpoofaxProjectSettings(identifier, name, project);
+        final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(settings);
+        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, new String[] { "dummy" });
+        newGenerator.generateIgnoreFile();
+        newGenerator.generatePOM();
+        final ProjectGenerator generator = new ProjectGenerator(generatorSettings);
+        generator.generateAll();
     }
 }

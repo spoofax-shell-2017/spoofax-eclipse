@@ -11,6 +11,11 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.metaborg.core.MetaborgException;
+import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.project.ProjectException;
+import org.metaborg.spoofax.core.project.ISpoofaxProjectSettingsService;
+import org.metaborg.spoofax.core.project.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -28,15 +33,17 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
     private static final Logger logger = LoggerFactory.getLogger(PreJavaBuilder.class);
 
     private final IEclipseResourceService resourceService;
+    private final IProjectService projectService;
+    private final ISpoofaxProjectSettingsService projectSettingsService;
 
     private final SpoofaxMetaBuilder builder;
-    private final MetaBuildInputGenerator inputGenerator;
 
     public PreJavaBuilder() {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
+        this.projectService = injector.getInstance(IProjectService.class);
+        this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
-        this.inputGenerator = injector.getInstance(MetaBuildInputGenerator.class);
     }
 
 
@@ -46,7 +53,7 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
             if(kind != AUTO_BUILD) {
                 build(getProject(), monitor);
             }
-        } catch(CoreException e) {
+        } catch(Exception e) {
             logger.error("Cannot build language project", e);
         } finally {
             // Always forget last build state to force a full build next time.
@@ -55,12 +62,15 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private void build(final IProject project, IProgressMonitor monitor) throws CoreException {
-        final FileObject location = resourceService.resolve(project);
-        final MetaBuildInput input = inputGenerator.buildInput(location);
-        if(input == null) {
-            return;
+    private void build(final IProject eclipseProject, IProgressMonitor monitor) throws CoreException,
+        MetaborgException, ProjectException {
+        final FileObject location = resourceService.resolve(eclipseProject);
+        final org.metaborg.core.project.IProject project = projectService.get(location);
+        if(project == null) {
+            throw new MetaborgException("Cannot get metaborg project for " + eclipseProject);
         }
+        final SpoofaxProjectSettings settings = projectSettingsService.get(project);
+        final MetaBuildInput input = new MetaBuildInput(project, settings);
 
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
@@ -69,10 +79,10 @@ public class PreJavaBuilder extends IncrementalProjectBuilder {
                 } catch(Exception e) {
                     throw new CoreException(StatusUtils.error(e));
                 } finally {
-                    project.refreshLocal(IResource.DEPTH_INFINITE, workspaceMonitor);
+                    eclipseProject.refreshLocal(IResource.DEPTH_INFINITE, workspaceMonitor);
                 }
             }
         };
-        ResourcesPlugin.getWorkspace().run(runnable, project, IWorkspace.AVOID_UPDATE, monitor);
+        ResourcesPlugin.getWorkspace().run(runnable, eclipseProject, IWorkspace.AVOID_UPDATE, monitor);
     }
 }

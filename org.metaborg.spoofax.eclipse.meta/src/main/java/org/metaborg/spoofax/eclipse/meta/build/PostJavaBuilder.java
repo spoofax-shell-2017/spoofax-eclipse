@@ -13,7 +13,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.language.ILanguageDiscoveryService;
+import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.project.ProjectException;
+import org.metaborg.spoofax.core.project.ISpoofaxProjectSettingsService;
+import org.metaborg.spoofax.core.project.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
@@ -34,19 +39,21 @@ public class PostJavaBuilder extends IncrementalProjectBuilder {
 
     private final IEclipseResourceService resourceService;
     private final ILanguageDiscoveryService languageDiscoveryService;
+    private final IProjectService projectService;
+    private final ISpoofaxProjectSettingsService projectSettingsService;
 
     private final SpoofaxMetaBuilder builder;
     private final GlobalSchedulingRules globalSchedulingRules;
-    private final MetaBuildInputGenerator inputGenerator;
 
 
     public PostJavaBuilder() {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
+        this.projectService = injector.getInstance(IProjectService.class);
+        this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
         this.languageDiscoveryService = injector.getInstance(ILanguageDiscoveryService.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
         this.globalSchedulingRules = injector.getInstance(GlobalSchedulingRules.class);
-        this.inputGenerator = injector.getInstance(MetaBuildInputGenerator.class);
     }
 
 
@@ -56,7 +63,7 @@ public class PostJavaBuilder extends IncrementalProjectBuilder {
             if(kind != AUTO_BUILD) {
                 build(getProject(), monitor);
             }
-        } catch(CoreException e) {
+        } catch(Exception e) {
             logger.error("Cannot build language project", e);
         } finally {
             // Always forget last build state to force a full build next time.
@@ -65,12 +72,15 @@ public class PostJavaBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private void build(IProject project, IProgressMonitor monitor) throws CoreException {
-        final FileObject location = resourceService.resolve(project);
-        final MetaBuildInput input = inputGenerator.buildInput(location);
-        if(input == null) {
-            return;
+    private void build(IProject eclipseProject, IProgressMonitor monitor) throws CoreException, MetaborgException,
+        ProjectException {
+        final FileObject location = resourceService.resolve(eclipseProject);
+        final org.metaborg.core.project.IProject project = projectService.get(location);
+        if(project == null) {
+            throw new MetaborgException("Cannot get metaborg project for " + eclipseProject);
         }
+        final SpoofaxProjectSettings settings = projectSettingsService.get(project);
+        final MetaBuildInput input = new MetaBuildInput(project, settings);
 
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
@@ -81,7 +91,7 @@ public class PostJavaBuilder extends IncrementalProjectBuilder {
                 }
             }
         };
-        ResourcesPlugin.getWorkspace().run(runnable, project, IWorkspace.AVOID_UPDATE, monitor);
+        ResourcesPlugin.getWorkspace().run(runnable, eclipseProject, IWorkspace.AVOID_UPDATE, monitor);
 
         final Job languageLoadJob = new LoadLanguageJob(languageDiscoveryService, location);
         languageLoadJob.setRule(new MultiRule(new ISchedulingRule[] { globalSchedulingRules.startupReadLock(),
