@@ -33,13 +33,14 @@ public class MavenProjectService implements IMavenProjectService {
             return mavenProject;
         }
 
-        mavenProject = getFromPom(project);
+        mavenProject = getFromLocation(project.location());
         if(mavenProject != null) {
             return mavenProject;
         }
 
         return null;
     }
+
 
     private MavenProject getFromProject(IProject project) {
         try {
@@ -57,9 +58,9 @@ public class MavenProjectService implements IMavenProjectService {
         return null;
     }
 
-    private MavenProject getFromPom(IProject project) {
+    private MavenProject getFromLocation(FileObject location) {
         try {
-            final FileObject pomResource = project.location().resolveFile("pom.xml");
+            final FileObject pomResource = location.resolveFile("pom.xml");
             if(!pomResource.exists()) {
                 return null;
             }

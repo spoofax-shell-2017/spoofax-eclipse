@@ -19,8 +19,10 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
+import org.metaborg.core.project.settings.IProjectSettings;
+import org.metaborg.core.project.settings.ProjectSettings;
 import org.metaborg.spoofax.core.esv.ESVReader;
-import org.metaborg.spoofax.core.project.SpoofaxProjectSettings;
+import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -252,8 +254,9 @@ public class UpgradeLanguageProjectWizard extends Wizard {
     private void generateFiles(String groupId, String id, String versionString, String name) throws Exception {
         final LanguageVersion version = LanguageVersion.parse(versionString);
         final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
-        final SpoofaxProjectSettings settings = new SpoofaxProjectSettings(identifier, name, project);
-        final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(settings);
+        final IProjectSettings settings = new ProjectSettings(identifier, name);
+        final SpoofaxProjectSettings spoofaxSettings = new SpoofaxProjectSettings(settings, project);
+        final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
         final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, new String[] { "dummy" });
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();

@@ -63,10 +63,16 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
     }
 
     /**
-     * Overrides {@link MetaborgModule#bindProject()} for non-dummy implementation of project and Maven project service.
+     * Overrides {@link MetaborgModule#bindProject()} for non-dummy implementation of project service.
      */
     @Override protected void bindProject() {
         bind(IProjectService.class).to(EclipseProjectService.class).in(Singleton.class);
+    }
+
+    /**
+     * Overrides {@link SpoofaxModule#bindMavenProject()} for non-dummy implementation of Maven project service.
+     */
+    @Override protected void bindMavenProject() {
         bind(IMavenProjectService.class).to(MavenProjectService.class).in(Singleton.class);
     }
 
