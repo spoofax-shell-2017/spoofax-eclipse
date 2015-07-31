@@ -11,7 +11,7 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IWorkbenchContribution;
 import org.eclipse.ui.services.IServiceLocator;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.spoofax.core.transform.menu.Action;
 import org.metaborg.spoofax.core.transform.menu.Menu;
@@ -65,7 +65,7 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
             return new IContributionItem[0];
         }
 
-        final ILanguage language = languageIdentifier.identify(resource);
+        final ILanguageImpl language = languageIdentifier.identify(resource);
         if(language == null) {
             logger.error("Cannot create menu items; cannot identify language for {}", resource);
             return new IContributionItem[0];

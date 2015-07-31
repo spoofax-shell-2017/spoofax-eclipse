@@ -11,7 +11,8 @@ import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.CleanInput;
 import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.language.ILanguageDiscoveryService;
-import org.metaborg.core.language.LanguageChange;
+import org.metaborg.core.language.LanguageComponentChange;
+import org.metaborg.core.language.LanguageImplChange;
 import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.CancellationToken;
 import org.metaborg.core.processing.ICancellationToken;
@@ -27,7 +28,8 @@ import org.metaborg.spoofax.eclipse.build.CleanRunnable;
 import org.metaborg.spoofax.eclipse.build.ProcessDialectsRunnable;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.DiscoverLanguagesJob;
-import org.metaborg.spoofax.eclipse.language.LanguageChangeJob;
+import org.metaborg.spoofax.eclipse.language.LanguageComponentChangeJob;
+import org.metaborg.spoofax.eclipse.language.LanguageImplChangeJob;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -106,9 +108,18 @@ public class EclipseProcessor implements ISpoofaxProcessor {
     }
 
 
-    @Override public ITask<?> languageChange(LanguageChange change) {
+    @Override public ITask<?> languageChange(LanguageComponentChange change) {
         final CancellationToken cancellationToken = new CancellationToken();
-        final Job job = new LanguageChangeJob(processor, change);
+        final Job job = new LanguageComponentChangeJob(processor, change);
+        job.setRule(new MultiRule(new ISchedulingRule[] { workspace.getRoot(), globalRules.startupReadLock(),
+            globalRules.languageServiceLock() }));
+        final ITask<?> task = new JobTask<Object>(job, cancellationToken);
+        return task;
+    }
+
+    @Override public ITask<?> languageChange(LanguageImplChange change) {
+        final CancellationToken cancellationToken = new CancellationToken();
+        final Job job = new LanguageImplChangeJob(processor, change);
         job.setRule(new MultiRule(new ISchedulingRule[] { workspace.getRoot(), globalRules.startupReadLock(),
             globalRules.languageServiceLock() }));
         final ITask<?> task = new JobTask<Object>(job, cancellationToken);

@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Display;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.completion.ICompletion;
 import org.metaborg.core.completion.ICompletionService;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.ParseResult;
 
@@ -32,14 +32,14 @@ public class SpoofaxContentAssistProcessor implements IContentAssistProcessor {
 
     private final FileObject resource;
     private final IDocument document;
-    private final ILanguage language;
+    private final ILanguageImpl language;
 
     private Subscription parseResultSubscription;
     private volatile ICompletionProposal[] cachedProposals;
 
 
     public SpoofaxContentAssistProcessor(ICompletionService completionService,
-        IParseResultRequester<?> parseResultRequester, FileObject resource, IDocument document, ILanguage language) {
+        IParseResultRequester<?> parseResultRequester, FileObject resource, IDocument document, ILanguageImpl language) {
         this.completionService = completionService;
 
         this.parseResultRequester = parseResultRequester;

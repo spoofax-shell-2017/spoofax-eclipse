@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.BuildInputBuilder;
 import org.metaborg.core.build.BuildState;
@@ -80,7 +81,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         } catch(InterruptedException e) {
             // Interrupted, build state is invalid, redo build next time.
             keepState();
-        } catch(FileSystemException e) {
+        } catch(MetaborgException | FileSystemException e) {
             // Exception, build state is invalid, redo build next time.
             keepState();
             logger.error("Build failed", e);
@@ -105,7 +106,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
 
 
     private void fullBuild(IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException,
-        FileSystemException {
+        FileSystemException, MetaborgException {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
 
@@ -138,7 +139,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     }
 
     private void incrBuild(IProject eclipseProject, IResourceDelta delta, IProgressMonitor monitor)
-        throws CoreException, InterruptedException {
+        throws CoreException, InterruptedException, MetaborgException {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
 

@@ -21,7 +21,7 @@ import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguage;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.messages.IMessage;
@@ -161,12 +161,12 @@ public class EditorUpdateJob<P, A> extends Job {
         final Display display = Display.getDefault();
 
         // Identify language
-        final ILanguage parserLanguage = languageIdentifierService.identify(resource);
+        final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource);
         if(parserLanguage == null) {
             throw new MetaborgException("Language could not be identified");
         }
-        ILanguage baseLanguage = dialectService.getBase(parserLanguage);
-        final ILanguage language;
+        ILanguageImpl baseLanguage = dialectService.getBase(parserLanguage);
+        final ILanguageImpl language;
         if(baseLanguage == null) {
             language = parserLanguage;
         } else {
