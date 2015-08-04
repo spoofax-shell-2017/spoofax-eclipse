@@ -7,9 +7,10 @@ import org.metaborg.spoofax.meta.core.ant.IAntRunnerService;
 import com.google.inject.Singleton;
 
 public class SpoofaxEclipseMetaModule extends SpoofaxMetaModule {
-    @Override protected void configure() {
-        super.configure();
-
+    /**
+     * Overrides {@link SpoofaxMetaModule#bindAnt()} for Eclipse implementation of Ant runner service.
+     */
+    @Override protected void bindAnt() {
         bind(IAntRunnerService.class).to(EclipseAntRunnerService.class).in(Singleton.class);
     }
 }
