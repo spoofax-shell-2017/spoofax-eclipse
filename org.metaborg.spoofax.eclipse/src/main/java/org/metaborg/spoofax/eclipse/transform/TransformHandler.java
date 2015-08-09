@@ -6,6 +6,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
+import org.metaborg.core.menu.IMenuService;
+import org.metaborg.spoofax.core.menu.MenuService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultRequester;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultRequester;
 import org.metaborg.spoofax.core.transform.IStrategoTransformer;
@@ -21,6 +23,7 @@ public class TransformHandler extends AbstractHandler {
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService langaugeIdentifierService;
     private final IContextService contextService;
+    private final IMenuService menuService;
     private final IStrategoTransformer transformer;
 
     private final ISpoofaxParseResultRequester parseResultRequester;
@@ -35,6 +38,7 @@ public class TransformHandler extends AbstractHandler {
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.langaugeIdentifierService = injector.getInstance(ILanguageIdentifierService.class);
         this.contextService = injector.getInstance(IContextService.class);
+        this.menuService = injector.getInstance(MenuService.class);
         this.transformer = injector.getInstance(IStrategoTransformer.class);
 
         this.parseResultRequester = injector.getInstance(ISpoofaxParseResultRequester.class);
@@ -49,7 +53,8 @@ public class TransformHandler extends AbstractHandler {
         final String actionName = event.getParameter(TransformMenuContribution.actionNameParam);
         final Job transformJob =
             new TransformJob<IStrategoTerm, IStrategoTerm, IStrategoTerm>(resourceService, langaugeIdentifierService,
-                contextService, transformer, parseResultRequester, analysisResultRequester, latestEditor, actionName);
+                contextService, menuService, transformer, parseResultRequester, analysisResultRequester, latestEditor,
+                actionName);
         transformJob.schedule();
 
         return null;

@@ -11,11 +11,13 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IWorkbenchContribution;
 import org.eclipse.ui.services.IServiceLocator;
-import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
-import org.metaborg.spoofax.core.transform.menu.Action;
-import org.metaborg.spoofax.core.transform.menu.Menu;
-import org.metaborg.spoofax.core.transform.menu.MenusFacet;
+import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.menu.IAction;
+import org.metaborg.core.menu.IMenu;
+import org.metaborg.core.menu.IMenuItem;
+import org.metaborg.core.menu.IMenuService;
+import org.metaborg.core.menu.Separator;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
@@ -36,6 +38,7 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifier;
     private final IEclipseEditorRegistry latestEditorListener;
+    private final IMenuService menuService;
 
     private IServiceLocator serviceLocator;
 
@@ -45,6 +48,7 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.languageIdentifier = injector.getInstance(ILanguageIdentifierService.class);
         this.latestEditorListener = injector.getInstance(IEclipseEditorRegistry.class);
+        this.menuService = injector.getInstance(IMenuService.class);
     }
 
 
@@ -71,39 +75,38 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
             return new IContributionItem[0];
         }
 
-        final MenusFacet facet = language.facet(MenusFacet.class);
-        if(facet == null) {
-            logger.error("Cannot create menu items; cannot find menus facet in {}", language);
-            return new IContributionItem[0];
-        }
-
+        final Iterable<IMenu> menus = menuService.menu(language);
         final Collection<IContributionItem> items = Lists.newLinkedList();
-        for(Menu menu : facet.menus()) {
+        for(IMenu menu : menus) {
             items.add(createItem(menu));
         }
         return items.toArray(new IContributionItem[0]);
     }
 
-    private IContributionItem createItem(Menu menu) {
+    private IContributionItem createItem(IMenu menu) {
         final MenuManager menuManager = new MenuManager(menu.name());
-        for(Menu submenu : menu.submenus()) {
-            final IContributionItem submenuItem = createItem(submenu);
-            menuManager.add(submenuItem);
-        }
-        for(Action action : menu.actions()) {
-            final IContributionItem actionItem = createItem(action);
-            menuManager.add(actionItem);
+        for(IMenuItem item : menu.items()) {
+            if(item instanceof IMenu) {
+                final IContributionItem contribItem = createItem((IMenu) item);
+                menuManager.add(contribItem);
+            } else if(item instanceof IAction) {
+                final IContributionItem contribItem = createItem((IAction) item);
+                menuManager.add(contribItem);
+            } else if(item instanceof Separator) {
+                menuManager.add(new org.eclipse.jface.action.Separator());
+            }
+
         }
         return menuManager;
     }
 
-    private IContributionItem createItem(Action action) {
+    private IContributionItem createItem(IAction action) {
         final CommandContributionItemParameter itemParams =
             new CommandContributionItemParameter(serviceLocator, null, transformId, CommandContributionItem.STYLE_PUSH);
         final Map<String, String> parameters = Maps.newHashMap();
-        parameters.put(actionNameParam, action.name);
+        parameters.put(actionNameParam, action.name());
         itemParams.parameters = parameters;
-        itemParams.label = action.name;
+        itemParams.label = action.name();
 
         return new CommandContributionItem(itemParams);
     }

@@ -15,14 +15,15 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgException;
+import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.analysis.AnalysisException;
 import org.metaborg.core.analysis.AnalysisFileResult;
 import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.messages.MessageFactory;
@@ -116,7 +117,7 @@ public class EditorUpdateJob<P, A> extends Job {
                 threadKiller.cancel();
             }
             return status;
-        } catch(MetaborgException | CoreException e) {
+        } catch(MetaborgRuntimeException | MetaborgException | CoreException e) {
             if(monitor.isCanceled())
                 return StatusUtils.cancel();
 

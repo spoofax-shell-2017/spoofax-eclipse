@@ -3,14 +3,16 @@ package org.metaborg.spoofax.eclipse.transform;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.menu.IAction;
+import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NamedGoal;
 import org.metaborg.core.transform.TransformResult;
+import org.metaborg.spoofax.core.menu.StrategoTransformAction;
 import org.metaborg.spoofax.core.transform.IStrategoTransformerResultHandler;
 import org.metaborg.spoofax.core.transform.StrategoTransformerCommon;
-import org.metaborg.spoofax.core.transform.menu.Action;
-import org.metaborg.spoofax.core.transform.menu.MenusFacet;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -19,13 +21,15 @@ import com.google.inject.Inject;
 
 public class OpenEditorResultHandler implements IStrategoTransformerResultHandler {
     private final IEclipseResourceService resourceService;
+    private final IMenuService menuService;
 
     private final StrategoTransformerCommon transformer;
 
 
-    @Inject public OpenEditorResultHandler(IEclipseResourceService resourceService,
+    @Inject public OpenEditorResultHandler(IEclipseResourceService resourceService, IMenuService menuService,
         StrategoTransformerCommon transformer) {
         this.resourceService = resourceService;
+        this.menuService = menuService;
         this.transformer = transformer;
     }
 
@@ -47,16 +51,20 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
         }
 
         if(goal instanceof NamedGoal) {
-            final MenusFacet facet = language.facet(MenusFacet.class);
-            if(facet == null) {
+            final NamedGoal namedGoal = (NamedGoal) goal;
+            final IAction action;
+            try {
+                action = menuService.action(language, namedGoal.name);
+            } catch(MetaborgException e) {
                 return false;
             }
-            final NamedGoal namedGoal = (NamedGoal) goal;
-            final Action action = facet.action(namedGoal.name);
             if(action == null) {
                 return false;
             }
-            return action.flags.openEditor;
+            if(action instanceof StrategoTransformAction) {
+                final StrategoTransformAction transformAction = (StrategoTransformAction) action;
+                return transformAction.flags.openEditor;
+            }
         }
         return false;
     }

@@ -31,6 +31,7 @@ import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
+import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -85,6 +86,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             // Exception, build state is invalid, redo build next time.
             keepState();
             logger.error("Build failed", e);
+            throw new CoreException(StatusUtils.error("Build failed", e));
         }
 
         // Return value is used to declare dependencies on other projects, but right now this is
