@@ -65,7 +65,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
 
 
     @Override public void addedComponent(ILanguageComponent component) {
-        logger.debug("Running component added job for {}", component);
+        logger.debug("Running component added tasks for {}", component);
 
         final Set<String> extensions = getExtensions(component);
         if(!extensions.isEmpty()) {
@@ -81,7 +81,8 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
     }
 
     @Override public void reloadedComponent(ILanguageComponent oldComponent, ILanguageComponent newComponent) {
-        logger.debug("Running component reloaded job for {}", newComponent);
+        logger.debug("Running component reloaded tasks for {}", newComponent);
+        
         final Set<String> oldExtensions = getExtensions(oldComponent);
         final Set<String> newExtensions = getExtensions(newComponent);
         if(!oldExtensions.isEmpty() || !newExtensions.isEmpty()) {
@@ -106,7 +107,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
     }
 
     @Override protected void removedComponent(ILanguageComponent component) {
-        logger.debug("Running component removed job for {}", component);
+        logger.debug("Running component removed tasks for {}", component);
 
         final Set<String> extensions = getExtensions(component);
         if(!extensions.isEmpty()) {
