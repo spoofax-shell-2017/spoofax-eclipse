@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.PlatformUI;
+import org.metaborg.core.context.IContextProcessor;
 import org.metaborg.core.language.ILanguageCache;
 import org.metaborg.core.language.ILanguageComponent;
 import org.metaborg.core.language.ILanguageIdentifierService;
@@ -50,8 +51,9 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
 
     @Inject public EclipseLanguageChangeProcessor(IEclipseResourceService resourceService,
         ILanguageIdentifierService languageIdentifier, IDialectProcessor dialectProcessor,
-        org.metaborg.core.editor.IEditorRegistry editorRegistry, Set<ILanguageCache> languageCaches) {
-        super(dialectProcessor, editorRegistry, languageCaches);
+        IContextProcessor contextProcessor, org.metaborg.core.editor.IEditorRegistry editorRegistry,
+        Set<ILanguageCache> languageCaches) {
+        super(dialectProcessor, contextProcessor, editorRegistry, languageCaches);
 
         this.resourceService = resourceService;
         this.languageIdentifier = languageIdentifier;
