@@ -82,7 +82,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
 
     @Override public void reloadedComponent(ILanguageComponent oldComponent, ILanguageComponent newComponent) {
         logger.debug("Running component reloaded tasks for {}", newComponent);
-        
+
         final Set<String> oldExtensions = getExtensions(oldComponent);
         final Set<String> newExtensions = getExtensions(newComponent);
         if(!oldExtensions.isEmpty() || !newExtensions.isEmpty()) {
@@ -123,25 +123,28 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
     }
 
     @Override public void removedImpl(ILanguageImpl language) {
-        try {
-            final Collection<FileObject> resources =
-                ResourceUtils.workspaceResources(resourceService,
-                    new LanguageFileSelector(languageIdentifier, language), workspace.getRoot());
-            final Collection<IResource> eclipseResources = ResourceUtils.toEclipseResources(resourceService, resources);
-            logger.debug("Removing markers from {} workspace resources", resources.size());
-            for(IResource resource : eclipseResources) {
-                try {
-                    MarkerUtils.clearAll(resource);
-                } catch(CoreException e) {
-                    final String message = String.format("Cannot remove markers for resource %s", resource);
-                    logger.error(message, e);
+        if(languageIdentifier.available(language)) {
+            try {
+                final Collection<FileObject> resources =
+                    ResourceUtils.workspaceResources(resourceService, new LanguageFileSelector(languageIdentifier,
+                        language), workspace.getRoot());
+                final Collection<IResource> eclipseResources =
+                    ResourceUtils.toEclipseResources(resourceService, resources);
+                logger.debug("Removing markers from {} workspace resources", resources.size());
+                for(IResource resource : eclipseResources) {
+                    try {
+                        MarkerUtils.clearAll(resource);
+                    } catch(CoreException e) {
+                        final String message = String.format("Cannot remove markers for resource %s", resource);
+                        logger.error(message, e);
+                    }
                 }
+            } catch(FileSystemException e) {
+                final String message = String.format("Cannot retrieve all workspace resources for %s", language);
+                logger.error(message, e);
             }
-        } catch(FileSystemException e) {
-            final String message = String.format("Cannot retrieve all workspace resources for %s", language);
-            logger.error(message, e);
         }
-
+        
         super.removedImpl(language);
     }
 
