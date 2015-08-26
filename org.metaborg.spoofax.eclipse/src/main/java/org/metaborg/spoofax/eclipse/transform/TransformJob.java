@@ -26,6 +26,7 @@ import org.metaborg.spoofax.core.menu.StrategoTransformAction;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
+import org.metaborg.util.concurrent.IClosableLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +100,7 @@ public class TransformJob<P, A, T> extends Job {
             logger.error(message);
             return StatusUtils.error(message);
         }
-        
+
         if(!(action instanceof StrategoTransformAction)) {
             final String message =
                 String.format("Transformation failed, action %s is not a Stratego transformer action", actionName);
@@ -128,7 +129,9 @@ public class TransformJob<P, A, T> extends Job {
         } else {
             final AnalysisFileResult<P, A> result =
                 analysisResultRequester.request(resource, context, text).toBlocking().single();
-            transformer.transform(result, context, new NamedGoal(action.name));
+            try(IClosableLock lock = context.write()) {
+                transformer.transform(result, context, new NamedGoal(action.name));
+            }
         }
 
         return StatusUtils.success();

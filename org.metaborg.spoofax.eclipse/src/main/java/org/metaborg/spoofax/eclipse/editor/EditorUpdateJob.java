@@ -42,6 +42,7 @@ import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.eclipse.util.StyleUtils;
+import org.metaborg.util.concurrent.IClosableLock;
 import org.metaborg.util.iterators.Iterables2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -258,7 +259,7 @@ public class EditorUpdateJob<P, A> extends Job {
             return StatusUtils.cancel();
         final IContext context = contextService.get(resource, language);
         final AnalysisResult<P, A> analysisResult;
-        synchronized(context) {
+        try(IClosableLock lock = context.write()) {
             analysisResultProcessor.invalidate(parseResult.source);
             try {
                 analysisResult = analyzer.analyze(Iterables2.singleton(parseResult), context);
