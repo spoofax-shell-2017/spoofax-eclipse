@@ -57,17 +57,17 @@ public class DiscoverLanguagesJob extends Job {
         final IExtensionPoint point = registry.getExtensionPoint("org.metaborg.spoofax.eclipse.language");
         for(IConfigurationElement config : point.getConfigurationElements()) {
             if(config.getName().equals("language")) {
-                final String relativeEsvLocation = config.getAttribute("esvFile");
+                final String relativeLocation = config.getAttribute("location");
                 final String contributor = config.getDeclaringExtension().getContributor().getName();
                 try {
                     final Bundle bundle = Platform.getBundle(contributor);
                     final File bundleLocationFile = FileLocator.getBundleFile(bundle);
                     final FileObject bundleLocation = resourceService.resolve(bundleLocationFile);
-                    final FileObject esvLocation = bundleLocation.resolveFile(relativeEsvLocation);
-                    languageDiscoveryService.discover(esvLocation);
+                    final FileObject location = bundleLocation.resolveFile(relativeLocation);
+                    languageDiscoveryService.discover(location);
                 } catch(Exception e) {
                     final String message =
-                        String.format("Could not load language from %s in plugin %s", relativeEsvLocation, contributor);
+                        String.format("Could not load language from %s in plugin %s", relativeLocation, contributor);
                     logger.error(message, e);
                 }
             }

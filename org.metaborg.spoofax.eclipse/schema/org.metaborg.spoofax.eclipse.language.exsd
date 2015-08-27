@@ -50,16 +50,16 @@
    <element name="language">
       <annotation>
          <documentation>
-            Indicates that this plugin contains a Spoofax language. The Spoofax runtime will load this language on startup using the specified packed.esv file. 
+            Indicates that this plugin contains a language component. The Spoofax runtime will discover this language component on startup from the specified location.
 
-Note: Spoofax can only locate this file if your plugin is unpacked, packed plugins are not yet supported. Make sure to set unpack to true in your feature specification.
+Note: Spoofax can only discover the language component if your plugin is unpacked, packed plugins are not yet supported. Make sure to set unpack to true in your feature specification.
          </documentation>
       </annotation>
       <complexType>
-         <attribute name="esvFile" type="string" use="required">
+         <attribute name="location" type="string" use="required">
             <annotation>
                <documentation>
-                  Location of the packed.esv file containing the specification of the language.
+                  Location of the language component. Can be a directory or a file. In case of a directory, all language components in given directory (and ancestors) are discovered. In case of a file, if that file describes a language component, discovers a single language component.
                </documentation>
                <appinfo>
                   <meta.attribute kind="resource"/>

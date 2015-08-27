@@ -15,47 +15,89 @@
   </parent>
 
   <properties>
-    <language-unpack-location>${project.build.directory}/unpacked</language-unpack-location>
-    <language-unpack-markers-location>${project.build.directory}/unpacked-markers</language-unpack-markers-location>
+    <unpack.loc>${project.build.directory}/unpacked</unpack.loc>
+    <unpack.markers.loc>${project.build.directory}/unpacked-markers</unpack.markers.loc>
+
+    <lang.unpack.skip>false</lang.unpack.skip>
+    <lang.unpack.groupId>${project.groupId}</lang.unpack.groupId>
+    <lang.unpack.version>${metaborg-version}</lang.unpack.version>
+    <lang.unpack.loc>${unpack.loc}/latest</lang.unpack.loc>
+    <lang.unpack.markers.loc>${unpack.markers.loc}/latest</lang.unpack.markers.loc>
+
+    <lang.baseline.unpack.skip>true</lang.baseline.unpack.skip>
+    <lang.baseline.unpack.groupId>${project.groupId}</lang.baseline.unpack.groupId>
+    <lang.baseline.unpack.artifactId>${lang.unpack.artifactId}</lang.baseline.unpack.artifactId>
+    <lang.baseline.unpack.version>${metaborg-baseline-version}</lang.baseline.unpack.version>
+    <lang.baseline.unpack.loc>${unpack.loc}/baseline</lang.baseline.unpack.loc>
+    <lang.baseline.unpack.markers.loc>${unpack.markers.loc}/baseline</lang.baseline.unpack.markers.loc>
   </properties>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.metaborg</groupId>
-        <artifactId>spoofax-maven-plugin</artifactId>
-        <version>${metaborg-version}</version>
-        <extensions>true</extensions>
-      </plugin>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.metaborg</groupId>
+          <artifactId>spoofax-maven-plugin</artifactId>
+          <version>${metaborg-version}</version>
+          <extensions>true</extensions>
+        </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <!-- Required to add a dependency on the Spoofax plugin, otherwise unpacking will fail with a class cast 
-          exception on archivers. Fix from: http://maven.40175.n5.nabble.com/Problems-with-register-new-archive-type-td4574906.html -->
-        <dependencies>
-          <dependency>
-            <groupId>org.metaborg</groupId>
-            <artifactId>spoofax-maven-plugin</artifactId>
-            <version>${metaborg-version}</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <configuration>
-              <actTransitively>false</actTransitively>
-              <excludeTransitive>true</excludeTransitive>
-              <includeTypes>spoofax-language</includeTypes>
-              <outputDirectory>${language-unpack-location}</outputDirectory>
-              <markersDirectory>${language-unpack-markers-location}</markersDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <!-- Required to add a dependency on the Spoofax plugin, otherwise unpacking will fail with a class cast 
+            exception on archivers. Fix from: http://maven.40175.n5.nabble.com/Problems-with-register-new-archive-type-td4574906.html -->
+          <dependencies>
+            <dependency>
+              <groupId>org.metaborg</groupId>
+              <artifactId>spoofax-maven-plugin</artifactId>
+              <version>${metaborg-version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>unpack</goal>
+              </goals>
+              <id>unpack-language</id>
+              <configuration>
+                <artifactItems>
+                  <artifactItem>
+                    <groupId>${lang.unpack.groupId}</groupId>
+                    <artifactId>${lang.unpack.artifactId}</artifactId>
+                    <version>${lang.unpack.version}</version>
+                    <type>spoofax-language</type>
+                  </artifactItem>
+                </artifactItems>
+                <outputDirectory>${lang.unpack.loc}</outputDirectory>
+                <markersDirectory>${lang.unpack.markers.loc}</markersDirectory>
+                <skip>${lang.unpack.skip}</skip>
+              </configuration>
+            </execution>
+            <execution>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>unpack</goal>
+              </goals>
+              <id>unpack-language-baseline</id>
+              <configuration>
+                <artifactItems>
+                  <artifactItem>
+                    <groupId>${lang.baseline.unpack.groupId}</groupId>
+                    <artifactId>${lang.baseline.unpack.artifactId}</artifactId>
+                    <version>${lang.baseline.unpack.version}</version>
+                    <type>spoofax-language</type>
+                  </artifactItem>
+                </artifactItems>
+                <outputDirectory>${lang.baseline.unpack.loc}</outputDirectory>
+                <markersDirectory>${lang.baseline.unpack.markers.loc}</markersDirectory>
+                <skip>${lang.baseline.unpack.skip}</skip>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 </project>
