@@ -9,14 +9,15 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.eclipse.core.runtime.FileLocator;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.util.BundleUtils;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.strategoxt.imp.generator.sdf2imp;
 
 import com.google.common.collect.Lists;
 
@@ -27,7 +28,7 @@ public class AntClasspathGenerator {
      * @return List of classpath entries generated from installed Eclipse plugins.
      */
     public static URL[] classpaths() throws MalformedURLException {
-        final Collection<URL> classpath = strategoClasspaths();
+        final Collection<URL> classpath = Lists.newLinkedList();
         final Map<String, Bundle> bundles = BundleUtils.bundlesBySymbolicName(SpoofaxMetaPlugin.context());
 
         final Bundle antBundle = bundles.get("org.apache.ant");
@@ -76,11 +77,8 @@ public class AntClasspathGenerator {
                 }
 
                 // Also include any nested jar files.
-                final File[] jarFiles = file.listFiles(new FilenameFilter() {
-                    @Override public boolean accept(File dir, String name) {
-                        return name.endsWith(".jar");
-                    }
-                });
+                final Iterable<File> jarFiles =
+                    FileUtils.listFiles(file, new RegexFileFilter(".+\\.jar"), DirectoryFileFilter.DIRECTORY);
                 for(File jarFile : jarFiles) {
                     classpath.add(jarFile.toURI().toURL());
                 }
@@ -90,36 +88,5 @@ public class AntClasspathGenerator {
         }
 
         return classpath.toArray(new URL[0]);
-    }
-
-    private static Collection<URL> strategoClasspaths() throws MalformedURLException {
-        final Collection<URL> classpaths = Lists.newLinkedList();
-        classpaths.add(new File(strategoJar()).toURI().toURL());
-        classpaths.add(Paths.get(jars(), "make_permissive.jar").toFile().toURI().toURL());
-
-        return classpaths;
-    }
-
-    private static String strategoJar() {
-        String result = org.strategoxt.lang.Context.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        if(SystemUtils.IS_OS_WINDOWS) {
-            // Fix path on Windows.
-            result = result.substring(1);
-        }
-        if(!result.endsWith(".jar")) {
-            // Ensure correct JAR file at development time.
-            String result2 = result + "/../strategoxt.jar";
-            if(new File(result2).exists())
-                return result2;
-            result2 = result + "/java/strategoxt.jar";
-            if(new File(result2).exists())
-                return result2;
-        }
-        return result;
-    }
-
-    private static String jars() {
-        final String generatorPath = sdf2imp.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        return Paths.get(new File(generatorPath).getAbsolutePath(), "dist").toFile().getAbsolutePath();
     }
 }

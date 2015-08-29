@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <project
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
@@ -26,29 +27,8 @@
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
-      <artifactId>make-permissive-jar</artifactId>
+      <artifactId>make-permissive</artifactId>
       <version>${metaborg-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.metaborg</groupId>
-      <artifactId>make-permissive-jar-installer</artifactId>
-      <version>${metaborg-version}</version>
-      <type>pom</type>
-      <scope>provided</scope>
-    </dependency>
-    <!-- Requirements for org.spoofax.aterm -->
-    <dependency>
-      <groupId>com.github.ansell.jjtraveler</groupId>
-      <artifactId>jjtraveler</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.github.ansell.aterms</groupId>
-      <artifactId>shared-objects</artifactId>
-    </dependency>
-    <!-- Requirements for org.spoofax.interpreter.library.jline -->
-    <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
     </dependency>
     <!-- Requirements for org.metaborg.meta.interpreter.framework -->
     <dependency>
@@ -194,6 +174,7 @@
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <configuration>
+          <unpackBundle>true</unpackBundle>
           <instructions>
             <!-- Fix names not to include the groupId. -->
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
@@ -220,18 +201,15 @@
               jackson-dataformat-yaml,
               jackson-core,
               jgrapht-core,
-              jjtraveler,
               jcl-over-slf4j,
-              jline,
               kryo,
               logback-classic,
               logback-core,
-              make-permissive-jar,
+              make-permissive,
               minlog,
               objenesis,
               reflectasm,
               rxjava-core,
-              shared-objects,
               slf4j-api,
               strategoxt-min-jar
             </Embed-Dependency>
@@ -259,8 +237,6 @@
               com.google.common.*;provider=metaborg;mandatory:=provider,
               com.google.inject.*;provider=metaborg;mandatory:=provider,
               fj.*;provider=metaborg;mandatory:=provider,
-              jjtraveler.*;provider=metaborg;mandatory:=provider,
-              jline.*;provider=metaborg;mandatory:=provider,
               org.aopalliance*;provider=metaborg;mandatory:=provider,
               org.apache.commons.io*;provider=metaborg;mandatory:=provider,
               org.apache.commons.io;provider=metaborg;mandatory:=provider,
@@ -277,8 +253,7 @@
               org.slf4j*;provider=metaborg;mandatory:=provider,
               org.slf4j;provider=metaborg;mandatory:=provider,
               org.strategoxt*,
-              rx.*;provider=metaborg;mandatory:=provider,
-              shared.*;provider=metaborg;mandatory:=provider
+              rx.*;provider=metaborg;mandatory:=provider
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
             <Import-Package>
