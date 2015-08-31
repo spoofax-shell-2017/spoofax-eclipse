@@ -99,6 +99,13 @@
     unpack="false"
   />
 
+  <!-- Languages used at runtime by other languages -->
+  <plugin
+    id="org.metaborg.meta.lang.analysis.eclipse"
+    version="1.5.0.qualifier"
+    unpack="true"
+  />
+
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
     id="org.metaborg.spoofax.eclipse.externaldeps"
@@ -111,22 +118,12 @@
     unpack="false"
   />
   <plugin
-    id="org.strategoxt.imp.generator"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
     id="org.metaborg.spoofax.nativebundle"
     version="1.5.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.strategoxt.strj"
-    version="1.5.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.metaborg.meta.lang.analysis.eclipse"
     version="1.5.0.qualifier"
     unpack="true"
   />
