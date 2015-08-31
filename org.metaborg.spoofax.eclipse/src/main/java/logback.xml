@@ -1,15 +1,26 @@
 <configuration>
-  <!--appender
+  <appender
+    name="stdout"
+    class="org.metaborg.spoofax.eclipse.logging.StaticConsoleAppender"
+  >
+    <target>System.out</target>
+    <encoder>
+      <pattern>%date{HH:mm:ss.SSS} | %-12.12thread | %-5level | %-40.40logger{30} - %message%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender
     name="eclipse-log"
     class="org.metaborg.spoofax.eclipse.logging.EclipseLogAppender"
   >
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>INFO</level>
+      <level>WARN</level>
     </filter>
     <encoder>
       <pattern>%message%n{}in %logger \(%thread\)%n</pattern>
     </encoder>
-  </appender
+  </appender>
+
   <appender
     name="eclipse-console"
     class="org.metaborg.spoofax.eclipse.logging.EclipseConsoleAppender"
@@ -30,21 +41,12 @@
       <pattern>%date{HH:mm:ss.SSS} | %-12.12thread | %-5level | %-40.40logger{30} - %message%n</pattern>
     </encoder>
     <consoleName>Spoofax developers console</consoleName>
-  </appender-->
-  <appender
-    name="stdout"
-    class="org.metaborg.spoofax.eclipse.logging.StaticConsoleAppender"
-  >
-    <target>System.out</target>
-    <encoder>
-      <pattern>%date{HH:mm:ss.SSS} | %-12.12thread | %-5level | %-40.40logger{30} - %message%n</pattern>
-    </encoder>
   </appender>
 
 
   <root level="debug">
-    <!-- appender-ref ref="eclipse-log" / -->
-    <!-- appender-ref ref="eclipse-console" / -->
+    <appender-ref ref="eclipse-log" />
+    <appender-ref ref="eclipse-console" />
     <appender-ref ref="stdout" />
     <!-- appender-ref ref="eclipse-dev-console" / -->
   </root>
