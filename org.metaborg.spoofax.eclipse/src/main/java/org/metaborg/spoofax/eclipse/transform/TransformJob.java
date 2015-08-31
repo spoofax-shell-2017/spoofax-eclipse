@@ -129,7 +129,7 @@ public class TransformJob<P, A, T> extends Job {
         } else {
             final AnalysisFileResult<P, A> result =
                 analysisResultRequester.request(resource, context, text).toBlocking().single();
-            try(IClosableLock lock = context.write()) {
+            try(IClosableLock lock = context.read()) {
                 transformer.transform(result, context, new NamedGoal(action.name));
             }
         }
