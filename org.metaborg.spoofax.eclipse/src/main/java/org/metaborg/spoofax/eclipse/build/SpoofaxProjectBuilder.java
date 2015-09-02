@@ -16,6 +16,7 @@ import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.BuildInputBuilder;
 import org.metaborg.core.build.BuildState;
 import org.metaborg.core.build.CleanInput;
+import org.metaborg.core.build.CleanInputBuilder;
 import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.build.dependency.IDependencyService;
 import org.metaborg.core.build.paths.ILanguagePathService;
@@ -101,6 +102,9 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             clean(project, monitor);
         } catch(InterruptedException e) {
             // Ignore
+        } catch(MetaborgException e) {
+            logger.error("Cleaning failed", e);
+            throw new CoreException(StatusUtils.error("Cleaning failed", e));
         } finally {
             cleanState(project);
         }
@@ -183,10 +187,18 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     }
 
 
-    private void clean(final IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException {
+    private void clean(final IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException,
+        MetaborgException {
         final FileObject location = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(location);
-        final CleanInput input = new CleanInput(project, new SpoofaxIgnoresSelector());
+
+        final CleanInputBuilder inputBuilder = new CleanInputBuilder(project);
+        // @formatter:off
+        final CleanInput input = inputBuilder
+            .withSelector(new SpoofaxIgnoresSelector())
+            .build(dependencyService)
+            ;
+        // @formatter:on
 
         processorRunner.clean(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor))
             .schedule().block();
