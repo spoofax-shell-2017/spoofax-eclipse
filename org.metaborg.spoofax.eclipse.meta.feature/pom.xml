@@ -9,9 +9,9 @@
 
 	<parent>
 		<groupId>org.metaborg</groupId>
-		<artifactId>org.metaborg.maven.parent.plugin</artifactId>
+		<artifactId>parent.eclipse.plugin</artifactId>
 		<version>1.5.0-SNAPSHOT</version>
-		<relativePath>../org.metaborg.maven.parent.plugin</relativePath>
+		<relativePath>../../releng/parent/eclipse/plugin</relativePath>
 	</parent>
 
 	<developers>
