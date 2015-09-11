@@ -20,6 +20,7 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
+import org.metaborg.util.file.FileAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +87,7 @@ public class GenerateSourcesBuilder extends IncrementalProjectBuilder {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
                     builder.initialize(input);
-                    builder.generateSources(input);
+                    builder.generateSources(input, new FileAccess());
                 } catch(Exception e) {
                     throw new CoreException(StatusUtils.error(e));
                 }
@@ -110,7 +111,7 @@ public class GenerateSourcesBuilder extends IncrementalProjectBuilder {
                 try {
                     builder.clean(input.settings);
                     builder.initialize(input);
-                    builder.generateSources(input);
+                    builder.generateSources(input, new FileAccess());
                 } catch(Exception e) {
                     throw new CoreException(StatusUtils.error(e));
                 }

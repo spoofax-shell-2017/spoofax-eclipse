@@ -32,6 +32,7 @@ import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.generator.NewProjectGenerator;
 import org.metaborg.spoofax.generator.ProjectGenerator;
 import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
+import org.metaborg.util.file.FileAccess;
 import org.metaborg.util.resource.ContainsFileSelector;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -257,10 +258,10 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         final IProjectSettings settings = new ProjectSettings(identifier, name);
         final SpoofaxProjectSettings spoofaxSettings = new SpoofaxProjectSettings(settings, project);
         final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
-        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, new String[] { "dummy" });
+        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, new String[] { "dummy" }, new FileAccess());
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
-        final ProjectGenerator generator = new ProjectGenerator(generatorSettings);
+        final ProjectGenerator generator = new ProjectGenerator(generatorSettings, new FileAccess());
         generator.generateAll();
     }
 }
