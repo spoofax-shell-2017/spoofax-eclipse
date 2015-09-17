@@ -11,6 +11,7 @@ import org.metaborg.core.transform.CompileGoal;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.ITransformerResultHandler;
 import org.metaborg.core.transform.NamedGoal;
+import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.spoofax.core.SpoofaxModule;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
 import org.metaborg.spoofax.core.project.IMavenProjectService;
@@ -84,6 +85,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
         MapBinder<Class<? extends ITransformerGoal>, ITransformerResultHandler<IStrategoTerm>> binder) {
         bind(OpenEditorResultHandler.class).in(Singleton.class);
         binder.addBinding(NamedGoal.class).to(OpenEditorResultHandler.class);
+        binder.addBinding(NestedNamedGoal.class).to(OpenEditorResultHandler.class);
         binder.addBinding(CompileGoal.class).to(OpenEditorResultHandler.class);
     }
 

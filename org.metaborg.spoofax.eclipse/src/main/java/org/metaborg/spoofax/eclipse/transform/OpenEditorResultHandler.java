@@ -9,6 +9,7 @@ import org.metaborg.core.menu.IAction;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NamedGoal;
+import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformResult;
 import org.metaborg.spoofax.core.menu.StrategoTransformAction;
 import org.metaborg.spoofax.core.transform.IStrategoTransformerResultHandler;
@@ -50,22 +51,33 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
             return false;
         }
 
+        final IAction action;
         if(goal instanceof NamedGoal) {
             final NamedGoal namedGoal = (NamedGoal) goal;
-            final IAction action;
             try {
                 action = menuService.action(language, namedGoal.name);
             } catch(MetaborgException e) {
                 return false;
             }
-            if(action == null) {
+        } else if(goal instanceof NestedNamedGoal) {
+            final NestedNamedGoal namedGoal = (NestedNamedGoal) goal;
+            try {
+                action = menuService.nestedAction(language, namedGoal.names);
+            } catch(MetaborgException e) {
                 return false;
             }
-            if(action instanceof StrategoTransformAction) {
-                final StrategoTransformAction transformAction = (StrategoTransformAction) action;
-                return transformAction.flags.openEditor;
-            }
+        } else {
+            return false;
         }
+        
+        if(action == null) {
+            return false;
+        }
+        if(action instanceof StrategoTransformAction) {
+            final StrategoTransformAction transformAction = (StrategoTransformAction) action;
+            return transformAction.flags.openEditor;
+        }
+        
         return false;
     }
 }

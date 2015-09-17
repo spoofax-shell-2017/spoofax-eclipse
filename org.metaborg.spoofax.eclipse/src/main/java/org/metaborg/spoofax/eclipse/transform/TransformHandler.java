@@ -1,5 +1,7 @@
 package org.metaborg.spoofax.eclipse.transform;
 
+import java.util.List;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -50,11 +52,11 @@ public class TransformHandler extends AbstractHandler {
 
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
         final IEclipseEditor latestEditor = latestEditorListener.previousEditor();
-        final String actionName = event.getParameter(TransformMenuContribution.actionNameParam);
+        final List<String> actionNames = TransformMenuContribution.fromProperty(event);
         final Job transformJob =
             new TransformJob<IStrategoTerm, IStrategoTerm, IStrategoTerm>(resourceService, langaugeIdentifierService,
                 contextService, menuService, transformer, parseResultRequester, analysisResultRequester, latestEditor,
-                actionName);
+                actionNames);
         transformJob.schedule();
 
         return null;

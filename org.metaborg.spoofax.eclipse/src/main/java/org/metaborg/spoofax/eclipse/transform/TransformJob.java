@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.eclipse.transform;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -20,18 +21,19 @@ import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.core.transform.ITransformer;
-import org.metaborg.core.transform.NamedGoal;
+import org.metaborg.core.transform.ITransformerGoal;
+import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformerException;
 import org.metaborg.spoofax.core.menu.StrategoTransformAction;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.concurrent.IClosableLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 public class TransformJob<P, A, T> extends Job {
-    private static final Logger logger = LoggerFactory.getLogger(TransformJob.class);
+    private static final ILogger logger = LoggerUtils.logger(TransformJob.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService langaugeIdentifierService;
@@ -43,13 +45,13 @@ public class TransformJob<P, A, T> extends Job {
     private final IAnalysisResultRequester<P, A> analysisResultRequester;
 
     private final IEclipseEditor editor;
-    private final String actionName;
+    private final List<String> actionNames;
 
 
     public TransformJob(IEclipseResourceService resourceService, ILanguageIdentifierService langaugeIdentifierService,
         IContextService contextService, IMenuService menuService, ITransformer<P, A, T> transformer,
         IParseResultRequester<P> parseResultProcessor, IAnalysisResultRequester<P, A> analysisResultProcessor,
-        IEclipseEditor editor, String actionName) {
+        IEclipseEditor editor, List<String> actionNames) {
         super("Transforming file");
 
         this.resourceService = resourceService;
@@ -62,7 +64,7 @@ public class TransformJob<P, A, T> extends Job {
         this.analysisResultRequester = analysisResultProcessor;
 
         this.editor = editor;
-        this.actionName = actionName;
+        this.actionNames = actionNames;
     }
 
 
@@ -72,7 +74,7 @@ public class TransformJob<P, A, T> extends Job {
         final FileObject resource = resourceService.resolve(input);
 
         if(resource == null) {
-            final String message = String.format("Transformation failed, input %s cannot be resolved", input);
+            final String message = logger.format("Transformation failed, input {} cannot be resolved", input);
             logger.error(message);
             return StatusUtils.error(message);
         }
@@ -80,36 +82,38 @@ public class TransformJob<P, A, T> extends Job {
         final ILanguageImpl language = langaugeIdentifierService.identify(resource);
         if(language == null) {
             final String message =
-                String.format("Transformation failed, language of %s cannot be identified", resource);
+                logger.format("Transformation failed, language of {} cannot be identified", resource);
             logger.error(message);
             return StatusUtils.error(message);
         }
 
         final IAction action;
         try {
-            action = menuService.action(language, actionName);
+            action = menuService.nestedAction(language, actionNames);
         } catch(MetaborgException e) {
-            final String message =
-                String.format("Transformation failed, %s has multiple actions named %s", language, actionName);
-            logger.error(message);
+            final String message = "Transformation failed";
+            logger.error(message, e);
             return StatusUtils.error(message, e);
         }
+
+        final ITransformerGoal goal = new NestedNamedGoal(actionNames);
+
         if(action == null) {
             final String message =
-                String.format("Transformation failed, %s does not have an action named %s", language, actionName);
+                logger.format("Transformation failed, {} does not have an action named {}", language, goal);
             logger.error(message);
             return StatusUtils.error(message);
         }
 
         if(!(action instanceof StrategoTransformAction)) {
             final String message =
-                String.format("Transformation failed, action %s is not a Stratego transformer action", actionName);
+                String.format("Transformation failed, action %s is not a Stratego transformer action", goal);
             logger.error(message);
             return StatusUtils.error(message);
         }
 
         try {
-            return transform(monitor, resource, language, (StrategoTransformAction) action, text);
+            return transform(monitor, resource, language, (StrategoTransformAction) action, goal, text);
         } catch(IOException | ContextException | TransformerException e) {
             final String message = String.format("Transformation failed for %s", resource);
             logger.error(message, e);
@@ -118,19 +122,20 @@ public class TransformJob<P, A, T> extends Job {
     }
 
     private IStatus transform(IProgressMonitor monitor, FileObject resource, ILanguageImpl language,
-        StrategoTransformAction action, String text) throws IOException, ContextException, TransformerException {
+        StrategoTransformAction action, ITransformerGoal goal, String text) throws IOException, ContextException,
+        TransformerException {
         if(monitor.isCanceled())
             return StatusUtils.cancel();
 
         final IContext context = contextService.get(resource, language);
         if(action.flags.parsed) {
             final ParseResult<P> result = parseResultRequester.request(resource, language, text).toBlocking().single();
-            transformer.transform(result, context, new NamedGoal(action.name));
+            transformer.transform(result, context, goal);
         } else {
             final AnalysisFileResult<P, A> result =
                 analysisResultRequester.request(resource, context, text).toBlocking().single();
             try(IClosableLock lock = context.read()) {
-                transformer.transform(result, context, new NamedGoal(action.name));
+                transformer.transform(result, context, goal);
             }
         }
 

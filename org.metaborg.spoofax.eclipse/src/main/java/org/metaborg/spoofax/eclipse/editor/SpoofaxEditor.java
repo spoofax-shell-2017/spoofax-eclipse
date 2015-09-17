@@ -324,7 +324,9 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
             document.removeDocumentListener(documentListener);
         }
         this.removePropertyListener(editorInputChangedListener);
-        textViewerExt4.removeTextPresentationListener(presentationMerger);
+        if(textViewerExt4 != null) {
+            textViewerExt4.removeTextPresentationListener(presentationMerger);
+        }
 
         input = null;
         resource = null;
@@ -361,10 +363,10 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         analysisResultProcessor.invalidate(resource);
 
         final Job job =
-            new EditorUpdateJob<IStrategoTerm, IStrategoTerm>(languageIdentifier, dialectService, contextService,
-                syntaxService, analysisService, categorizerService, stylerService, parseResultProcessor,
-                analysisResultProcessor, input, eclipseResource, resource, sourceViewer, document.get(),
-                presentationMerger, instantaneous);
+            new EditorUpdateJob<IStrategoTerm, IStrategoTerm>(resourceService, languageIdentifier, dialectService,
+                contextService, syntaxService, analysisService, categorizerService, stylerService,
+                parseResultProcessor, analysisResultProcessor, input, eclipseResource, resource, sourceViewer,
+                document.get(), presentationMerger, instantaneous);
         job.setRule(new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource }));
         job.schedule(instantaneous ? 0 : 100);
     }

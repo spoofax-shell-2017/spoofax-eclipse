@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.analysis.AnalysisFileResult;
+import org.metaborg.core.analysis.AnalysisMessageResult;
 import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.IBuildOutput;
@@ -115,6 +116,19 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
                         continue;
                     }
                     MarkerUtils.createMarker(eclipseResource, message);
+                }
+            }
+            
+            for(AnalysisMessageResult messageResult : result.messageResults) {
+                final FileObject resource = messageResult.source;
+                if(output.includedResources().contains(resource.getName())) {
+                    // Don't create markers for included resources.
+                    continue;
+                }
+                final IResource elipseResource = resourceService.unresolve(resource);
+                MarkerUtils.clearAnalysis(elipseResource);
+                for(IMessage message : messageResult.messages) {
+                    MarkerUtils.createMarker(elipseResource, message);
                 }
             }
         }

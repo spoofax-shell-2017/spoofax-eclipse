@@ -18,6 +18,7 @@ import org.metaborg.core.MetaborgException;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.analysis.AnalysisException;
 import org.metaborg.core.analysis.AnalysisFileResult;
+import org.metaborg.core.analysis.AnalysisMessageResult;
 import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.context.IContext;
@@ -39,6 +40,7 @@ import org.metaborg.core.syntax.ParseException;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.spoofax.core.style.CategorizerValidator;
 import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
+import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.eclipse.util.StyleUtils;
@@ -51,6 +53,7 @@ public class EditorUpdateJob<P, A> extends Job {
     private static final Logger logger = LoggerFactory.getLogger(EditorUpdateJob.class);
     private static final long killTimeMillis = 3000;
 
+    private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifierService;
     private final IDialectService dialectService;
     private final IContextService contextService;
@@ -73,7 +76,8 @@ public class EditorUpdateJob<P, A> extends Job {
     private ThreadKillerJob threadKiller;
 
 
-    public EditorUpdateJob(ILanguageIdentifierService languageIdentifierService, IDialectService dialectService,
+    public EditorUpdateJob(IEclipseResourceService resourceService,
+        ILanguageIdentifierService languageIdentifierService, IDialectService dialectService,
         IContextService contextService, ISyntaxService<P> syntaxService, IAnalysisService<P, A> analyzer,
         ICategorizerService<P, A> categorizer, IStylerService<P, A> styler,
         IParseResultUpdater<P> parseResultProcessor, IAnalysisResultUpdater<P, A> analysisResultProcessor,
@@ -82,6 +86,7 @@ public class EditorUpdateJob<P, A> extends Job {
         super("Updating Spoofax editor");
         setPriority(Job.SHORT);
 
+        this.resourceService = resourceService;
         this.languageIdentifierService = languageIdentifierService;
         this.dialectService = dialectService;
         this.contextService = contextService;
@@ -152,14 +157,15 @@ public class EditorUpdateJob<P, A> extends Job {
         if(thread == null) {
             return;
         }
-        
+
         logger.debug("Cancelling editor update job for {}, killing in {}ms", resource, killTimeMillis);
         threadKiller = new ThreadKillerJob(thread);
         threadKiller.schedule(killTimeMillis);
     }
 
 
-    private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException, CoreException {
+    private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException,
+        CoreException {
         final Display display = Display.getDefault();
 
         // Identify language
@@ -267,8 +273,7 @@ public class EditorUpdateJob<P, A> extends Job {
                 analysisResultProcessor.error(resource, e);
                 throw e;
             } catch(ThreadDeath e) {
-                analysisResultProcessor.error(resource, new AnalysisException(Iterables2.singleton(parseResult.source),
-                    context, "Editor update job killed", e));
+                analysisResultProcessor.error(resource, new AnalysisException(context, "Editor update job killed", e));
                 throw e;
             }
             analysisResultProcessor.update(analysisResult);
@@ -284,9 +289,17 @@ public class EditorUpdateJob<P, A> extends Job {
                     return;
                 MarkerUtils.clearInternal(eclipseResource);
                 MarkerUtils.clearAnalysis(eclipseResource);
-                for(AnalysisFileResult<P, A> fileResult : analysisResult.fileResults) {
-                    for(IMessage message : fileResult.messages) {
+                for(AnalysisFileResult<P, A> result : analysisResult.fileResults) {
+                    for(IMessage message : result.messages) {
                         MarkerUtils.createMarker(eclipseResource, message);
+                    }
+                }
+                // GTODO: might cause exceptions because changing resource without scheduling rule?
+                for(AnalysisMessageResult result : analysisResult.messageResults) {
+                    final IResource messagesEclipseResource = resourceService.unresolve(result.source);
+                    MarkerUtils.clearAnalysis(messagesEclipseResource);
+                    for(IMessage message : result.messages) {
+                        MarkerUtils.createMarker(messagesEclipseResource, message);
                     }
                 }
             }

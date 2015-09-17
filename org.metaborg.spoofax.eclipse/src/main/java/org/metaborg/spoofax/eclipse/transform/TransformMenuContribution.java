@@ -1,9 +1,11 @@
 package org.metaborg.spoofax.eclipse.transform;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -11,6 +13,7 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IWorkbenchContribution;
 import org.eclipse.ui.services.IServiceLocator;
+import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.menu.IAction;
@@ -25,6 +28,8 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Injector;
@@ -75,39 +80,52 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
             return new IContributionItem[0];
         }
 
-        final Iterable<IMenu> menus = menuService.menu(language);
+        final Iterable<IMenuItem> menuItems = menuService.menuItems(language);
         final Collection<IContributionItem> items = Lists.newLinkedList();
-        for(IMenu menu : menus) {
-            items.add(createItem(menu));
+        for(IMenuItem menuItem : menuItems) {
+            items.add(createItem(menuItem));
         }
         return items.toArray(new IContributionItem[0]);
     }
 
-    private IContributionItem createItem(IMenu menu) {
+    private IContributionItem createItem(IMenuItem item) {
+        if(item instanceof IMenu) {
+            return createMenu((IMenu) item);
+        } else if(item instanceof IAction) {
+            return createAction((IAction) item);
+        } else if(item instanceof Separator) {
+            return new org.eclipse.jface.action.Separator();
+        } else {
+            throw new MetaborgRuntimeException("Unhandled menu item: " + item.getClass());
+        }
+    }
+
+    private IContributionItem createMenu(IMenu menu) {
         final MenuManager menuManager = new MenuManager(menu.name());
         for(IMenuItem item : menu.items()) {
-            if(item instanceof IMenu) {
-                final IContributionItem contribItem = createItem((IMenu) item);
-                menuManager.add(contribItem);
-            } else if(item instanceof IAction) {
-                final IContributionItem contribItem = createItem((IAction) item);
-                menuManager.add(contribItem);
-            } else if(item instanceof Separator) {
-                menuManager.add(new org.eclipse.jface.action.Separator());
-            }
-
+            final IContributionItem contribItem = createItem(item);
+            menuManager.add(contribItem);
         }
         return menuManager;
     }
 
-    private IContributionItem createItem(IAction action) {
+    private IContributionItem createAction(IAction action) {
         final CommandContributionItemParameter itemParams =
             new CommandContributionItemParameter(serviceLocator, null, transformId, CommandContributionItem.STYLE_PUSH);
         final Map<String, String> parameters = Maps.newHashMap();
-        parameters.put(actionNameParam, action.name());
+        parameters.put(actionNameParam, toProperty(action));
         itemParams.parameters = parameters;
         itemParams.label = action.name();
 
         return new CommandContributionItem(itemParams);
+    }
+
+
+    private static String toProperty(IAction action) {
+        return Joiner.on(" ---> ").join(action.goal().names);
+    }
+
+    public static List<String> fromProperty(ExecutionEvent event) {
+        return Splitter.on(" ---> ").splitToList(event.getParameter(actionNameParam));
     }
 }

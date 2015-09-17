@@ -4,11 +4,13 @@ import java.io.File;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
@@ -16,14 +18,14 @@ import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
 import org.metaborg.core.resource.ResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 public class EclipseResourceService extends ResourceService implements IEclipseResourceService {
-    private static final Logger logger = LoggerFactory.getLogger(EclipseResourceService.class);
+    private static final ILogger logger = LoggerUtils.logger(EclipseResourceService.class);
 
 
     @Inject public EclipseResourceService(FileSystemManager fileSystemManager,
@@ -34,6 +36,15 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
 
     @Override public FileObject resolve(IResource resource) {
         return resolve("eclipse://" + resource.getFullPath().toString());
+    }
+
+    @Override public @Nullable FileObject resolve(IEditorInput input) {
+        if(input instanceof IFileEditorInput) {
+            final IFileEditorInput fileInput = (IFileEditorInput) input;
+            return resolve(fileInput.getFile());
+        }
+        logger.error("Could not resolve editor input {}", input);
+        return null;
     }
 
     @Override public @Nullable ResourceChange resolve(IResourceDelta delta) {
@@ -62,38 +73,34 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
         return new ResourceChange(resource, kind);
     }
 
-    @Override public FileObject resolve(IEditorInput input) {
-        if(input instanceof IFileEditorInput) {
-            final IFileEditorInput fileInput = (IFileEditorInput) input;
-            return resolve(fileInput.getFile());
-        }
-        logger.error("Could not resolve editor input {}", input);
-        return null;
-    }
-
-    @Override public IResource unresolve(FileObject resource) {
+    @Override public @Nullable IResource unresolve(FileObject resource) {
         if(resource instanceof EclipseResourceFileObject) {
             final EclipseResourceFileObject eclipseResource = (EclipseResourceFileObject) resource;
             try {
                 return eclipseResource.resource();
             } catch(Exception e) {
-                logger.error("Could not unresolve resource {} to an Eclipse resource", resource);
+                logger.error("Could not unresolve resource {} to an Eclipse resource", e, resource);
                 return null;
             }
         }
-        // LEGACY: analysis returns messages with local file resources, we need to resolve these to Eclipse
-        // resources to show markers.
-        // GTODO: support absolute resources
-        final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        final String relativePath = resource.getName().getPath();
-        return root.findMember(relativePath);
+
+        if(resource instanceof LocalFile) {
+            // LEGACY: analysis returns messages with relative local file resources, try to convert as relative first.
+            final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+            final String path = resource.getName().getPath();
+            IResource eclipseResource = root.findMember(path);
+            if(eclipseResource == null) {
+                // Path might be absolute, try to get absolute file.
+                final IPath location = Path.fromOSString(path);
+                eclipseResource = root.getFileForLocation(location);
+            }
+            return eclipseResource;
+        }
+
+        return null;
     }
 
-    @Override public FileObject rebase(FileObject resource) {
-        return resolve("eclipse://" + resource.getName().getPath());
-    }
-
-    @Override public File localPath(FileObject resource) {
+    @Override public @Nullable File localPath(FileObject resource) {
         if(!(resource instanceof EclipseResourceFileObject)) {
             return super.localPath(resource);
         }
