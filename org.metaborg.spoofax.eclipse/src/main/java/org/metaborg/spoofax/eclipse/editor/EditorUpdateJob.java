@@ -261,6 +261,8 @@ public class EditorUpdateJob<P, A> extends Job {
         }
 
         // Analyze
+        if(!contextService.available(language))
+            return StatusUtils.success();
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         final IContext context = contextService.get(resource, language);
@@ -285,20 +287,28 @@ public class EditorUpdateJob<P, A> extends Job {
         // Update markers atomically using a workspace runnable, to prevent flashing/jumping markers.
         final IWorkspaceRunnable analysisMarkerUpdater = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
-                if(workspaceMonitor.isCanceled())
+                if(workspaceMonitor.isCanceled() || monitor.isCanceled())
                     return;
                 MarkerUtils.clearInternal(eclipseResource);
                 MarkerUtils.clearAnalysis(eclipseResource);
                 for(AnalysisFileResult<P, A> result : analysisResult.fileResults) {
+                    if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                        return;
                     for(IMessage message : result.messages) {
+                        if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                            return;
                         MarkerUtils.createMarker(eclipseResource, message);
                     }
                 }
-                // GTODO: might cause exceptions because changing resource without scheduling rule?
+
                 for(AnalysisMessageResult result : analysisResult.messageResults) {
+                    if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                        return;
                     final IResource messagesEclipseResource = resourceService.unresolve(result.source);
                     MarkerUtils.clearAnalysis(messagesEclipseResource);
                     for(IMessage message : result.messages) {
+                        if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                            return;
                         MarkerUtils.createMarker(messagesEclipseResource, message);
                     }
                 }
