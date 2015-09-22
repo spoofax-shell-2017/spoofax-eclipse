@@ -43,6 +43,7 @@ public class PostJavaBuilder extends Builder {
 
         @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
             try {
+                logger.info("Packaging language project {}", input.project);
                 builder.compilePostJava(input, AntClasspathGenerator.classpaths(), null);
                 success = true;
             } catch(Exception e) {
@@ -88,6 +89,7 @@ public class PostJavaBuilder extends Builder {
         ResourcesPlugin.getWorkspace().run(runnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
 
         if(runnable.succeeded()) {
+            logger.info("Reloading language project {}", project);
             final Job languageLoadJob = new LoadLanguageJob(languageDiscoveryService, project.location());
             languageLoadJob.setRule(new MultiRule(new ISchedulingRule[] { globalSchedulingRules.startupReadLock(),
                 globalSchedulingRules.languageServiceLock() }));

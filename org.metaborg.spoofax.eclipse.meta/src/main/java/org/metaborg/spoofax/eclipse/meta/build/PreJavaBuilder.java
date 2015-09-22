@@ -47,6 +47,7 @@ public class PreJavaBuilder extends Builder {
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
+                    logger.info("Building language project {}", project);
                     builder.compilePreJava(input, AntClasspathGenerator.classpaths(), new EclipseAntLogger());
                 } catch(Exception e) {
                     workspaceMonitor.setCanceled(true);

@@ -46,6 +46,7 @@ public class GenerateSourcesBuilder extends Builder {
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
+                    logger.info("Generating sources for language project {}", project);
                     builder.initialize(input);
                     builder.generateSources(input);
                 } catch(Exception e) {
@@ -67,6 +68,7 @@ public class GenerateSourcesBuilder extends Builder {
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
+                    logger.info("Cleaning and generating sources for language project {}", project);
                     builder.clean(input.settings);
                     builder.initialize(input);
                     builder.generateSources(input);
