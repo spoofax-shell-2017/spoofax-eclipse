@@ -162,6 +162,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             .withState(state)
             .withDefaultIncludePaths(true)
             .withSourceChanges(changes)
+            .withSelector(new SpoofaxIgnoresSelector())
             .addTransformGoal(new CompileGoal())
             .build(dependencyService, languagePathService)
             ;
