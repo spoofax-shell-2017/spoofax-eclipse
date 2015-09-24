@@ -12,8 +12,8 @@ import org.metaborg.core.transform.NamedGoal;
 import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformResult;
 import org.metaborg.spoofax.core.menu.StrategoTransformAction;
+import org.metaborg.spoofax.core.stratego.StrategoCommon;
 import org.metaborg.spoofax.core.transform.IStrategoTransformerResultHandler;
-import org.metaborg.spoofax.core.transform.StrategoTransformerCommon;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -24,11 +24,11 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
     private final IEclipseResourceService resourceService;
     private final IMenuService menuService;
 
-    private final StrategoTransformerCommon transformer;
+    private final StrategoCommon transformer;
 
 
     @Inject public OpenEditorResultHandler(IEclipseResourceService resourceService, IMenuService menuService,
-        StrategoTransformerCommon transformer) {
+        StrategoCommon transformer) {
         this.resourceService = resourceService;
         this.menuService = menuService;
         this.transformer = transformer;
