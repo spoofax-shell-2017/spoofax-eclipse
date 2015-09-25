@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
@@ -42,6 +44,12 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
         if(input instanceof IFileEditorInput) {
             final IFileEditorInput fileInput = (IFileEditorInput) input;
             return resolve(fileInput.getFile());
+        } else if(input instanceof IPathEditorInput) {
+            final IPathEditorInput pathInput = (IPathEditorInput) input;
+            return resolve(pathInput.getPath().toFile());
+        } else if(input instanceof IURIEditorInput) {
+            final IURIEditorInput uriInput = (IURIEditorInput) input;
+            return resolve(uriInput.getURI());
         }
         logger.error("Could not resolve editor input {}", input);
         return null;

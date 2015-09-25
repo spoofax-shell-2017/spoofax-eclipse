@@ -1,6 +1,11 @@
 package org.metaborg.spoofax.eclipse.util;
 
+import java.net.URI;
+
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -15,7 +20,7 @@ public class EditorUtils {
     private static final Logger logger = LoggerFactory.getLogger(EditorUtils.class);
 
 
-    public static void openEditor(final IFile file) {
+    public static void openEditor(IFile file) {
         openEditor(file, -1);
     }
 
@@ -39,6 +44,34 @@ public class EditorUtils {
             }
         });
     }
+
+
+    public static void openEditor(URI uri) {
+        openEditor(uri, -1);
+    }
+
+    public static void openEditor(final URI uri, final int offset) {
+        // Run in the UI thread because we need to get the active workbench window and page.
+        final Display display = Display.getDefault();
+        display.asyncExec(new Runnable() {
+            @Override public void run() {
+                final IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                try {
+                    final IFileStore fileStore = EFS.getStore(uri);
+                    final IEditorPart editorPart = IDE.openEditorOnFileStore(page, fileStore);
+                    if(offset >= 0) {
+                        if(editorPart instanceof AbstractTextEditor) {
+                            final AbstractTextEditor editor = (AbstractTextEditor) editorPart;
+                            editorFocus(editor, offset);
+                        }
+                    }
+                } catch(CoreException e) {
+                    logger.error("Cannot open editor", e);
+                }
+            }
+        });
+    }
+
 
     public static void editorFocus(AbstractTextEditor editor, int offset) {
         editor.selectAndReveal(offset, 0);

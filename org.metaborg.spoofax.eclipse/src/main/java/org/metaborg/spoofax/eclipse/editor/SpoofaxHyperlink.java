@@ -1,5 +1,7 @@
 package org.metaborg.spoofax.eclipse.editor;
 
+import java.io.File;
+
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -45,6 +47,9 @@ final class SpoofaxHyperlink implements IHyperlink {
             if(eclipseResource != null && eclipseResource instanceof IFile) {
                 final IFile file = (IFile) eclipseResource;
                 EditorUtils.openEditor(file, offset);
+            } else {
+                final File file = resourceService.localFile(targetResource);
+                EditorUtils.openEditor(file.toURI());
             }
         }
     }

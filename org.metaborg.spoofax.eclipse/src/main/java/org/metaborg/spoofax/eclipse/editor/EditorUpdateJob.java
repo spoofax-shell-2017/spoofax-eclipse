@@ -42,6 +42,7 @@ import org.metaborg.spoofax.core.style.CategorizerValidator;
 import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
+import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.eclipse.util.StyleUtils;
 import org.metaborg.util.concurrent.IClosableLock;
@@ -66,12 +67,12 @@ public class EditorUpdateJob<P, A> extends Job {
     private final IAnalysisResultUpdater<P, A> analysisResultProcessor;
 
     private final IEditorInput input;
-    private final IResource eclipseResource;
+    private final @Nullable IResource eclipseResource;
     private final FileObject resource;
     private final ISourceViewer sourceViewer;
     private final String text;
     private final PresentationMerger presentationMerger;
-    private final boolean isNewEditor;
+    private final boolean instantaneous;
 
     private ThreadKillerJob threadKiller;
 
@@ -81,8 +82,8 @@ public class EditorUpdateJob<P, A> extends Job {
         IContextService contextService, ISyntaxService<P> syntaxService, IAnalysisService<P, A> analyzer,
         ICategorizerService<P, A> categorizer, IStylerService<P, A> styler,
         IParseResultUpdater<P> parseResultProcessor, IAnalysisResultUpdater<P, A> analysisResultProcessor,
-        IEditorInput input, IResource eclipseResource, FileObject resource, ISourceViewer sourceViewer, String text,
-        PresentationMerger presentationMerger, boolean isNewEditor) {
+        IEditorInput input, @Nullable IResource eclipseResource, FileObject resource, ISourceViewer sourceViewer,
+        String text, PresentationMerger presentationMerger, boolean instantaneous) {
         super("Updating Spoofax editor");
         setPriority(Job.SHORT);
 
@@ -104,7 +105,7 @@ public class EditorUpdateJob<P, A> extends Job {
         this.sourceViewer = sourceViewer;
         this.text = text;
         this.presentationMerger = presentationMerger;
-        this.isNewEditor = isNewEditor;
+        this.instantaneous = instantaneous;
     }
 
 
@@ -127,21 +128,23 @@ public class EditorUpdateJob<P, A> extends Job {
             if(monitor.isCanceled())
                 return StatusUtils.cancel();
 
-            try {
-                final IWorkspaceRunnable parseMarkerUpdater = new IWorkspaceRunnable() {
-                    @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
-                        if(workspaceMonitor.isCanceled())
-                            return;
-                        MarkerUtils.clearAll(eclipseResource);
-                        MarkerUtils.createMarker(eclipseResource, MessageFactory.newErrorAtTop(resource,
-                            "Failed to update editor", MessageType.INTERNAL, null));
-                    }
-                };
-                workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
-            } catch(CoreException e2) {
-                final String message = "Failed to show internal error marker";
-                logger.error(message, e2);
-                return StatusUtils.silentError(message, e2);
+            if(eclipseResource != null) {
+                try {
+                    final IWorkspaceRunnable parseMarkerUpdater = new IWorkspaceRunnable() {
+                        @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
+                            if(workspaceMonitor.isCanceled())
+                                return;
+                            MarkerUtils.clearAll(eclipseResource);
+                            MarkerUtils.createMarker(eclipseResource, MessageFactory.newErrorAtTop(resource,
+                                "Failed to update editor", MessageType.INTERNAL, null));
+                        }
+                    };
+                    workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
+                } catch(CoreException e2) {
+                    final String message = "Failed to show internal error marker";
+                    logger.error(message, e2);
+                    return StatusUtils.silentError(message, e2);
+                }
             }
 
             final String message = String.format("Failed to update editor for %s", resource);
@@ -166,8 +169,6 @@ public class EditorUpdateJob<P, A> extends Job {
 
     private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException,
         CoreException {
-        final Display display = Display.getDefault();
-
         // Identify language
         final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource);
         if(parserLanguage == null) {
@@ -181,9 +182,61 @@ public class EditorUpdateJob<P, A> extends Job {
             language = baseLanguage;
         }
 
-        // Parse
         if(monitor.isCanceled())
             return StatusUtils.cancel();
+        final ParseResult<P> parseResult = parse(parserLanguage);
+
+        if(monitor.isCanceled())
+            return StatusUtils.cancel();
+        style(monitor, Display.getDefault(), language, parseResult);
+
+        // Sleep before showing parse messages to prevent showing irrelevant messages while user is still typing.
+        if(!instantaneous && eclipseResource != null) {
+            try {
+                Thread.sleep(300);
+            } catch(InterruptedException e) {
+                return StatusUtils.cancel();
+            }
+        }
+
+        // Just parse when eclipse resource is null, skip the rest. Analysis only works with a project context,
+        // which is unavailable when the eclipse resource is null.
+        if(eclipseResource == null) {
+            return StatusUtils.success();
+        }
+
+        if(monitor.isCanceled())
+            return StatusUtils.cancel();
+        parseMessages(workspace, monitor, parseResult);
+
+        // Stop if parsing produced no AST, cannot analyze.
+        if(parseResult.result == null)
+            return StatusUtils.silentError();
+
+        // Sleep before analyzing to prevent running many analyses when small edits are made in succession.
+        if(!instantaneous) {
+            try {
+                Thread.sleep(300);
+            } catch(InterruptedException e) {
+                return StatusUtils.cancel();
+            }
+        }
+
+        if(monitor.isCanceled())
+            return StatusUtils.cancel();
+        if(!contextService.available(language))
+            return StatusUtils.success();
+        final IContext context = contextService.get(resource, language);
+        final AnalysisResult<P, A> analysisResult = analyze(parseResult, context);
+        if(monitor.isCanceled())
+            return StatusUtils.cancel();
+        analysisMessages(workspace, monitor, analysisResult);
+
+        return StatusUtils.success();
+    }
+
+
+    private ParseResult<P> parse(ILanguageImpl parserLanguage) throws ParseException, ThreadDeath {
         final ParseResult<P> parseResult;
         try {
             parseResultProcessor.invalidate(resource);
@@ -197,16 +250,18 @@ public class EditorUpdateJob<P, A> extends Job {
                 "Editor update job killed", e));
             throw e;
         }
+        return parseResult;
+    }
 
-        // Style
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
+    private void style(final IProgressMonitor monitor, Display display, ILanguageImpl language,
+        ParseResult<P> parseResult) {
         if(parseResult.result != null) {
             final Iterable<IRegionCategory<P>> categories =
                 CategorizerValidator.validate(categorizer.categorize(language, parseResult));
             final Iterable<IRegionStyle<P>> styles = styler.styleParsed(language, categories);
             final TextPresentation textPresentation = StyleUtils.createTextPresentation(styles, display);
             presentationMerger.set(textPresentation);
+            // Update styling on the main thread, required by Eclipse.
             display.asyncExec(new Runnable() {
                 public void run() {
                     if(monitor.isCanceled())
@@ -220,19 +275,10 @@ public class EditorUpdateJob<P, A> extends Job {
                 }
             });
         }
+    }
 
-        // Sleep before showing parse messages to prevent showing irrelevant messages while user is still typing.
-        if(!isNewEditor) {
-            try {
-                Thread.sleep(300);
-            } catch(InterruptedException e) {
-                return StatusUtils.cancel();
-            }
-        }
-
-        // Parse messages
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
+    private void parseMessages(IWorkspace workspace, IProgressMonitor monitor, final ParseResult<P> parseResult)
+        throws CoreException {
         // Update markers atomically using a workspace runnable, to prevent flashing/jumping markers.
         final IWorkspaceRunnable parseMarkerUpdater = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
@@ -246,26 +292,10 @@ public class EditorUpdateJob<P, A> extends Job {
             }
         };
         workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
+    }
 
-        // Stop if parsing failed completely, no AST.
-        if(parseResult.result == null)
-            return StatusUtils.silentError();
-
-        // Sleep before analyzing to prevent running many analyses when small edits are made in succession.
-        if(!isNewEditor) {
-            try {
-                Thread.sleep(300);
-            } catch(InterruptedException e) {
-                return StatusUtils.cancel();
-            }
-        }
-
-        // Analyze
-        if(!contextService.available(language))
-            return StatusUtils.success();
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
-        final IContext context = contextService.get(resource, language);
+    private AnalysisResult<P, A> analyze(ParseResult<P> parseResult, IContext context) throws AnalysisException,
+        ThreadDeath {
         final AnalysisResult<P, A> analysisResult;
         try(IClosableLock lock = context.write()) {
             analysisResultProcessor.invalidate(parseResult.source);
@@ -280,34 +310,35 @@ public class EditorUpdateJob<P, A> extends Job {
             }
             analysisResultProcessor.update(analysisResult);
         }
+        return analysisResult;
+    }
 
-        // Analysis markers
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
+    private void analysisMessages(IWorkspace workspace, IProgressMonitor monitor,
+        final AnalysisResult<P, A> analysisResult) throws CoreException {
         // Update markers atomically using a workspace runnable, to prevent flashing/jumping markers.
         final IWorkspaceRunnable analysisMarkerUpdater = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
-                if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                if(workspaceMonitor.isCanceled())
                     return;
                 MarkerUtils.clearInternal(eclipseResource);
                 MarkerUtils.clearAnalysis(eclipseResource);
                 for(AnalysisFileResult<P, A> result : analysisResult.fileResults) {
-                    if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                    if(workspaceMonitor.isCanceled())
                         return;
                     for(IMessage message : result.messages) {
-                        if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                        if(workspaceMonitor.isCanceled())
                             return;
                         MarkerUtils.createMarker(eclipseResource, message);
                     }
                 }
 
                 for(AnalysisMessageResult result : analysisResult.messageResults) {
-                    if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                    if(workspaceMonitor.isCanceled())
                         return;
                     final IResource messagesEclipseResource = resourceService.unresolve(result.source);
                     MarkerUtils.clearAnalysis(messagesEclipseResource);
                     for(IMessage message : result.messages) {
-                        if(workspaceMonitor.isCanceled() || monitor.isCanceled())
+                        if(workspaceMonitor.isCanceled())
                             return;
                         MarkerUtils.createMarker(messagesEclipseResource, message);
                     }
@@ -315,7 +346,5 @@ public class EditorUpdateJob<P, A> extends Job {
             }
         };
         workspace.run(analysisMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
-
-        return StatusUtils.success();
     }
 }

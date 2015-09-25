@@ -31,8 +31,8 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.style.ICategorizerService;
 import org.metaborg.core.style.IStylerService;
@@ -83,7 +83,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
     private IEditorInput input;
     private FileObject resource;
-    private IResource eclipseResource;
+    private @Nullable IResource eclipseResource;
     private IDocument document;
     private ILanguageImpl language;
     private ISourceViewer sourceViewer;
@@ -97,8 +97,6 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
         this.editorInputChangedListener = new EditorInputChangedListener();
         this.presentationMerger = new PresentationMerger();
-
-        setDocumentProvider(new SpoofaxDocumentProvider());
     }
 
 
@@ -243,6 +241,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
         this.jobManager = Job.getJobManager();
 
+        setDocumentProvider(new SpoofaxDocumentProvider(resourceService));
         setEditorContextMenuId("#SpoofaxEditorContext");
         setSourceViewerConfiguration(createSourceViewerConfiguration());
     }
@@ -342,7 +341,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
 
     private boolean checkInitialized() {
-        if(input == null || document == null || sourceViewer == null) {
+        if(input == null || sourceViewer == null) {
             logger.error("Attempted to use editor before it was initialized");
             return false;
         }
@@ -367,7 +366,13 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
                 contextService, syntaxService, analysisService, categorizerService, stylerService,
                 parseResultProcessor, analysisResultProcessor, input, eclipseResource, resource, sourceViewer,
                 document.get(), presentationMerger, instantaneous);
-        job.setRule(new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource }));
+        final ISchedulingRule rule;
+        if(eclipseResource == null) {
+            rule = globalRules.startupReadLock();
+        } else {
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource });
+        }
+        job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);
     }
 
