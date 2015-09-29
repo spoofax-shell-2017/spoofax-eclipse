@@ -2,9 +2,10 @@ package org.metaborg.spoofax.eclipse.util;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectNature;
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -13,38 +14,63 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public final class AbstractHandlerUtils {
     /**
+     * Converts selection in given execution event into a structured selection.
+     * 
+     * @param event
+     *            Execution event.
+     * @return Structured selection, or null if selection in given execution event is not a structured selection.
+     */
+    public static @Nullable IStructuredSelection toStructured(ExecutionEvent event) {
+        final ISelection selection = HandlerUtil.getCurrentSelection(event);
+        if(selection == null) {
+            return null;
+        }
+        return SelectionUtils.toStructured(selection);
+    }
+
+
+    /**
+     * Retrieves all resources from selection in given execution event.
+     * 
+     * @param event
+     *            Execution event.
+     * @return Selected resources, or null if no structured selection could be found.
+     */
+    public static @Nullable Iterable<IResource> toResources(ExecutionEvent event) {
+        final IStructuredSelection selection = toStructured(event);
+        if(selection == null) {
+            return null;
+        }
+        return SelectionUtils.toResources(selection);
+    }
+
+    /**
+     * Retrieves all files from selection in given execution event.
+     * 
+     * @param event
+     *            Execution event.
+     * @return Selected files, or null if no structed selection could be found.
+     */
+    public static Iterable<IFile> toFiles(ExecutionEvent event) {
+        final IStructuredSelection selection = toStructured(event);
+        if(selection == null) {
+            return null;
+        }
+        return SelectionUtils.toFiles(selection);
+    }
+
+    /**
      * Attempts to retrieve the project from the selection in given execution event.
      * 
      * @param event
      *            Execution event.
      * @return Selected project, or null if it could not be retrieved.
      */
-    public static IProject getProjectFromSelected(ExecutionEvent event) {
-        final IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
-        final Object selected = selection.getFirstElement();
-        return getProjectFromElement(selected);
-    }
-
-    /**
-     * Attempts to retrieve the project from a selection element.
-     * 
-     * @param selected
-     *            Selected element.
-     * @return Project from selected element, or null if no project could be retrieved.
-     */
-    public static IProject getProjectFromElement(Object selected) {
-        if(selected instanceof IProjectNature) {
-            // Test for project nature as well, in the Package explorer, Java projects of class JavaProject,
-            // which implements IProjectNature.
-            final IProjectNature nature = (IProjectNature) selected;
-            return nature.getProject();
-        } else if(selected instanceof IProject) {
-            return (IProject) selected;
-        } else if(selected instanceof IAdaptable) {
-            final IAdaptable adaptable = (IAdaptable) selected;
-            return (IProject) adaptable.getAdapter(IProject.class);
-        } else {
+    public static @Nullable IProject toProject(ExecutionEvent event) {
+        final IStructuredSelection selection = toStructured(event);
+        if(selection == null) {
             return null;
         }
+        return SelectionUtils.toProject(selection);
     }
 }

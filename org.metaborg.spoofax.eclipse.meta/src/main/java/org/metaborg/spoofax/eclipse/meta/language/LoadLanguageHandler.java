@@ -31,7 +31,7 @@ public class LoadLanguageHandler extends AbstractHandler {
 
 
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
-        final IProject project = AbstractHandlerUtils.getProjectFromSelected(event);
+        final IProject project = AbstractHandlerUtils.toProject(event);
         if(project == null)
             return null;
 

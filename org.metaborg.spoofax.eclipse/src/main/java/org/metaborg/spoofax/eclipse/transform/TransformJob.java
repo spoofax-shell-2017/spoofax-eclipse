@@ -7,13 +7,11 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.AnalysisFileResult;
 import org.metaborg.core.context.ContextException;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.menu.IAction;
 import org.metaborg.core.menu.IMenuService;
@@ -25,8 +23,6 @@ import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformerException;
 import org.metaborg.spoofax.core.menu.StrategoTransformAction;
-import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
-import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.concurrent.IClosableLock;
 import org.metaborg.util.log.ILogger;
@@ -35,8 +31,6 @@ import org.metaborg.util.log.LoggerUtils;
 public class TransformJob<P, A, T> extends Job {
     private static final ILogger logger = LoggerUtils.logger(TransformJob.class);
 
-    private final IEclipseResourceService resourceService;
-    private final ILanguageIdentifierService langaugeIdentifierService;
     private final IContextService contextService;
     private final IMenuService menuService;
     private final ITransformer<P, A, T> transformer;
@@ -44,18 +38,16 @@ public class TransformJob<P, A, T> extends Job {
     private final IParseResultRequester<P> parseResultRequester;
     private final IAnalysisResultRequester<P, A> analysisResultRequester;
 
-    private final IEclipseEditor editor;
+    private final ILanguageImpl language;
+    private final Iterable<TransformResource> resources;
     private final List<String> actionNames;
 
 
-    public TransformJob(IEclipseResourceService resourceService, ILanguageIdentifierService langaugeIdentifierService,
-        IContextService contextService, IMenuService menuService, ITransformer<P, A, T> transformer,
+    public TransformJob(IContextService contextService, IMenuService menuService, ITransformer<P, A, T> transformer,
         IParseResultRequester<P> parseResultProcessor, IAnalysisResultRequester<P, A> analysisResultProcessor,
-        IEclipseEditor editor, List<String> actionNames) {
-        super("Transforming file");
+        ILanguageImpl language, Iterable<TransformResource> resources, List<String> actionNames) {
+        super("Transforming resources");
 
-        this.resourceService = resourceService;
-        this.langaugeIdentifierService = langaugeIdentifierService;
         this.contextService = contextService;
         this.menuService = menuService;
         this.transformer = transformer;
@@ -63,29 +55,16 @@ public class TransformJob<P, A, T> extends Job {
         this.parseResultRequester = parseResultProcessor;
         this.analysisResultRequester = analysisResultProcessor;
 
-        this.editor = editor;
+        this.language = language;
+        this.resources = resources;
+
         this.actionNames = actionNames;
     }
 
 
     @Override protected IStatus run(IProgressMonitor monitor) {
-        final IEditorInput input = editor.input();
-        final String text = editor.document().get();
-        final FileObject resource = resourceService.resolve(input);
-
-        if(resource == null) {
-            final String message = logger.format("Transformation failed, input {} cannot be resolved", input);
-            logger.error(message);
-            return StatusUtils.error(message);
-        }
-
-        final ILanguageImpl language = langaugeIdentifierService.identify(resource);
-        if(language == null) {
-            final String message =
-                logger.format("Transformation failed, language of {} cannot be identified", resource);
-            logger.error(message);
-            return StatusUtils.error(message);
-        }
+        if(monitor.isCanceled())
+            return StatusUtils.cancel();
 
         final IAction action;
         try {
@@ -112,21 +91,25 @@ public class TransformJob<P, A, T> extends Job {
             return StatusUtils.error(message);
         }
 
-        try {
-            return transform(monitor, resource, language, (StrategoTransformAction) action, goal, text);
-        } catch(IOException | ContextException | TransformerException e) {
-            final String message = String.format("Transformation failed for %s", resource);
-            logger.error(message, e);
-            return StatusUtils.error(message, e);
+        for(TransformResource transformResource : resources) {
+            if(monitor.isCanceled())
+                return StatusUtils.cancel();
+
+            final FileObject resource = transformResource.resource;
+            try {
+                transform(resource, language, (StrategoTransformAction) action, goal, transformResource.text);
+            } catch(IOException | ContextException | TransformerException e) {
+                final String message = String.format("Transformation failed for %s", resource);
+                logger.error(message, e);
+                return StatusUtils.error(message, e);
+            }
         }
+
+        return StatusUtils.success();
     }
 
-    private IStatus transform(IProgressMonitor monitor, FileObject resource, ILanguageImpl language,
-        StrategoTransformAction action, ITransformerGoal goal, String text) throws IOException, ContextException,
-        TransformerException {
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
-
+    private void transform(FileObject resource, ILanguageImpl language, StrategoTransformAction action,
+        ITransformerGoal goal, String text) throws IOException, ContextException, TransformerException {
         final IContext context = contextService.get(resource, language);
         if(action.flags.parsed) {
             final ParseResult<P> result = parseResultRequester.request(resource, language, text).toBlocking().single();
@@ -138,7 +121,5 @@ public class TransformJob<P, A, T> extends Job {
                 transformer.transform(result, context, goal);
             }
         }
-
-        return StatusUtils.success();
     }
 }

@@ -140,6 +140,7 @@
     <command id="org.metaborg.spoofax.eclipse.command.transform" name="Transform">
       <commandParameter id="language-id" name="Language identifier" optional="false"/>
       <commandParameter id="action-name" name="Action name" optional="false"/>
+      <commandParameter id="has-open-editor" name="Has open editor" optional="false"/>
     </command>
   </extension>
   <extension point="org.eclipse.ui.handlers">
@@ -167,6 +168,11 @@
   <extension point="org.eclipse.ui.menus">
     <!-- Package Explorer -->
     <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?after=additions">
+      <dynamic 
+        id="org.metaborg.spoofax.eclipse.menu.context" 
+        class="org.metaborg.spoofax.eclipse.transform.ContextMenuContribution"
+      />
+      
       <menu id="org.metaborg.spoofax.eclipse.menu.project" label="Spoofax">
         <visibleWhen>
           <and>
@@ -178,6 +184,11 @@
     </menuContribution>
     <!-- Project Explorer -->
     <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+      <dynamic 
+        id="org.metaborg.spoofax.eclipse.menu.context" 
+        class="org.metaborg.spoofax.eclipse.transform.ContextMenuContribution"
+      />
+      
       <menu id="org.metaborg.spoofax.eclipse.menu.project" label="Spoofax">
         <visibleWhen>
           <and>

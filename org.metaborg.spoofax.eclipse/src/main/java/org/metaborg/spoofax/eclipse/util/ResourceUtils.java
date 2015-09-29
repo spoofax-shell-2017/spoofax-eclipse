@@ -67,4 +67,27 @@ public class ResourceUtils {
         }
         return eclipseResources;
     }
+    
+    /**
+     * Converts Apache VFS resources on the Eclipse filesystem, to Eclipse resources.
+     * 
+     * @param resourceService
+     *            Resource service used to convert resources.
+     * @param resources
+     *            The VFS resources to convert.
+     * @return Eclipse resources.
+     */
+    public static Collection<FileObject> toResources(IEclipseResourceService resourceService,
+        Collection<IResource> eclipseResources) {
+        final Collection<FileObject> resources = Lists.newArrayListWithExpectedSize(eclipseResources.size());
+        for(IResource eclipseResource : eclipseResources) {
+            final FileObject resource = resourceService.resolve(eclipseResource);
+            if(resource != null) {
+                resources.add(resource);
+            } else {
+                logger.error("Cannot resolve {}", resource);
+            }
+        }
+        return resources;
+    }
 }
