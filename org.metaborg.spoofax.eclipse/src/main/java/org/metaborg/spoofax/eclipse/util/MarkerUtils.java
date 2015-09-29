@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.messages.MessageSeverity;
 import org.metaborg.core.messages.MessageType;
+import org.metaborg.core.source.ISourceRegion;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 
 /**
@@ -35,9 +36,14 @@ public final class MarkerUtils {
     public static IMarker createMarker(IResource resource, IMessage message) throws CoreException {
         final String type = type(message.type(), message.severity());
         final IMarker marker = resource.createMarker(type);
-        marker.setAttribute(IMarker.CHAR_START, message.region().startOffset());
-        marker.setAttribute(IMarker.CHAR_END, message.region().endOffset() + 1);
-        marker.setAttribute(IMarker.LINE_NUMBER, message.region().startRow() + 1);
+        final ISourceRegion region = message.region();
+        if(region != null) {
+            marker.setAttribute(IMarker.CHAR_START, region.startOffset());
+            marker.setAttribute(IMarker.CHAR_END, region.endOffset() + 1);
+            marker.setAttribute(IMarker.LINE_NUMBER, region.startRow() + 1);
+        } else {
+            marker.setAttribute(IMarker.LINE_NUMBER, 1);
+        }
         marker.setAttribute(IMarker.MESSAGE, message.message());
         marker.setAttribute(IMarker.SEVERITY, severity(message.severity()));
         marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
