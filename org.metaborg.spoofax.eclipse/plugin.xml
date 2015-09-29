@@ -138,6 +138,7 @@
   <!-- Language transformations command -->
   <extension point="org.eclipse.ui.commands">
     <command id="org.metaborg.spoofax.eclipse.command.transform" name="Transform">
+      <commandParameter id="language-id" name="Language identifier" optional="false"/>
       <commandParameter id="action-name" name="Action name" optional="false"/>
     </command>
   </extension>

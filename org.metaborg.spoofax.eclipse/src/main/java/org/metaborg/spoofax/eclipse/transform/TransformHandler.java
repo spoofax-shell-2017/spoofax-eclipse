@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
+import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.spoofax.core.menu.MenuService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultRequester;
@@ -23,6 +24,7 @@ import com.google.inject.Injector;
 
 public class TransformHandler extends AbstractHandler {
     private final IEclipseResourceService resourceService;
+    private final ILanguageService languageService;
     private final ILanguageIdentifierService langaugeIdentifierService;
     private final IContextService contextService;
     private final IMenuService menuService;
@@ -38,6 +40,7 @@ public class TransformHandler extends AbstractHandler {
         final Injector injector = SpoofaxPlugin.injector();
 
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
+        this.languageService = injector.getInstance(ILanguageService.class);
         this.langaugeIdentifierService = injector.getInstance(ILanguageIdentifierService.class);
         this.contextService = injector.getInstance(IContextService.class);
         this.menuService = injector.getInstance(MenuService.class);
@@ -52,7 +55,7 @@ public class TransformHandler extends AbstractHandler {
 
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
         final IEclipseEditor latestEditor = latestEditorListener.previousEditor();
-        final List<String> actionNames = TransformMenuContribution.fromProperty(event);
+        final List<String> actionNames = TransformMenuContribution.fromActionNameProperty(event);
         final Job transformJob =
             new TransformJob<IStrategoTerm, IStrategoTerm, IStrategoTerm>(resourceService, langaugeIdentifierService,
                 contextService, menuService, transformer, parseResultRequester, analysisResultRequester, latestEditor,

@@ -16,6 +16,7 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.menu.IAction;
 import org.metaborg.core.menu.IMenu;
 import org.metaborg.core.menu.IMenuItem;
@@ -36,6 +37,7 @@ import com.google.inject.Injector;
 
 public class TransformMenuContribution extends CompoundContributionItem implements IWorkbenchContribution {
     public static final String transformId = SpoofaxPlugin.id + ".command.transform";
+    public static final String languageIdParam = "language-id";
     public static final String actionNameParam = "action-name";
 
     private static final Logger logger = LoggerFactory.getLogger(TransformMenuContribution.class);
@@ -83,16 +85,16 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
         final Iterable<IMenuItem> menuItems = menuService.menuItems(language);
         final Collection<IContributionItem> items = Lists.newLinkedList();
         for(IMenuItem menuItem : menuItems) {
-            items.add(createItem(menuItem));
+            items.add(createItem(menuItem, language));
         }
         return items.toArray(new IContributionItem[0]);
     }
 
-    private IContributionItem createItem(IMenuItem item) {
+    private IContributionItem createItem(IMenuItem item, ILanguageImpl language) {
         if(item instanceof IMenu) {
-            return createMenu((IMenu) item);
+            return createMenu((IMenu) item, language);
         } else if(item instanceof IAction) {
-            return createAction((IAction) item);
+            return createAction((IAction) item, language);
         } else if(item instanceof Separator) {
             return new org.eclipse.jface.action.Separator();
         } else {
@@ -100,19 +102,20 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
         }
     }
 
-    private IContributionItem createMenu(IMenu menu) {
+    private IContributionItem createMenu(IMenu menu, ILanguageImpl language) {
         final MenuManager menuManager = new MenuManager(menu.name());
         for(IMenuItem item : menu.items()) {
-            final IContributionItem contribItem = createItem(item);
+            final IContributionItem contribItem = createItem(item, language);
             menuManager.add(contribItem);
         }
         return menuManager;
     }
 
-    private IContributionItem createAction(IAction action) {
+    private IContributionItem createAction(IAction action, ILanguageImpl language) {
         final CommandContributionItemParameter itemParams =
             new CommandContributionItemParameter(serviceLocator, null, transformId, CommandContributionItem.STYLE_PUSH);
         final Map<String, String> parameters = Maps.newHashMap();
+        parameters.put(languageIdParam, toProperty(language.id()));
         parameters.put(actionNameParam, toProperty(action));
         itemParams.parameters = parameters;
         itemParams.label = action.name();
@@ -121,11 +124,20 @@ public class TransformMenuContribution extends CompoundContributionItem implemen
     }
 
 
+    private static String toProperty(LanguageIdentifier identifier) {
+        return identifier.toString();
+    }
+
     private static String toProperty(IAction action) {
         return Joiner.on(" ---> ").join(action.goal().names);
     }
 
-    public static List<String> fromProperty(ExecutionEvent event) {
+
+    public static LanguageIdentifier fromLanguageIdProperty(ExecutionEvent event) {
+        return LanguageIdentifier.parse(event.getParameter(languageIdParam));
+    }
+
+    public static List<String> fromActionNameProperty(ExecutionEvent event) {
         return Splitter.on(" ---> ").splitToList(event.getParameter(actionNameParam));
     }
 }
