@@ -45,6 +45,7 @@ import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultProcessor;
 import org.metaborg.spoofax.core.tracing.ISpoofaxHoverService;
 import org.metaborg.spoofax.core.tracing.ISpoofaxReferenceResolver;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
+import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePage;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;

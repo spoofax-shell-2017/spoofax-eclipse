@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.editor;
+package org.metaborg.spoofax.eclipse.editor.tracing;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.jface.text.IRegion;

@@ -41,6 +41,7 @@ import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.syntax.ParseException;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.spoofax.core.style.CategorizerValidator;
+import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePage;
 import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;

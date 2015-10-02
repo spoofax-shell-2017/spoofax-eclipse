@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.editor;
+package org.metaborg.spoofax.eclipse.editor.outline;
 
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
@@ -18,6 +18,7 @@ public class SpoofaxOutlinePage extends ContentOutlinePage {
         control = viewer.getControl();
 
         viewer.setContentProvider(new SpoofaxContentProvider());
+        viewer.setLabelProvider(new SpoofaxLabelProvider());
     }
 
 
