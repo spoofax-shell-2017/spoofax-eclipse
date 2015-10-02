@@ -41,7 +41,7 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource instanceof IFile) {
                 final IFile file = (IFile) eclipseResource;
-                EditorUtils.openEditor(file);
+                EditorUtils.open(file);
             }
         }
     }

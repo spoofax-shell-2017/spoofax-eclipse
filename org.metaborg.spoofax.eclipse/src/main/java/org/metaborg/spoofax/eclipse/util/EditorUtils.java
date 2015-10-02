@@ -6,6 +6,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -13,18 +14,19 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.core.source.ISourceRegion;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 public class EditorUtils {
-    private static final Logger logger = LoggerFactory.getLogger(EditorUtils.class);
+    private static final ILogger logger = LoggerUtils.logger(EditorUtils.class);
 
 
-    public static void openEditor(IFile file) {
-        openEditor(file, -1);
+    public static void open(IFile file) {
+        open(file, -1);
     }
 
-    public static void openEditor(final IFile file, final int offset) {
+    public static void open(final IFile file, final int offset) {
         // Run in the UI thread because we need to get the active workbench window and page.
         final Display display = Display.getDefault();
         display.asyncExec(new Runnable() {
@@ -35,7 +37,7 @@ public class EditorUtils {
                     if(offset >= 0) {
                         if(editorPart instanceof AbstractTextEditor) {
                             final AbstractTextEditor editor = (AbstractTextEditor) editorPart;
-                            editorFocus(editor, offset);
+                            selectAndFocus(editor, offset);
                         }
                     }
                 } catch(PartInitException e) {
@@ -46,11 +48,11 @@ public class EditorUtils {
     }
 
 
-    public static void openEditor(URI uri) {
-        openEditor(uri, -1);
+    public static void open(URI uri) {
+        open(uri, -1);
     }
 
-    public static void openEditor(final URI uri, final int offset) {
+    public static void open(final URI uri, final int offset) {
         // Run in the UI thread because we need to get the active workbench window and page.
         final Display display = Display.getDefault();
         display.asyncExec(new Runnable() {
@@ -62,7 +64,7 @@ public class EditorUtils {
                     if(offset >= 0) {
                         if(editorPart instanceof AbstractTextEditor) {
                             final AbstractTextEditor editor = (AbstractTextEditor) editorPart;
-                            editorFocus(editor, offset);
+                            selectAndFocus(editor, offset);
                         }
                     }
                 } catch(CoreException e) {
@@ -73,8 +75,37 @@ public class EditorUtils {
     }
 
 
-    public static void editorFocus(AbstractTextEditor editor, int offset) {
-        editor.selectAndReveal(offset, 0);
+    public static void select(AbstractTextEditor editor, int offset) {
+        select(editor, offset, 0);
+    }
+
+    public static void select(AbstractTextEditor editor, int offset, int length) {
+        editor.selectAndReveal(offset, length);
+    }
+
+    public static void select(AbstractTextEditor editor, ISourceRegion region) {
+        final IRegion eclipseRegion = RegionUtils.fromCore(region);
+        select(editor, eclipseRegion.getOffset(), eclipseRegion.getLength());
+    }
+
+
+    public static void focus(AbstractTextEditor editor) {
         editor.setFocus();
+    }
+
+
+    public static void selectAndFocus(AbstractTextEditor editor, int offset) {
+        select(editor, offset);
+        focus(editor);
+    }
+
+    public static void selectAndFocus(AbstractTextEditor editor, int offset, int length) {
+        select(editor, offset, length);
+        focus(editor);
+    }
+
+    public static void selectAndFocus(AbstractTextEditor editor, ISourceRegion region) {
+        select(editor, region);
+        focus(editor);
     }
 }

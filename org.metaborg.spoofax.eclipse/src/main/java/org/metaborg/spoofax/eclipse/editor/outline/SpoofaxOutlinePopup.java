@@ -5,15 +5,23 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.metaborg.core.outline.IOutline;
+import org.metaborg.core.outline.IOutlineNode;
+import org.metaborg.core.source.ISourceRegion;
+import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.metaborg.spoofax.eclipse.util.ui.FilteringInfoPopup;
 
 public class SpoofaxOutlinePopup extends FilteringInfoPopup {
+    private final AbstractTextEditor editor;
+    
     private IOutline outline;
 
 
-    public SpoofaxOutlinePopup(Shell parent) {
+    public SpoofaxOutlinePopup(Shell parent, AbstractTextEditor editor) {
         super(parent, FilteringInfoPopup.INFOPOPUP_SHELLSTYLE, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        
+        this.editor = editor;
     }
 
 
@@ -44,7 +52,16 @@ public class SpoofaxOutlinePopup extends FilteringInfoPopup {
     }
 
     @Override protected void handleElementSelected(Object selectedElement) {
-
+        final IOutlineNode node = OutlineUtils.node(selectedElement);
+        if(node == null) {
+            return;
+        }
+        
+        final ISourceRegion region = node.origin();
+        if(region == null) {
+            return;
+        }
+        EditorUtils.selectAndFocus(editor, region.startOffset());
     }
 
     @Override protected Point getDefaultSize() {

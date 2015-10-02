@@ -41,15 +41,15 @@ final class SpoofaxHyperlink implements IHyperlink {
         final int offset = target.region().startOffset();
 
         if(targetResource.getName().equals(editorResource.getName())) {
-            EditorUtils.editorFocus(editor, offset);
+            EditorUtils.selectAndFocus(editor, offset);
         } else {
             final IResource eclipseResource = resourceService.unresolve(targetResource);
             if(eclipseResource != null && eclipseResource instanceof IFile) {
                 final IFile file = (IFile) eclipseResource;
-                EditorUtils.openEditor(file, offset);
+                EditorUtils.open(file, offset);
             } else {
                 final File file = resourceService.localFile(targetResource);
-                EditorUtils.openEditor(file.toURI());
+                EditorUtils.open(file.toURI());
             }
         }
     }

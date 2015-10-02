@@ -109,7 +109,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
 
         this.editorInputChangedListener = new EditorInputChangedListener();
         this.presentationMerger = new PresentationMerger();
-        this.outlinePage = new SpoofaxOutlinePage();
+        this.outlinePage = new SpoofaxOutlinePage(this);
     }
 
 
@@ -336,7 +336,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         textViewerExt4.addTextPresentationListener(presentationMerger);
 
         // Create quick outline control.
-        this.outlinePopup = new SpoofaxOutlinePopup(getSite().getShell());
+        this.outlinePopup = new SpoofaxOutlinePopup(getSite().getShell(), this);
 
         scheduleJob(true);
 
@@ -352,8 +352,6 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
             return;
         }
 
-        // Implementation based on:
-        // http://www.sigasi.com/content/how-implement-highlight-matching-brackets-your-custom-editor-eclipse
         final Iterable<FenceCharacters> fenceCharacters = syntaxService.fenceCharacters(language);
         final Collection<Character> pairMatcherChars = Lists.newArrayList();
         for(FenceCharacters fenceChars : fenceCharacters) {
