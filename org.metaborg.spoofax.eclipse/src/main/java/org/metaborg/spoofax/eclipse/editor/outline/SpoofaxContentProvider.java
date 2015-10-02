@@ -21,7 +21,7 @@ public class SpoofaxContentProvider implements ITreeContentProvider {
         // Workaround for https://bugs.eclipse.org/9262, make sure that the root object does not equal the input.
         final IOutline outline = OutlineUtils.outline(input);
         if(outline != null) {
-            return new Object[] { outline.root() };
+            return Iterables.toArray(outline.roots(), IOutlineNode.class);
         }
 
         final IOutlineNode node = OutlineUtils.node(input);
