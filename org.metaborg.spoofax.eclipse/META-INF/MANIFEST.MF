@@ -32,5 +32,6 @@ Export-Package: org.metaborg.spoofax.eclipse,
  org.metaborg.spoofax.eclipse.build,
  org.metaborg.spoofax.eclipse.job,
  org.metaborg.spoofax.eclipse.nature,
+ org.metaborg.spoofax.eclipse.processing,
  org.metaborg.spoofax.eclipse.resource
 Bundle-ActivationPolicy: lazy

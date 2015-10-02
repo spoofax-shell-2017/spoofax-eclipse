@@ -6,6 +6,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
@@ -43,6 +44,8 @@ public abstract class Builder extends IncrementalProjectBuilder {
 
             try {
                 build(project, monitor);
+            } catch(OperationCanceledException e) {
+                // Ignore
             } catch(Exception e) {
                 monitor.setCanceled(true);
                 logger.error("Cannot {} language project {}; build failed unexpectedly", e, description(), project);
@@ -65,6 +68,8 @@ public abstract class Builder extends IncrementalProjectBuilder {
 
             try {
                 clean(project, monitor);
+            } catch(OperationCanceledException e) {
+                // Ignore
             } catch(Exception e) {
                 monitor.setCanceled(true);
                 logger.error("Cannot clean language project {}; build failed unexpectedly", e, project);

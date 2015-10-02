@@ -17,6 +17,7 @@ import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.language.LoadLanguageJob;
+import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
@@ -44,7 +45,8 @@ public class PostJavaBuilder extends Builder {
         @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
             try {
                 logger.info("Packaging language project {}", input.project);
-                builder.compilePostJava(input, AntClasspathGenerator.classpaths(), null);
+                builder.compilePostJava(input, AntClasspathGenerator.classpaths(), null, new EclipseCancellationToken(
+                    monitor));
                 success = true;
             } catch(Exception e) {
                 workspaceMonitor.setCanceled(true);

@@ -13,6 +13,7 @@ import org.metaborg.spoofax.core.project.settings.ISpoofaxProjectSettingsService
 import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
+import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
@@ -48,7 +49,8 @@ public class PreJavaBuilder extends Builder {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
                     logger.info("Building language project {}", project);
-                    builder.compilePreJava(input, AntClasspathGenerator.classpaths(), new EclipseAntLogger());
+                    builder.compilePreJava(input, AntClasspathGenerator.classpaths(), new EclipseAntLogger(),
+                        new EclipseCancellationToken(monitor));
                 } catch(Exception e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
