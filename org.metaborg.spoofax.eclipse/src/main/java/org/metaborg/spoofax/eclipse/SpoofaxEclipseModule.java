@@ -114,6 +114,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
     @Override protected void bindEditor() {
         bind(SpoofaxEditorRegistry.class).in(Singleton.class);
         bind(IEditorRegistry.class).to(SpoofaxEditorRegistry.class);
+        bind(new TypeLiteral<IEclipseEditorRegistry<IStrategoTerm>>() {}).to(SpoofaxEditorRegistry.class);
         bind(IEclipseEditorRegistry.class).to(SpoofaxEditorRegistry.class);
         bind(IEclipseEditorRegistryInternal.class).to(SpoofaxEditorRegistry.class);
     }

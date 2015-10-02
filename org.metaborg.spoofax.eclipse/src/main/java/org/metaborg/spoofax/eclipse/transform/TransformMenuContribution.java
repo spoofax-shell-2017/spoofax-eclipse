@@ -10,27 +10,31 @@ import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
 public class TransformMenuContribution extends MenuContribution {
     private static final Logger logger = LoggerFactory.getLogger(TransformMenuContribution.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifier;
-    private final IEclipseEditorRegistry latestEditorListener;
+    private final IEclipseEditorRegistry<?> editorRegistry;
 
 
     public TransformMenuContribution() {
         final Injector injector = SpoofaxPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.languageIdentifier = injector.getInstance(ILanguageIdentifierService.class);
-        this.latestEditorListener = injector.getInstance(IEclipseEditorRegistry.class);
+        this.editorRegistry =
+            injector.getInstance(Key.get(new TypeLiteral<IEclipseEditorRegistry<IStrategoTerm>>() {}));
     }
 
 
     @Override protected IContributionItem[] getContributionItems() {
-        final IEclipseEditor editor = latestEditorListener.previousEditor();
+        final IEclipseEditor<?> editor = editorRegistry.previousEditor();
         if(editor == null) {
             logger.debug("Cannot create menu items; there is no latest active editor");
             return new IContributionItem[0];

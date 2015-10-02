@@ -9,10 +9,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextPresentation;
-import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.MetaborgRuntimeException;
@@ -41,13 +37,11 @@ import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.syntax.ParseException;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.spoofax.core.style.CategorizerValidator;
-import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePage;
 import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
-import org.metaborg.spoofax.eclipse.util.StyleUtils;
 import org.metaborg.util.concurrent.IClosableLock;
 import org.metaborg.util.iterators.Iterables2;
 import org.slf4j.Logger;
@@ -55,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public class EditorUpdateJob<P, A> extends Job {
     private static final Logger logger = LoggerFactory.getLogger(EditorUpdateJob.class);
-    private static final long killTimeMillis = 3000;
+    private static final long killTimeMillis = 10000;
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifierService;
@@ -66,17 +60,14 @@ public class EditorUpdateJob<P, A> extends Job {
     private final ICategorizerService<P, A> categorizer;
     private final IStylerService<P, A> styler;
     private final IOutlineService<P, A> outlineService;
-
     private final IParseResultUpdater<P> parseResultProcessor;
     private final IAnalysisResultUpdater<P, A> analysisResultProcessor;
 
+    private final IEclipseEditor<P> editor;
     private final IEditorInput input;
     private final @Nullable IResource eclipseResource;
     private final FileObject resource;
-    private final ISourceViewer sourceViewer;
     private final String text;
-    private final PresentationMerger presentationMerger;
-    private final SpoofaxOutlinePage outlinePage;
     private final boolean instantaneous;
 
     private ThreadKillerJob threadKiller;
@@ -87,8 +78,8 @@ public class EditorUpdateJob<P, A> extends Job {
         IContextService contextService, ISyntaxService<P> syntaxService, IAnalysisService<P, A> analyzer,
         ICategorizerService<P, A> categorizer, IStylerService<P, A> styler, IOutlineService<P, A> outlineService,
         IParseResultUpdater<P> parseResultProcessor, IAnalysisResultUpdater<P, A> analysisResultProcessor,
-        IEditorInput input, @Nullable IResource eclipseResource, FileObject resource, ISourceViewer sourceViewer,
-        String text, PresentationMerger presentationMerger, SpoofaxOutlinePage outlinePage, boolean instantaneous) {
+        IEclipseEditor<P> editor, IEditorInput input, @Nullable IResource eclipseResource, FileObject resource,
+        String text, boolean instantaneous) {
         super("Updating Spoofax editor");
         setPriority(Job.SHORT);
 
@@ -101,17 +92,14 @@ public class EditorUpdateJob<P, A> extends Job {
         this.categorizer = categorizer;
         this.styler = styler;
         this.outlineService = outlineService;
-
         this.parseResultProcessor = parseResultProcessor;
         this.analysisResultProcessor = analysisResultProcessor;
 
+        this.editor = editor;
         this.input = input;
         this.eclipseResource = eclipseResource;
         this.resource = resource;
-        this.sourceViewer = sourceViewer;
         this.text = text;
-        this.presentationMerger = presentationMerger;
-        this.outlinePage = outlinePage;
         this.instantaneous = instantaneous;
     }
 
@@ -199,11 +187,11 @@ public class EditorUpdateJob<P, A> extends Job {
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
-        style(monitor, Display.getDefault(), language, parseResult);
+        style(monitor, language, parseResult);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
-        outline(monitor, Display.getDefault(), language, parseResult);
+        outline(monitor, language, parseResult);
 
         // Just parse when eclipse resource is null, skip the rest. Analysis only works with a project context,
         // which is unavailable when the eclipse resource is null.
@@ -264,30 +252,15 @@ public class EditorUpdateJob<P, A> extends Job {
         return parseResult;
     }
 
-    private void style(final IProgressMonitor monitor, Display display, ILanguageImpl language,
-        ParseResult<P> parseResult) {
+    private void style(final IProgressMonitor monitor, ILanguageImpl language, ParseResult<P> parseResult) {
         final Iterable<IRegionCategory<P>> categories =
             CategorizerValidator.validate(categorizer.categorize(language, parseResult));
         final Iterable<IRegionStyle<P>> styles = styler.styleParsed(language, categories);
-        final TextPresentation textPresentation = StyleUtils.createTextPresentation(styles, display);
-        presentationMerger.set(textPresentation);
-        // Update styling on the main thread, required by Eclipse.
-        display.asyncExec(new Runnable() {
-            public void run() {
-                if(monitor.isCanceled())
-                    return;
-                // Also cancel if text presentation is not valid for current text any more.
-                final IDocument document = sourceViewer.getDocument();
-                if(document == null || !document.get().equals(text)) {
-                    return;
-                }
-                sourceViewer.changeTextPresentation(textPresentation, true);
-            }
-        });
+        editor.setStyle(styles, text, monitor);
     }
 
-    private void outline(final IProgressMonitor monitor, Display display, ILanguageImpl language,
-        ParseResult<P> parseResult) throws MetaborgException {
+    private void outline(final IProgressMonitor monitor, ILanguageImpl language, ParseResult<P> parseResult)
+        throws MetaborgException {
         if(!outlineService.available(language)) {
             return;
         }
@@ -297,14 +270,7 @@ public class EditorUpdateJob<P, A> extends Job {
             return;
         }
 
-        // Update outline on the main thread, required by Eclipse.
-        display.asyncExec(new Runnable() {
-            public void run() {
-                if(monitor.isCanceled())
-                    return;
-                outlinePage.update(outline);
-            }
-        });
+        editor.setOutline(outline, monitor);
     }
 
     private void parseMessages(IWorkspace workspace, IProgressMonitor monitor, final ParseResult<P> parseResult)

@@ -29,9 +29,12 @@ import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
 import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
+import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
 public class TransformHandler extends AbstractHandler {
     private static final ILogger logger = LoggerUtils.logger(TransformHandler.class);
@@ -43,11 +46,9 @@ public class TransformHandler extends AbstractHandler {
     private final IContextService contextService;
     private final IMenuService menuService;
     private final IStrategoTransformer transformer;
-
     private final ISpoofaxParseResultRequester parseResultRequester;
     private final ISpoofaxAnalysisResultRequester analysisResultRequester;
-
-    private final IEclipseEditorRegistry editorRegistry;
+    private final IEclipseEditorRegistry<?> editorRegistry;
 
 
     public TransformHandler() {
@@ -60,11 +61,10 @@ public class TransformHandler extends AbstractHandler {
         this.contextService = injector.getInstance(IContextService.class);
         this.menuService = injector.getInstance(MenuService.class);
         this.transformer = injector.getInstance(IStrategoTransformer.class);
-
         this.parseResultRequester = injector.getInstance(ISpoofaxParseResultRequester.class);
         this.analysisResultRequester = injector.getInstance(ISpoofaxAnalysisResultRequester.class);
-
-        this.editorRegistry = injector.getInstance(IEclipseEditorRegistry.class);
+        this.editorRegistry =
+            injector.getInstance(Key.get(new TypeLiteral<IEclipseEditorRegistry<IStrategoTerm>>() {}));
     }
 
 
@@ -83,7 +83,7 @@ public class TransformHandler extends AbstractHandler {
 
         final Iterable<TransformResource> resources;
         if(hasOpenEditor) {
-            final IEclipseEditor editor = editorRegistry.previousEditor();
+            final IEclipseEditor<?> editor = editorRegistry.previousEditor();
             if(editor == null) {
                 final String message =
                     logger.format("Cannot transform resource of {}; no active Spoofax editor", language);
@@ -110,7 +110,7 @@ public class TransformHandler extends AbstractHandler {
                 if(!languageIdentifierService.identify(resource, language)) {
                     continue;
                 }
-                
+
                 try {
                     final String text = sourceTextService.text(resource);
                     transformResources.add(new TransformResource(resource, text));
