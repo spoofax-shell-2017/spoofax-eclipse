@@ -7,27 +7,47 @@ import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Job that interrupts given thread when scheduled, and kills the thread after a certain time.
+ */
 public class ThreadKillerJob extends Job {
     private static final Logger logger = LoggerFactory.getLogger(ThreadKillerJob.class);
 
     private final Thread thread;
+    private final long killTimeMillis;
 
 
-    public ThreadKillerJob(Thread thread) {
+    public ThreadKillerJob(Thread thread, long killTimeMillis) {
         super("Killing thread");
+
+        this.thread = thread;
+        this.killTimeMillis = killTimeMillis;
+
         setSystem(true);
         setPriority(INTERACTIVE);
 
-        this.thread = thread;
     }
 
 
     @SuppressWarnings("deprecation") @Override protected IStatus run(IProgressMonitor monitor) {
         if(monitor.isCanceled())
             return StatusUtils.cancel();
-        logger.warn("Killing {}", thread);
+
+        logger.warn("Interrupting {}, killing after {}ms", thread, killTimeMillis);
         thread.interrupt();
+
+        try {
+            Thread.sleep(killTimeMillis);
+        } catch(InterruptedException e) {
+            return StatusUtils.cancel();
+        }
+
+        if(monitor.isCanceled())
+            return StatusUtils.cancel();
+
+        logger.warn("Killing {}", thread);
         thread.stop();
+
         return StatusUtils.success();
     }
 }

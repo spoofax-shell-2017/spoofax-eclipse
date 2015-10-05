@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public class EditorUpdateJob<P, A> extends Job {
     private static final Logger logger = LoggerFactory.getLogger(EditorUpdateJob.class);
+    private static final long interruptTimeMillis = 5000;
     private static final long killTimeMillis = 10000;
 
     private final IEclipseResourceService resourceService;
@@ -120,6 +121,9 @@ public class EditorUpdateJob<P, A> extends Job {
             }
             return status;
         } catch(MetaborgRuntimeException | MetaborgException | CoreException e) {
+            if(threadKiller != null) {
+                threadKiller.cancel();
+            }
             if(monitor.isCanceled())
                 return StatusUtils.cancel();
 
@@ -156,15 +160,18 @@ public class EditorUpdateJob<P, A> extends Job {
             return;
         }
 
-        logger.debug("Cancelling editor update job for {}, killing in {}ms", resource, killTimeMillis);
-        threadKiller = new ThreadKillerJob(thread);
-        threadKiller.schedule(killTimeMillis);
+        logger.debug("Cancelling editor update job for {}, interrupting in {}ms, killing in {}ms", resource,
+            interruptTimeMillis, interruptTimeMillis + killTimeMillis);
+        threadKiller = new ThreadKillerJob(thread, killTimeMillis);
+        threadKiller.schedule(interruptTimeMillis);
     }
 
 
     private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException,
         CoreException {
-        // Identify language
+        monitor.beginTask("Updating editor", 9);
+        
+        monitor.subTask("Identifying language");
         final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource);
         if(parserLanguage == null) {
             throw new MetaborgException("Language could not be identified");
@@ -176,10 +183,13 @@ public class EditorUpdateJob<P, A> extends Job {
         } else {
             language = baseLanguage;
         }
+        monitor.worked(1);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
+        monitor.subTask("Parsing");
         final ParseResult<P> parseResult = parse(parserLanguage);
+        monitor.worked(1);
 
         // Stop if parsing produced no AST
         if(parseResult.result == null)
@@ -187,11 +197,15 @@ public class EditorUpdateJob<P, A> extends Job {
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
+        monitor.subTask("Styling");
         style(monitor, language, parseResult);
+        monitor.worked(1);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
+        monitor.subTask("Creating outline");
         outline(monitor, language, parseResult);
+        monitor.worked(1);
 
         // Just parse when eclipse resource is null, skip the rest. Analysis only works with a project context,
         // which is unavailable when the eclipse resource is null.
@@ -202,7 +216,9 @@ public class EditorUpdateJob<P, A> extends Job {
         // Sleep before showing parse messages to prevent showing irrelevant messages while user is still typing.
         if(!instantaneous && eclipseResource != null) {
             try {
+                monitor.subTask("Waiting");
                 Thread.sleep(300);
+                monitor.worked(1);
             } catch(InterruptedException e) {
                 return StatusUtils.cancel();
             }
@@ -210,12 +226,16 @@ public class EditorUpdateJob<P, A> extends Job {
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
+        monitor.subTask("Processing parse messages");
         parseMessages(workspace, monitor, parseResult);
+        monitor.worked(1);
 
         // Sleep before analyzing to prevent running many analyses when small edits are made in succession.
         if(!instantaneous) {
             try {
+                monitor.subTask("Waiting");
                 Thread.sleep(300);
+                monitor.worked(1);
             } catch(InterruptedException e) {
                 return StatusUtils.cancel();
             }
@@ -225,11 +245,16 @@ public class EditorUpdateJob<P, A> extends Job {
             return StatusUtils.cancel();
         if(!contextService.available(language))
             return StatusUtils.success();
+        monitor.subTask("Analyzing");
         final IContext context = contextService.get(resource, language);
         final AnalysisResult<P, A> analysisResult = analyze(parseResult, context);
+        monitor.worked(1);
+        
         if(monitor.isCanceled())
             return StatusUtils.cancel();
+        monitor.subTask("Processing analysis messages");
         analysisMessages(workspace, monitor, analysisResult);
+        monitor.worked(1);
 
         return StatusUtils.success();
     }
