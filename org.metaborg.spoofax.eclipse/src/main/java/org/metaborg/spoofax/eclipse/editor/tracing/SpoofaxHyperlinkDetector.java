@@ -12,7 +12,7 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.ParseResult;
-import org.metaborg.core.tracing.IReferenceResolver;
+import org.metaborg.core.tracing.IResolverService;
 import org.metaborg.core.tracing.Resolution;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -25,7 +25,7 @@ public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
     private final IEclipseResourceService resourceService;
     private final IParseResultRequester<P> parseResultRequester;
     private final IAnalysisResultRequester<P, A> analysisResultRequester;
-    private final IReferenceResolver<P, A> referenceResolver;
+    private final IResolverService<P, A> referenceResolver;
 
     private final FileObject resource;
     private final ILanguageImpl language;
@@ -34,7 +34,7 @@ public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
 
     public SpoofaxHyperlinkDetector(IEclipseResourceService resourceService,
         IParseResultRequester<P> parseResultRequester, IAnalysisResultRequester<P, A> analysisResultRequester,
-        IReferenceResolver<P, A> referenceResolver, FileObject resource, ILanguageImpl language, AbstractTextEditor editor) {
+        IResolverService<P, A> referenceResolver, FileObject resource, ILanguageImpl language, AbstractTextEditor editor) {
         this.resourceService = resourceService;
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;

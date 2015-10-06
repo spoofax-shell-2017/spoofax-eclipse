@@ -25,7 +25,7 @@ import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.tracing.IHoverService;
-import org.metaborg.core.tracing.IReferenceResolver;
+import org.metaborg.core.tracing.IResolverService;
 import org.metaborg.spoofax.eclipse.editor.completion.SpoofaxContentAssistProcessor;
 import org.metaborg.spoofax.eclipse.editor.tracing.SpoofaxHyperlinkDetector;
 import org.metaborg.spoofax.eclipse.editor.tracing.SpoofaxTextHover;
@@ -43,7 +43,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
     private final ISyntaxService<P> syntaxService;
     private final IParseResultRequester<P> parseResultRequester;
     private final IAnalysisResultRequester<P, A> analysisResultRequester;
-    private final IReferenceResolver<P, A> referenceResolver;
+    private final IResolverService<P, A> referenceResolver;
     private final IHoverService<P, A> hoverService;
     private final ICompletionService completionService;
 
@@ -52,7 +52,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
 
     public SpoofaxSourceViewerConfiguration(IEclipseResourceService resourceService, ISyntaxService<P> syntaxService,
         IParseResultRequester<P> parseResultRequester, IAnalysisResultRequester<P, A> analysisResultRequester,
-        IReferenceResolver<P, A> referenceResolver, IHoverService<P, A> hoverService,
+        IResolverService<P, A> referenceResolver, IHoverService<P, A> hoverService,
         ICompletionService completionService, IPreferenceStore preferenceStore, SpoofaxEditor editor) {
         super(preferenceStore);
 

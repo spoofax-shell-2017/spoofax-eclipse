@@ -22,7 +22,7 @@ import org.metaborg.core.transform.ITransformer;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformerException;
-import org.metaborg.spoofax.core.menu.StrategoTransformAction;
+import org.metaborg.spoofax.core.menu.TransformAction;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.concurrent.IClosableLock;
 import org.metaborg.util.log.ILogger;
@@ -84,7 +84,7 @@ public class TransformJob<P, A, T> extends Job {
             return StatusUtils.error(message);
         }
 
-        if(!(action instanceof StrategoTransformAction)) {
+        if(!(action instanceof TransformAction)) {
             final String message =
                 String.format("Transformation failed, action %s is not a Stratego transformer action", goal);
             logger.error(message);
@@ -97,7 +97,7 @@ public class TransformJob<P, A, T> extends Job {
 
             final FileObject resource = transformResource.resource;
             try {
-                transform(resource, language, (StrategoTransformAction) action, goal, transformResource.text);
+                transform(resource, language, (TransformAction) action, goal, transformResource.text);
             } catch(IOException | ContextException | TransformerException e) {
                 final String message = String.format("Transformation failed for %s", resource);
                 logger.error(message, e);
@@ -108,7 +108,7 @@ public class TransformJob<P, A, T> extends Job {
         return StatusUtils.success();
     }
 
-    private void transform(FileObject resource, ILanguageImpl language, StrategoTransformAction action,
+    private void transform(FileObject resource, ILanguageImpl language, TransformAction action,
         ITransformerGoal goal, String text) throws IOException, ContextException, TransformerException {
         final IContext context = contextService.get(resource, language);
         if(action.flags.parsed) {

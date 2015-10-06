@@ -46,7 +46,7 @@ import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultProcessor;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultProcessor;
 import org.metaborg.spoofax.core.tracing.ISpoofaxHoverService;
-import org.metaborg.spoofax.core.tracing.ISpoofaxReferenceResolver;
+import org.metaborg.spoofax.core.tracing.ISpoofaxResolverService;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePage;
 import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePopup;
@@ -78,7 +78,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     private IStylerService<IStrategoTerm, IStrategoTerm> stylerService;
     private IOutlineService<IStrategoTerm, IStrategoTerm> outlineService;
     private ICompletionService completionService;
-    private ISpoofaxReferenceResolver referenceResolver;
+    private ISpoofaxResolverService referenceResolver;
     private ISpoofaxHoverService hoverService;
     private ISpoofaxParseResultProcessor parseResultProcessor;
     private ISpoofaxAnalysisResultProcessor analysisResultProcessor;
@@ -288,7 +288,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         this.outlineService =
             injector.getInstance(Key.get(new TypeLiteral<IOutlineService<IStrategoTerm, IStrategoTerm>>() {}));
         this.completionService = injector.getInstance(ICompletionService.class);
-        this.referenceResolver = injector.getInstance(ISpoofaxReferenceResolver.class);
+        this.referenceResolver = injector.getInstance(ISpoofaxResolverService.class);
         this.hoverService = injector.getInstance(ISpoofaxHoverService.class);
         this.parseResultProcessor = injector.getInstance(ISpoofaxParseResultProcessor.class);
         this.analysisResultProcessor = injector.getInstance(ISpoofaxAnalysisResultProcessor.class);

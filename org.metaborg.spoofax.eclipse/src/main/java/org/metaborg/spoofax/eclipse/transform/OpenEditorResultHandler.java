@@ -11,7 +11,7 @@ import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NamedGoal;
 import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformResult;
-import org.metaborg.spoofax.core.menu.StrategoTransformAction;
+import org.metaborg.spoofax.core.menu.TransformAction;
 import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.transform.IStrategoTransformerResultHandler;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -73,8 +73,8 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
         if(action == null) {
             return false;
         }
-        if(action instanceof StrategoTransformAction) {
-            final StrategoTransformAction transformAction = (StrategoTransformAction) action;
+        if(action instanceof TransformAction) {
+            final TransformAction transformAction = (TransformAction) action;
             return transformAction.flags.openEditor;
         }
         
