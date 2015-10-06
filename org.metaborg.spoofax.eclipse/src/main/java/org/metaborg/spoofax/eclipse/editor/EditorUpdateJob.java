@@ -124,8 +124,10 @@ public class EditorUpdateJob<P, A> extends Job {
             if(threadKiller != null) {
                 threadKiller.cancel();
             }
-            if(monitor.isCanceled())
+            if(monitor.isCanceled()) {
+                monitor.done();
                 return StatusUtils.cancel();
+            }
 
             if(eclipseResource != null) {
                 try {
@@ -142,14 +144,17 @@ public class EditorUpdateJob<P, A> extends Job {
                 } catch(CoreException e2) {
                     final String message = "Failed to show internal error marker";
                     logger.error(message, e2);
+                    monitor.done();
                     return StatusUtils.silentError(message, e2);
                 }
             }
 
             final String message = String.format("Failed to update editor for %s", resource);
             logger.error(message, e);
+            monitor.done();
             return StatusUtils.silentError(message, e);
         } catch(Throwable e) {
+            monitor.done();
             return StatusUtils.cancel();
         }
     }
@@ -170,7 +175,7 @@ public class EditorUpdateJob<P, A> extends Job {
     private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException,
         CoreException {
         monitor.beginTask("Updating editor", 9);
-        
+
         monitor.subTask("Identifying language");
         final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource);
         if(parserLanguage == null) {
@@ -218,11 +223,11 @@ public class EditorUpdateJob<P, A> extends Job {
             try {
                 monitor.subTask("Waiting");
                 Thread.sleep(300);
-                monitor.worked(1);
             } catch(InterruptedException e) {
                 return StatusUtils.cancel();
             }
         }
+        monitor.worked(1);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
@@ -235,11 +240,11 @@ public class EditorUpdateJob<P, A> extends Job {
             try {
                 monitor.subTask("Waiting");
                 Thread.sleep(300);
-                monitor.worked(1);
             } catch(InterruptedException e) {
                 return StatusUtils.cancel();
             }
         }
+        monitor.worked(1);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
@@ -249,7 +254,7 @@ public class EditorUpdateJob<P, A> extends Job {
         final IContext context = contextService.get(resource, language);
         final AnalysisResult<P, A> analysisResult = analyze(parseResult, context);
         monitor.worked(1);
-        
+
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         monitor.subTask("Processing analysis messages");
