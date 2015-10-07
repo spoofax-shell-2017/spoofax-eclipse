@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.build;
+package org.metaborg.spoofax.eclipse.meta.ant;
 
 import java.io.File;
 import java.io.FilenameFilter;

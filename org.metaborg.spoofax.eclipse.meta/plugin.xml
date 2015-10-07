@@ -90,7 +90,7 @@
     />
     <handler 
       commandId="org.metaborg.spoofax.eclipse.meta.command.language.upgrade"
-      class="org.metaborg.spoofax.eclipse.meta.language.UpgradeLanguageProjectHandler"
+      class="org.metaborg.spoofax.eclipse.meta.language.upgrade.UpgradeLanguageProjectHandler"
     />
   </extension>
 

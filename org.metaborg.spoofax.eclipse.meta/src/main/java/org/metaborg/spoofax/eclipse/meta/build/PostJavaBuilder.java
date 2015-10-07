@@ -16,6 +16,7 @@ import org.metaborg.spoofax.core.project.settings.ISpoofaxProjectSettingsService
 import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
+import org.metaborg.spoofax.eclipse.meta.ant.AntClasspathGenerator;
 import org.metaborg.spoofax.eclipse.meta.language.LoadLanguageJob;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;

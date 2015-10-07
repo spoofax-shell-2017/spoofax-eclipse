@@ -12,6 +12,7 @@ import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.core.project.settings.ISpoofaxProjectSettingsService;
 import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
+import org.metaborg.spoofax.eclipse.meta.ant.AntClasspathGenerator;
 import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;

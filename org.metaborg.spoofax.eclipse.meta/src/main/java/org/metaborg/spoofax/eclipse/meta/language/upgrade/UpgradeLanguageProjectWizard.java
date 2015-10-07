@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.language;
+package org.metaborg.spoofax.eclipse.meta.language.upgrade;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +29,8 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
-import org.metaborg.spoofax.generator.NewProjectGenerator;
-import org.metaborg.spoofax.generator.ProjectGenerator;
+import org.metaborg.spoofax.generator.language.NewProjectGenerator;
+import org.metaborg.spoofax.generator.language.ProjectGenerator;
 import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
 import org.metaborg.util.resource.ContainsFileSelector;
 import org.spoofax.interpreter.terms.IStrategoAppl;

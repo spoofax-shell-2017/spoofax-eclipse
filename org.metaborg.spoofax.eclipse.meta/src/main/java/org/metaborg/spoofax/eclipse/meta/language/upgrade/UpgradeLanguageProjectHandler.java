@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.language;
+package org.metaborg.spoofax.eclipse.meta.language.upgrade;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;

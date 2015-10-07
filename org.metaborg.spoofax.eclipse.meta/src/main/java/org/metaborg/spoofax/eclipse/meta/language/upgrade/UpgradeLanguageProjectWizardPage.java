@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.language;
+package org.metaborg.spoofax.eclipse.meta.language.upgrade;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
