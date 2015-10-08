@@ -196,21 +196,21 @@ public class EditorUpdateJob<P, A> extends Job {
         final ParseResult<P> parseResult = parse(parserLanguage);
         monitor.worked(1);
 
-        // Stop if parsing produced no AST
-        if(parseResult.result == null)
-            return StatusUtils.silentError();
+        if(parseResult.result != null) {
+            if(monitor.isCanceled())
+                return StatusUtils.cancel();
+            monitor.subTask("Styling");
+            style(monitor, language, parseResult);
+            monitor.worked(1);
 
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
-        monitor.subTask("Styling");
-        style(monitor, language, parseResult);
-        monitor.worked(1);
-
-        if(monitor.isCanceled())
-            return StatusUtils.cancel();
-        monitor.subTask("Creating outline");
-        outline(monitor, language, parseResult);
-        monitor.worked(1);
+            if(monitor.isCanceled())
+                return StatusUtils.cancel();
+            monitor.subTask("Creating outline");
+            outline(monitor, language, parseResult);
+            monitor.worked(1);
+        } else {
+            monitor.worked(2);
+        }
 
         // Just parse when eclipse resource is null, skip the rest. Analysis only works with a project context,
         // which is unavailable when the eclipse resource is null.
@@ -234,6 +234,11 @@ public class EditorUpdateJob<P, A> extends Job {
         monitor.subTask("Processing parse messages");
         parseMessages(workspace, monitor, parseResult);
         monitor.worked(1);
+        
+        // Stop if parsing produced no AST
+        if(parseResult.result == null) {
+            return StatusUtils.silentError();
+        }
 
         // Sleep before analyzing to prevent running many analyses when small edits are made in succession.
         if(!instantaneous) {
