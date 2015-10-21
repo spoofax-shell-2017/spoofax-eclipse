@@ -21,15 +21,15 @@ import org.metaborg.core.resource.ResourceChangeKind;
 import org.metaborg.core.resource.ResourceUtils;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.osgi.framework.Bundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Job for discovering languages at startup.
  */
 public class DiscoverLanguagesJob extends Job {
-    private static final Logger logger = LoggerFactory.getLogger(DiscoverLanguagesJob.class);
+    private static final ILogger logger = LoggerUtils.logger(DiscoverLanguagesJob.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageDiscoveryService languageDiscoveryService;
@@ -66,9 +66,7 @@ public class DiscoverLanguagesJob extends Job {
                     final FileObject location = bundleLocation.resolveFile(relativeLocation);
                     languageDiscoveryService.discover(location);
                 } catch(Exception e) {
-                    final String message =
-                        String.format("Could not load language from %s in plugin %s", relativeLocation, contributor);
-                    logger.error(message, e);
+                    logger.error("Could not load language from {} in plugin {}", e, relativeLocation, contributor);
                 }
             }
         }
@@ -80,8 +78,7 @@ public class DiscoverLanguagesJob extends Job {
                 try {
                     languageDiscoveryService.discover(location);
                 } catch(Exception e) {
-                    final String message = String.format("Could not load language at location %s", location);
-                    logger.error(message, e);
+                    logger.error("Could not load language at location {}", e, location);
                 }
 
                 try {
@@ -91,8 +88,7 @@ public class DiscoverLanguagesJob extends Job {
                         ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
                     dialectProcessor.update(project, creations);
                 } catch(Exception e) {
-                    final String message = String.format("Could not load dialects at location %s", location);
-                    logger.error(message, e);
+                    logger.error("Could not load dialects at location %s", e, location);
                 }
             }
         }

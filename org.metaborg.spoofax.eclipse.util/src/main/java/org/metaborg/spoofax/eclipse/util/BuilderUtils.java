@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,8 @@ public class BuilderUtils {
      *            Identifier of the builder to add.
      * @param project
      *            Project to add the builder to.
+     * @param monitor
+     *            Optional progress monitor.
      * @param triggers
      *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
      *            configured (isConfigurable="true" in plugin.xml).
@@ -54,10 +57,11 @@ public class BuilderUtils {
      * @see IncrementalProjectBuilder#AUTO_BUILD
      * @see IncrementalProjectBuilder#CLEAN_BUILD
      */
-    public static void prepend(String id, IProject project, int... triggers) throws CoreException {
+    public static void prepend(String id, IProject project, @Nullable IProgressMonitor monitor, int... triggers)
+        throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
-        addTo(id, project, 0, projectDesc, builders, triggers);
+        addTo(id, project, 0, projectDesc, builders, monitor, triggers);
     }
 
     /**
@@ -68,6 +72,8 @@ public class BuilderUtils {
      *            Identifier of the builder to add.
      * @param project
      *            Project to add the builder to.
+     * @param monitor
+     *            Optional progress monitor.
      * @param triggers
      *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
      *            configured (isConfigurable="true" in plugin.xml).
@@ -78,10 +84,11 @@ public class BuilderUtils {
      * @see IncrementalProjectBuilder#AUTO_BUILD
      * @see IncrementalProjectBuilder#CLEAN_BUILD
      */
-    public static void append(String id, IProject project, int... triggers) throws CoreException {
+    public static void append(String id, IProject project, @Nullable IProgressMonitor monitor, int... triggers)
+        throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
-        addTo(id, project, builders.length, projectDesc, builders, triggers);
+        addTo(id, project, builders.length, projectDesc, builders, monitor, triggers);
     }
 
     /**
@@ -92,6 +99,8 @@ public class BuilderUtils {
      *            Identifier of the builder to add.
      * @param project
      *            Project to add the builder to.
+     * @param monitor
+     *            Optional progress monitor.
      * @param triggers
      *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
      *            configured (isConfigurable="true" in plugin.xml).
@@ -102,12 +111,13 @@ public class BuilderUtils {
      * @see IncrementalProjectBuilder#AUTO_BUILD
      * @see IncrementalProjectBuilder#CLEAN_BUILD
      */
-    public static void addBefore(String id, String beforeId, IProject project, int... triggers) throws CoreException {
+    public static void addBefore(String id, String beforeId, IProject project, @Nullable IProgressMonitor monitor,
+        int... triggers) throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
         final int[] indexes = indexes(beforeId, builders);
         final int index = Ints.min(indexes);
-        addTo(id, project, index, projectDesc, builders, triggers);
+        addTo(id, project, index, projectDesc, builders, monitor, triggers);
     }
 
     /**
@@ -118,6 +128,8 @@ public class BuilderUtils {
      *            Identifier of the builder to add.
      * @param project
      *            Project to add the builder to.
+     * @param monitor
+     *            Optional progress monitor.
      * @param triggers
      *            Which triggers the builder should respond to. Only used if the builder allows its build kinds to be
      *            configured (isConfigurable="true" in plugin.xml).
@@ -128,16 +140,17 @@ public class BuilderUtils {
      * @see IncrementalProjectBuilder#AUTO_BUILD
      * @see IncrementalProjectBuilder#CLEAN_BUILD
      */
-    public static void addAfter(String id, String afterId, IProject project, int... triggers) throws CoreException {
+    public static void addAfter(String id, String afterId, IProject project, @Nullable IProgressMonitor monitor,
+        int... triggers) throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
         final int[] indexes = indexes(afterId, builders);
         final int index = Ints.max(indexes);
-        addTo(id, project, index + 1, projectDesc, builders, triggers);
+        addTo(id, project, index + 1, projectDesc, builders, monitor, triggers);
     }
 
     public static void addTo(String id, IProject project, int index, IProjectDescription projectDesc,
-        ICommand[] builders, int... triggers) throws CoreException {
+        ICommand[] builders, @Nullable IProgressMonitor monitor, int... triggers) throws CoreException {
         if(!contains(id, builders)) {
             final ICommand newBuilder = projectDesc.newCommand();
             newBuilder.setBuilderName(id);
@@ -158,7 +171,7 @@ public class BuilderUtils {
             }
             final ICommand[] newBuilders = ArrayUtils.add(builders, index, newBuilder);
             projectDesc.setBuildSpec(newBuilders);
-            project.setDescription(projectDesc, null);
+            project.setDescription(projectDesc, monitor);
         }
     }
 
@@ -170,16 +183,18 @@ public class BuilderUtils {
      *            Identifier of the builder to remove.
      * @param project
      *            Project to remove the builder from.
+     * @param monitor
+     *            Optional progress monitor.
      * @throws CoreException
      *             When {@link IProject#getDescription} or {@link IProject#setDescription} throws a CoreException.
      */
-    public static void removeFrom(String id, IProject project) throws CoreException {
+    public static void removeFrom(String id, IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
         final int[] builderIndexes = indexes(id, builders);
         final ICommand[] newBuilders = ArrayUtils.removeAll(builders, builderIndexes);
         projectDesc.setBuildSpec(newBuilders);
-        project.setDescription(projectDesc, null);
+        project.setDescription(projectDesc, monitor);
     }
 
     /**
@@ -189,11 +204,14 @@ public class BuilderUtils {
      * @param project
      *            Project to check for the builder.
      * @param sortOrder
-     *            Builder names that reperesent a sorting order.
+     *            Builder names that represent a sorting order.
+     * @param monitor
+     *            Optional progress monitor.
      * @throws When
      *             {@link IProject#getDescription} throws a CoreException.
      */
-    public static void sort(IProject project, String... sortOrder) throws CoreException {
+    public static void sort(IProject project, @Nullable IProgressMonitor monitor, String... sortOrder)
+        throws CoreException {
         final IProjectDescription projectDesc = project.getDescription();
         final ICommand[] builders = projectDesc.getBuildSpec();
         final Map<String, ICommand> buildersMap = Maps.newLinkedHashMap();
@@ -215,7 +233,7 @@ public class BuilderUtils {
         }
 
         projectDesc.setBuildSpec(newBuilders.toArray(new ICommand[builders.length]));
-        project.setDescription(projectDesc, null);
+        project.setDescription(projectDesc, monitor);
     }
 
     private static int[] indexes(String id, ICommand[] builders) throws CoreException {

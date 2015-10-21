@@ -90,7 +90,7 @@
     />
     <handler 
       commandId="org.metaborg.spoofax.eclipse.meta.command.language.upgrade"
-      class="org.metaborg.spoofax.eclipse.meta.language.upgrade.UpgradeLanguageProjectHandler"
+      class="org.metaborg.spoofax.eclipse.meta.project.UpgradeLanguageProjectHandler"
     />
   </extension>
 
@@ -184,5 +184,25 @@
       <separator name="separator2" visible="true "/>
       <command commandId="org.metaborg.spoofax.eclipse.meta.command.language.upgrade" />
     </menuContribution>
+  </extension>
+  
+  
+  <!-- New project wizard -->
+  <extension point="org.eclipse.ui.newWizards">
+    <category 
+      id="org.metaborg.spoofax.eclipse.meta.newwizard.category"
+      name="Spoofax"
+    >
+    </category>
+    <wizard 
+      id="org.metaborg.spoofax.eclipse.meta.newwizard.generateproject"
+      name="Spoofax language project"
+      category="org.metaborg.spoofax.eclipse.meta.newwizard.category"
+      project="true"
+      hasPages="true"
+      class="org.metaborg.spoofax.eclipse.meta.project.GenerateLanguageProjectWizard"
+    >
+      
+    </wizard>
   </extension>
 </plugin>

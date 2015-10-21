@@ -14,7 +14,7 @@ public class AddNatureHandler extends AbstractHandler {
             return null;
 
         try {
-            SpoofaxMetaNature.add(project);
+            SpoofaxMetaNature.add(project, null);
         } catch(CoreException e) {
             throw new ExecutionException("Cannot add Spoofax meta nature", e);
         }

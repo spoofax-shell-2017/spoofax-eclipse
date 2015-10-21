@@ -15,7 +15,7 @@ public class RemoveNatureHandler extends AbstractHandler {
             return null;
 
         try {
-            NatureUtils.removeFrom(SpoofaxMetaNature.id, project);
+            NatureUtils.removeFrom(SpoofaxMetaNature.id, project, null);
         } catch(CoreException e) {
             throw new ExecutionException("Cannot add Spoofax meta nature", e);
         }

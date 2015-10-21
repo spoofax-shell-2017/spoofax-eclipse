@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 public class NatureUtils {
     /**
@@ -13,16 +14,18 @@ public class NatureUtils {
      *            Identifier of the nature to add.
      * @param project
      *            Project to add the nature to.
+     * @param monitor
+     *            Optional progress monitor.
      * @throws CoreException
      *             When {@link IProject#getDescription} throws a CoreException.
      */
-    public static void addTo(String id, IProject project) throws CoreException {
+    public static void addTo(String id, IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
         final IProjectDescription description = project.getDescription();
         final String[] natures = description.getNatureIds();
         if(natureIndex(id, natures) == -1) {
             final String[] newNatures = ArrayUtils.add(natures, id);
             description.setNatureIds(newNatures);
-            project.setDescription(description, null);
+            project.setDescription(description, monitor);
         }
     }
 
@@ -33,17 +36,19 @@ public class NatureUtils {
      *            Identifier of the nature to remove.
      * @param project
      *            Project to remove the nature from.
+     * @param monitor
+     *            Optional progress monitor.
      * @throws CoreException
      *             When {@link IProject#getDescription} or {@link IProject#setDescription} throws a CoreException.
      */
-    public static void removeFrom(String id, IProject project) throws CoreException {
+    public static void removeFrom(String id, IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
         final IProjectDescription description = project.getDescription();
         final String[] natures = description.getNatureIds();
         final int natureIndex = natureIndex(id, natures);
         if(natureIndex != -1) {
             final String[] newNatures = ArrayUtils.remove(natures, natureIndex);
             description.setNatureIds(newNatures);
-            project.setDescription(description, null);
+            project.setDescription(description, monitor);
         }
     }
 

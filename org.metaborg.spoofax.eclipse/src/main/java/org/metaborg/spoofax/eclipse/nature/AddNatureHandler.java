@@ -15,7 +15,7 @@ public class AddNatureHandler extends AbstractHandler {
             return null;
 
         try {
-            NatureUtils.addTo(SpoofaxNature.id, project);
+            NatureUtils.addTo(SpoofaxNature.id, project, null);
         } catch(CoreException e) {
             throw new ExecutionException("Cannot add Spoofax nature", e);
         }

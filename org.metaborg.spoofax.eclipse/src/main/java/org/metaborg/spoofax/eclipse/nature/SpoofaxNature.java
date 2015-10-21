@@ -14,11 +14,11 @@ public class SpoofaxNature implements IProjectNature {
 
 
     @Override public void configure() throws CoreException {
-        BuilderUtils.prepend(SpoofaxProjectBuilder.id, project);
+        BuilderUtils.prepend(SpoofaxProjectBuilder.id, project, null);
     }
 
     @Override public void deconfigure() throws CoreException {
-        BuilderUtils.removeFrom(SpoofaxProjectBuilder.id, project);
+        BuilderUtils.removeFrom(SpoofaxProjectBuilder.id, project, null);
     }
 
     @Override public IProject getProject() {
