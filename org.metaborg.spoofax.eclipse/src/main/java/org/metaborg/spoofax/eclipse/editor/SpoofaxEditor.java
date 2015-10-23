@@ -429,9 +429,9 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
                 analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
-            rule = globalRules.startupReadLock();
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock() });
         } else {
-            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource });
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
         }
         job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);
