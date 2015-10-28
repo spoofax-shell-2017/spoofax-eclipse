@@ -5,19 +5,14 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.MultiRule;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.core.project.settings.ISpoofaxProjectSettingsService;
 import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
-import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
+import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.ant.AntClasspathGenerator;
-import org.metaborg.spoofax.eclipse.meta.language.LoadLanguageJob;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
@@ -66,11 +61,10 @@ public class PostJavaBuilder extends Builder {
 
     private static final ILogger logger = LoggerUtils.logger(PostJavaBuilder.class);
 
-    private final ILanguageDiscoveryService languageDiscoveryService;
     private final ISpoofaxProjectSettingsService projectSettingsService;
 
+    private final EclipseLanguageLoader discoverer;
     private final SpoofaxMetaBuilder builder;
-    private final GlobalSchedulingRules globalSchedulingRules;
 
 
     public PostJavaBuilder() {
@@ -78,9 +72,8 @@ public class PostJavaBuilder extends Builder {
             .getInstance(IProjectService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
-        this.languageDiscoveryService = injector.getInstance(ILanguageDiscoveryService.class);
+        this.discoverer = injector.getInstance(EclipseLanguageLoader.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
-        this.globalSchedulingRules = injector.getInstance(GlobalSchedulingRules.class);
     }
 
 
@@ -93,10 +86,7 @@ public class PostJavaBuilder extends Builder {
 
         if(runnable.succeeded()) {
             logger.info("Reloading language project {}", project);
-            final Job languageLoadJob = new LoadLanguageJob(languageDiscoveryService, project.location());
-            languageLoadJob.setRule(new MultiRule(new ISchedulingRule[] { globalSchedulingRules.startupReadLock(),
-                globalSchedulingRules.languageServiceLock() }));
-            languageLoadJob.schedule();
+            discoverer.loadJob(project.location(), false).schedule();
         } else {
             monitor.setCanceled(true);
         }

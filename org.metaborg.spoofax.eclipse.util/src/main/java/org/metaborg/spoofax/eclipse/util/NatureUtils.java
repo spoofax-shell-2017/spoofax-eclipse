@@ -8,6 +8,22 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 public class NatureUtils {
     /**
+     * Checks if nature exists in given project.
+     * 
+     * @param id
+     *            Identifier of the nature to check for.
+     * @param project
+     *            Project to check.
+     * @throws CoreException
+     *             When {@link IProject#getDescription} throws a CoreException.
+     */
+    public static boolean exists(String id, IProject project) throws CoreException {
+        final IProjectDescription description = project.getDescription();
+        final String[] natures = description.getNatureIds();
+        return natureIndex(id, natures) != -1;
+    }
+    
+    /**
      * Adds nature to given project. Does nothing if this nature has already been added to the project.
      * 
      * @param id
@@ -52,7 +68,7 @@ public class NatureUtils {
         }
     }
 
-    private static int natureIndex(String id, String[] natures) throws CoreException {
+    private static int natureIndex(String id, String[] natures) {
         for(int i = 0; i < natures.length; ++i) {
             final String nature = natures[i];
             if(nature.equals(id)) {

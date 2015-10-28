@@ -4,7 +4,7 @@ package org.metaborg.spoofax.eclipse.job;
  * Collection of global scheduling rules.
  */
 public class GlobalSchedulingRules {
-    private final LockRule startupLock = new LockRule("Startup write");
+    private final LockRule startupLock = new LockRule("Startup write lock");
     private final LockRule languageServiceLock = new LockRule("Language service lock");
     private final LockRule strategoLock = new LockRule("Stratego lock");
 
@@ -26,7 +26,7 @@ public class GlobalSchedulingRules {
      * @return New startup read-only lock scheduling rule.
      */
     public ReadLockRule startupReadLock() {
-        return new ReadLockRule(startupLock, "Startup read");
+        return new ReadLockRule(startupLock, "Startup read lock");
     }
 
     /**

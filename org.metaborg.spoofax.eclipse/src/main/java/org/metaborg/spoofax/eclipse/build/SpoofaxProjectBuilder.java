@@ -123,7 +123,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         FileSystemException, MetaborgException {
         final Iterable<FileObject> resources = ResourceUtils.find(project.location());
         final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
-        processorRunner.updateDialects(project, creations).schedule().block();
+        processorRunner.updateDialects(project.location(), creations).schedule().block();
 
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
@@ -154,7 +154,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             }
         });
 
-        processorRunner.updateDialects(project, changes).schedule().block();
+        processorRunner.updateDialects(project.location(), changes).schedule().block();
 
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off

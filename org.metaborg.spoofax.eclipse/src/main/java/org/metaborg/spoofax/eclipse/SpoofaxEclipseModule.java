@@ -21,6 +21,7 @@ import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.editor.SpoofaxEditorRegistry;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.EclipseLanguageChangeProcessor;
+import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
 import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
 import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
 import org.metaborg.spoofax.eclipse.resource.EclipseProjectService;
@@ -48,6 +49,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
 
         bind(GlobalSchedulingRules.class).in(Singleton.class);
         bind(EclipseLanguageChangeProcessor.class).in(Singleton.class);
+        bind(EclipseLanguageLoader.class).in(Singleton.class);
     }
 
 
