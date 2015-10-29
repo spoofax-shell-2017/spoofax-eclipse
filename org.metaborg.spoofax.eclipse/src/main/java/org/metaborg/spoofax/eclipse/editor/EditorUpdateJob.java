@@ -8,6 +8,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgException;
@@ -125,7 +126,6 @@ public class EditorUpdateJob<P, A> extends Job {
                 threadKiller.cancel();
             }
             if(monitor.isCanceled()) {
-                monitor.done();
                 return StatusUtils.cancel();
             }
 
@@ -151,11 +151,11 @@ public class EditorUpdateJob<P, A> extends Job {
 
             final String message = String.format("Failed to update editor for %s", resource);
             logger.error(message, e);
-            monitor.done();
             return StatusUtils.silentError(message, e);
         } catch(Throwable e) {
-            monitor.done();
             return StatusUtils.cancel();
+        } finally {            
+            monitor.done();
         }
     }
 
@@ -172,9 +172,9 @@ public class EditorUpdateJob<P, A> extends Job {
     }
 
 
-    private IStatus update(IWorkspace workspace, final IProgressMonitor monitor) throws MetaborgException,
+    private IStatus update(IWorkspace workspace, final IProgressMonitor progressMonitor) throws MetaborgException,
         CoreException {
-        monitor.beginTask("Updating editor", 9);
+        final SubMonitor monitor = SubMonitor.convert(progressMonitor, 11);
 
         monitor.subTask("Identifying language");
         final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource);
@@ -232,7 +232,7 @@ public class EditorUpdateJob<P, A> extends Job {
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         monitor.subTask("Processing parse messages");
-        parseMessages(workspace, monitor, parseResult);
+        parseMessages(workspace, monitor.newChild(1), parseResult);
         monitor.worked(1);
         
         // Stop if parsing produced no AST
@@ -263,7 +263,7 @@ public class EditorUpdateJob<P, A> extends Job {
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         monitor.subTask("Processing analysis messages");
-        analysisMessages(workspace, monitor, analysisResult);
+        analysisMessages(workspace, monitor.newChild(1), analysisResult);
         monitor.worked(1);
 
         return StatusUtils.success();
