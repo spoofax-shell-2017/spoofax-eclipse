@@ -144,7 +144,6 @@ public class EditorUpdateJob<P, A> extends Job {
                 } catch(CoreException e2) {
                     final String message = "Failed to show internal error marker";
                     logger.error(message, e2);
-                    monitor.done();
                     return StatusUtils.silentError(message, e2);
                 }
             }
@@ -154,7 +153,7 @@ public class EditorUpdateJob<P, A> extends Job {
             return StatusUtils.silentError(message, e);
         } catch(Throwable e) {
             return StatusUtils.cancel();
-        } finally {            
+        } finally {
             monitor.done();
         }
     }
@@ -234,7 +233,7 @@ public class EditorUpdateJob<P, A> extends Job {
         monitor.subTask("Processing parse messages");
         parseMessages(workspace, monitor.newChild(1), parseResult);
         monitor.worked(1);
-        
+
         // Stop if parsing produced no AST
         if(parseResult.result == null) {
             return StatusUtils.silentError();

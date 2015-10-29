@@ -11,4 +11,9 @@ public class TransformResource {
         this.resource = resource;
         this.text = text;
     }
+
+
+    @Override public String toString() {
+        return resource.toString();
+    }
 }
