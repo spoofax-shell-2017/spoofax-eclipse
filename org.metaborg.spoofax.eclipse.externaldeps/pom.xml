@@ -35,6 +35,11 @@
       <groupId>com.github.krukow</groupId>
       <artifactId>clj-ds</artifactId>
     </dependency>
+    <!-- Requirements for new language config system -->
+    <dependency>
+      <groupId>com.virtlink.commons</groupId>
+      <artifactId>commons-configuration2-jackson</artifactId>
+    </dependency>
     <!-- General requirements for several libraries -->
     <!-- Logging -->
     <dependency>
@@ -74,6 +79,11 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+    <!-- Apache Commons Configuration -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-configuration2</artifactId>
     </dependency>
     <!-- Apache Commons IO -->
     <dependency>
@@ -186,6 +196,8 @@
               aopalliance,
               asm,
               clj-ds,
+              commons-configuration2,
+              commons-configuration2-jackson,
               commons-io,
               commons-lang3,
               commons-logging,
@@ -238,12 +250,16 @@
               com.google.inject.*;provider=metaborg;mandatory:=provider,
               fj.*;provider=metaborg;mandatory:=provider,
               org.aopalliance*;provider=metaborg;mandatory:=provider,
+              org.apache.commons.configuration2*;provider=metaborg;mandatory:=provider,
+              org.apache.commons.configuration2;provider=metaborg;mandatory:=provider,
               org.apache.commons.io*;provider=metaborg;mandatory:=provider,
               org.apache.commons.io;provider=metaborg;mandatory:=provider,
               org.apache.commons.lang3*;provider=metaborg;mandatory:=provider,
               org.apache.commons.lang3;provider=metaborg;mandatory:=provider,
               org.apache.commons.logging;provider=metaborg;mandatory:=provider,
               org.apache.commons.vfs2*;provider=metaborg;mandatory:=provider,
+              com.virtlink.commons.configuration2.jackson*;provider=metaborg;mandatory:=provider,
+              com.virtlink.commons.configuration2.jackson;provider=metaborg;mandatory:=provider,
               org.jgrapht*;provider=metaborg;mandatory:=provider,
               org.jgrapht;provider=metaborg;mandatory:=provider,
               org.objectweb.asm*;provider=metaborg;mandatory:=provider,
