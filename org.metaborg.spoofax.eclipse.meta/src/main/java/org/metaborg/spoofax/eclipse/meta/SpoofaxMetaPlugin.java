@@ -4,6 +4,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.meta.language.MetaProjectListener;
+import org.metaborg.spoofax.meta.core.SpoofaxMeta;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
 
@@ -14,6 +15,7 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
 
     private static SpoofaxMetaPlugin plugin;
     private static BundleContext bundleContext;
+    private static SpoofaxMeta spoofaxMeta;
     private static Injector injector;
 
 
@@ -21,7 +23,9 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         bundleContext = context;
-        injector = SpoofaxPlugin.injector().createChildInjector(new SpoofaxEclipseMetaModule());
+
+        spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax());
+        injector = spoofaxMeta.injector();
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(injector.getInstance(MetaProjectListener.class));
     }
@@ -42,6 +46,10 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
 
     public static BundleContext context() {
         return bundleContext;
+    }
+
+    public static SpoofaxMeta spoofaxMeta() {
+        return spoofaxMeta;
     }
 
     public static Injector injector() {
