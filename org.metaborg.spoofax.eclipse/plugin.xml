@@ -4,8 +4,13 @@
   <!-- Extension points -->
   <extension-point 
     id="org.metaborg.spoofax.eclipse.language" 
-    name="Spoofax language extension" 
+    name="Spoofax language plugin" 
     schema="schema/org.metaborg.spoofax.eclipse.language.exsd"
+  />
+  <extension-point 
+    id="org.metaborg.spoofax.eclipse.module" 
+    name="Spoofax module plugin" 
+    schema="schema/org.metaborg.spoofax.eclipse.module.exsd"
   />
   
   

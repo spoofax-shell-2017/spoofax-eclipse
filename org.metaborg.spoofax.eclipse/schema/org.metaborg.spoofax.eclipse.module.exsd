@@ -3,10 +3,10 @@
 <schema targetNamespace="org.metaborg.spoofax.eclipse" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.metaborg.spoofax.eclipse" id="org.metaborg.spoofax.eclipse.language" name="Spoofax language plugin"/>
+         <meta.schema plugin="org.metaborg.spoofax.eclipse" id="org.metaborg.spoofax.eclipse.module" name="Spoofax module plugin"/>
       </appinfo>
       <documentation>
-         Extension point for plugging languages into the Spoofax runtime.
+         Extension point for plugging in Guice modules.
       </documentation>
    </annotation>
 
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <choice minOccurs="1" maxOccurs="unbounded">
-            <element ref="language"/>
+            <element ref="module"/>
          </choice>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,22 +47,15 @@
       </complexType>
    </element>
 
-   <element name="language">
-      <annotation>
-         <documentation>
-            Indicates that this plugin contains a language component. The Spoofax runtime will discover this language component on startup from the specified location.
-
-Note: Spoofax can only discover the language component if your plugin is unpacked, packed plugins are not yet supported. Make sure to set unpack to true in your feature specification.
-         </documentation>
-      </annotation>
+   <element name="module">
       <complexType>
-         <attribute name="location" type="string" use="required">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  Location of the language component. Can be a directory or a file. In case of a directory, all language components in given directory (and ancestors) are discovered. In case of a file, if that file describes a language component, discovers a single language component.
+                  
                </documentation>
                <appinfo>
-                  <meta.attribute kind="resource"/>
+                  <meta.attribute kind="java" basedOn=":com.google.inject.Module"/>
                </appinfo>
             </annotation>
          </attribute>

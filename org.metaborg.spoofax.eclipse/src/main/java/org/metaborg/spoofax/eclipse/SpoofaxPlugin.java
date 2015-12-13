@@ -11,7 +11,6 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
@@ -32,9 +31,9 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxPlugin.class);
         logger.debug("Starting Spoofax plugin");
 
-        spoofax = new Spoofax(new SpoofaxEclipseModule());
+        spoofax = new Spoofax(new SpoofaxEclipseModule(), new EclipseModulePluginLoader(id + ".module"));
         injector = spoofax.injector();
-        
+
         // Eagerly initialize processor runner so that language changes are processed.
         injector.getInstance(IProcessorRunner.class);
         // Eagerly register editor registry so that editor changes are processed.
@@ -68,7 +67,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     public static Spoofax spoofax() {
         return spoofax;
     }
-    
+
     public static Injector injector() {
         return injector;
     }

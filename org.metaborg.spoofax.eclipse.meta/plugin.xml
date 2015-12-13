@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+  <!-- Extension points -->
+  <extension-point 
+    id="org.metaborg.spoofax.eclipse.meta.module" 
+    name="Spoofax meta-module plugin" 
+    schema="schema/org.metaborg.spoofax.eclipse.meta.module.exsd"
+  />
+  
+  
   <!-- Nature, builder, and support commands -->
   <extension
     id="org.metaborg.spoofax.eclipse.meta.nature"
