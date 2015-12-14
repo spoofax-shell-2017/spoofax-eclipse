@@ -25,7 +25,9 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
         plugin = this;
         bundleContext = context;
 
-        spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax(), new EclipseModulePluginLoader(id + ".module"));
+        spoofaxMeta =
+            new SpoofaxMeta(SpoofaxPlugin.spoofax(), new SpoofaxEclipseMetaModule(), new EclipseModulePluginLoader(id
+                + ".module"));
         injector = spoofaxMeta.injector();
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(injector.getInstance(MetaProjectListener.class));
