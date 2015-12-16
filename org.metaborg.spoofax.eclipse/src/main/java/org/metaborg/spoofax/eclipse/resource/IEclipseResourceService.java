@@ -50,14 +50,4 @@ public interface IEclipseResourceService extends IResourceService {
      * @return Eclipse resource, or null if it could not be converted.
      */
     public abstract @Nullable IResource unresolve(FileObject resource);
-
-    /**
-     * Rebases a resource on the local file system, but relative to the Eclipse workspace, into a resource on the
-     * Eclipse file system.
-     * 
-     * @param resource
-     *            Resource to rebase.
-     * @return Rebased resource.
-     */
-    public abstract FileObject rebase(FileObject resource);
 }

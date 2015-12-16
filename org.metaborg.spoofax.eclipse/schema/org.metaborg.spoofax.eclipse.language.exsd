@@ -3,7 +3,7 @@
 <schema targetNamespace="org.metaborg.spoofax.eclipse" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.metaborg.spoofax.eclipse" id="org.metaborg.spoofax.eclipse.language" name="Spoofax language extension"/>
+         <meta.schema plugin="org.metaborg.spoofax.eclipse" id="org.metaborg.spoofax.eclipse.language" name="Spoofax language plugin"/>
       </appinfo>
       <documentation>
          Extension point for plugging languages into the Spoofax runtime.
@@ -69,41 +69,9 @@ Note: Spoofax can only discover the language component if your plugin is unpacke
       </complexType>
    </element>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="since"/>
-      </appinfo>
-      <documentation>
-         1.4.0
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="examples"/>
-      </appinfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="apiinfo"/>
-      </appinfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appinfo>
-         <meta.section type="implementation"/>
-      </appinfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
 
 
 </schema>

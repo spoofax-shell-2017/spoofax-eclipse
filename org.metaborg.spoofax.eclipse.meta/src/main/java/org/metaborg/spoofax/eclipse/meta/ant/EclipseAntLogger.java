@@ -13,9 +13,8 @@ public class EclipseAntLogger extends DefaultLogger {
 
     public EclipseAntLogger() {
         super();
-        console = ConsoleUtils.get("Spoofax language build");
+        console = ConsoleUtils.get("Spoofax console");
         stream = new PrintStream(console.newMessageStream());
-        console.activate();
     }
 
 

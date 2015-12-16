@@ -8,7 +8,7 @@ import org.metaborg.core.processing.IProgressReporter;
  * Progress reporter implementation from {@link IProgressMonitor}s in Eclipse.
  */
 public class EclipseProgressReporter implements IProgressReporter {
-    private final SubMonitor monitor;
+    public final SubMonitor monitor;
 
 
     public EclipseProgressReporter(IProgressMonitor monitor) {

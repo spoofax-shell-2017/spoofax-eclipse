@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.build;
+package org.metaborg.spoofax.eclipse.meta.ant;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -54,6 +54,13 @@ public class AntClasspathGenerator {
         }
 
         for(final Bundle bundle : bundles.values()) {
+            final String name = bundle.getSymbolicName();
+            if(!name.startsWith("org.metaborg") && !name.startsWith("org.spoofax")
+                && !name.startsWith("org.strategoxt")) {
+                continue;
+            }
+            logger.debug("Including bundle {} at {} in Ant classpath", bundle.getSymbolicName(), bundle.getLocation());
+
             try {
                 final File file = FileLocator.getBundleFile(bundle);
                 final String path = file.getAbsolutePath();

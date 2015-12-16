@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.analysis.AnalysisFileResult;
+import org.metaborg.core.analysis.AnalysisMessageResult;
 import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.IBuildOutput;
@@ -60,7 +61,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
         } catch(InterruptedException e) {
             return;
         }
-        
+
         final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAll(eclipseProject);
 
@@ -72,7 +73,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
 
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
-                logger.error("Cannot clear markers for {}", resource);
+                logger.error("Cannot clear markers for {}, resource is not in the Eclipse workspace", resource);
                 continue;
             }
             MarkerUtils.clearAll(eclipseResource);
@@ -88,7 +89,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
                 final FileObject resource = message.source();
                 final IResource eclipseResource = resourceService.unresolve(resource);
                 if(eclipseResource == null) {
-                    logger.error("Cannot create marker for {}", resource);
+                    logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
                     continue;
                 }
                 MarkerUtils.createMarker(eclipseResource, message);
@@ -111,9 +112,27 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
                     }
                     final IResource eclipseResource = resourceService.unresolve(resource);
                     if(eclipseResource == null) {
-                        logger.error("Cannot create marker for {}", resource);
+                        logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
                         continue;
                     }
+                    MarkerUtils.createMarker(eclipseResource, message);
+                }
+            }
+
+            for(AnalysisMessageResult messageResult : result.messageResults) {
+                final FileObject resource = messageResult.source;
+                if(output.includedResources().contains(resource.getName())) {
+                    // Don't create markers for included resources.
+                    continue;
+                }
+                final IResource eclipseResource = resourceService.unresolve(resource);
+                if(eclipseResource == null) {
+                    logger.error("Cannot clear or create markers for {}, resource is not in the Eclipse workspace",
+                        resource);
+                    continue;
+                }
+                MarkerUtils.clearAnalysis(eclipseResource);
+                for(IMessage message : messageResult.messages) {
                     MarkerUtils.createMarker(eclipseResource, message);
                 }
             }
@@ -128,7 +147,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
 
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
-                logger.error("Cannot create marker for {}", resource);
+                logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
                 continue;
             }
             MarkerUtils.createMarker(eclipseResource, message);

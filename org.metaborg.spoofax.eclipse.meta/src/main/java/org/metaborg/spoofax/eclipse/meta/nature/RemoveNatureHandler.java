@@ -10,12 +10,12 @@ import org.metaborg.spoofax.eclipse.util.NatureUtils;
 
 public class RemoveNatureHandler extends AbstractHandler {
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
-        final IProject project = AbstractHandlerUtils.getProjectFromSelected(event);
+        final IProject project = AbstractHandlerUtils.toProject(event);
         if(project == null)
             return null;
 
         try {
-            NatureUtils.removeFrom(SpoofaxMetaNature.id, project);
+            NatureUtils.removeFrom(SpoofaxMetaNature.id, project, null);
         } catch(CoreException e) {
             throw new ExecutionException("Cannot add Spoofax meta nature", e);
         }

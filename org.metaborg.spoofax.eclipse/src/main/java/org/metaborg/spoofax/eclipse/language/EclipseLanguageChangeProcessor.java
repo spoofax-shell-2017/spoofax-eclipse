@@ -21,7 +21,7 @@ import org.metaborg.core.language.LanguageFileSelector;
 import org.metaborg.core.language.ResourceExtensionFacet;
 import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.LanguageChangeProcessor;
-import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
+import org.metaborg.spoofax.eclipse.editor.SpoofaxEditor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorMappingUtils;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
@@ -72,7 +72,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             logger.debug("Associating extension(s) {} to Spoofax editor", Joiner.on(", ").join(extensions));
             display.asyncExec(new Runnable() {
                 @Override public void run() {
-                    EditorMappingUtils.set(eclipseEditorRegistry, IEclipseEditor.id, extensions);
+                    EditorMappingUtils.set(eclipseEditorRegistry, SpoofaxEditor.id, extensions);
                 }
             });
         }
@@ -97,8 +97,8 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             }
             display.asyncExec(new Runnable() {
                 @Override public void run() {
-                    EditorMappingUtils.remove(eclipseEditorRegistry, IEclipseEditor.id, removeExtensions);
-                    EditorMappingUtils.set(eclipseEditorRegistry, IEclipseEditor.id, addExtensions);
+                    EditorMappingUtils.remove(eclipseEditorRegistry, SpoofaxEditor.id, removeExtensions);
+                    EditorMappingUtils.set(eclipseEditorRegistry, SpoofaxEditor.id, addExtensions);
                 }
             });
         }
@@ -114,7 +114,7 @@ public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
             logger.debug("Unassociating extension(s) {} from Spoofax editor", Joiner.on(", ").join(extensions));
             display.asyncExec(new Runnable() {
                 @Override public void run() {
-                    EditorMappingUtils.remove(eclipseEditorRegistry, IEclipseEditor.id, extensions);
+                    EditorMappingUtils.remove(eclipseEditorRegistry, SpoofaxEditor.id, extensions);
                 }
             });
         }

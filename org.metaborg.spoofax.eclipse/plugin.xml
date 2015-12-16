@@ -4,8 +4,13 @@
   <!-- Extension points -->
   <extension-point 
     id="org.metaborg.spoofax.eclipse.language" 
-    name="Spoofax language extension" 
+    name="Spoofax language plugin" 
     schema="schema/org.metaborg.spoofax.eclipse.language.exsd"
+  />
+  <extension-point 
+    id="org.metaborg.spoofax.eclipse.module" 
+    name="Spoofax module plugin" 
+    schema="schema/org.metaborg.spoofax.eclipse.module.exsd"
   />
   
   
@@ -69,14 +74,22 @@
       categoryId="org.metaborg.spoofax.eclipse.category" 
       name="Toggle comment"
     />
+    <command 
+      id="org.metaborg.spoofax.eclipse.command.editor.quickoutline"
+      categoryId="org.metaborg.spoofax.eclipse.category" 
+      name="Quick outline"
+    />
   </extension>
   <extension point="org.eclipse.ui.handlers">
     <handler
       commandId="org.metaborg.spoofax.eclipse.command.editor.togglecomment"
       class="org.metaborg.spoofax.eclipse.editor.ToggleCommentHandler"
     />
+    <handler
+      commandId="org.metaborg.spoofax.eclipse.command.editor.quickoutline"
+      class="org.metaborg.spoofax.eclipse.editor.outline.QuickOutlineHandler"
+    />
   </extension>
-  <!-- Editor command key bindings -->
   <extension point="org.eclipse.ui.bindings">
     <key
       commandId="org.metaborg.spoofax.eclipse.command.editor.togglecomment"
@@ -85,11 +98,19 @@
       sequence="M1+/"
     >
     </key>
+    <key
+      commandId="org.metaborg.spoofax.eclipse.command.editor.quickoutline"
+      contextId="org.metaborg.spoofax.eclipse.editor.context"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="M1+O"
+    >
+    </key>
   </extension>
   <!-- Editor context menu -->
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:#SpoofaxEditorContext?after=additions">
       <command commandId="org.metaborg.spoofax.eclipse.command.editor.togglecomment"/>
+      <command commandId="org.metaborg.spoofax.eclipse.command.editor.quickoutline"/>
     </menuContribution>
   </extension>
   
@@ -138,7 +159,9 @@
   <!-- Language transformations command -->
   <extension point="org.eclipse.ui.commands">
     <command id="org.metaborg.spoofax.eclipse.command.transform" name="Transform">
+      <commandParameter id="language-id" name="Language identifier" optional="false"/>
       <commandParameter id="action-name" name="Action name" optional="false"/>
+      <commandParameter id="has-open-editor" name="Has open editor" optional="false"/>
     </command>
   </extension>
   <extension point="org.eclipse.ui.handlers">
@@ -166,6 +189,11 @@
   <extension point="org.eclipse.ui.menus">
     <!-- Package Explorer -->
     <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?after=additions">
+      <dynamic 
+        id="org.metaborg.spoofax.eclipse.menu.context" 
+        class="org.metaborg.spoofax.eclipse.transform.ContextMenuContribution"
+      />
+      
       <menu id="org.metaborg.spoofax.eclipse.menu.project" label="Spoofax">
         <visibleWhen>
           <and>
@@ -177,6 +205,11 @@
     </menuContribution>
     <!-- Project Explorer -->
     <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+      <dynamic 
+        id="org.metaborg.spoofax.eclipse.menu.context" 
+        class="org.metaborg.spoofax.eclipse.transform.ContextMenuContribution"
+      />
+      
       <menu id="org.metaborg.spoofax.eclipse.menu.project" label="Spoofax">
         <visibleWhen>
           <and>

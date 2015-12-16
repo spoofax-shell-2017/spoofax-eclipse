@@ -11,6 +11,7 @@ import org.metaborg.core.transform.CompileGoal;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.ITransformerResultHandler;
 import org.metaborg.core.transform.NamedGoal;
+import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.spoofax.core.SpoofaxModule;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
 import org.metaborg.spoofax.core.project.IMavenProjectService;
@@ -20,6 +21,7 @@ import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.editor.SpoofaxEditorRegistry;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.EclipseLanguageChangeProcessor;
+import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
 import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
 import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
 import org.metaborg.spoofax.eclipse.resource.EclipseProjectService;
@@ -47,6 +49,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
 
         bind(GlobalSchedulingRules.class).in(Singleton.class);
         bind(EclipseLanguageChangeProcessor.class).in(Singleton.class);
+        bind(EclipseLanguageLoader.class).in(Singleton.class);
     }
 
 
@@ -84,6 +87,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
         MapBinder<Class<? extends ITransformerGoal>, ITransformerResultHandler<IStrategoTerm>> binder) {
         bind(OpenEditorResultHandler.class).in(Singleton.class);
         binder.addBinding(NamedGoal.class).to(OpenEditorResultHandler.class);
+        binder.addBinding(NestedNamedGoal.class).to(OpenEditorResultHandler.class);
         binder.addBinding(CompileGoal.class).to(OpenEditorResultHandler.class);
     }
 
@@ -112,6 +116,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
     @Override protected void bindEditor() {
         bind(SpoofaxEditorRegistry.class).in(Singleton.class);
         bind(IEditorRegistry.class).to(SpoofaxEditorRegistry.class);
+        bind(new TypeLiteral<IEclipseEditorRegistry<IStrategoTerm>>() {}).to(SpoofaxEditorRegistry.class);
         bind(IEclipseEditorRegistry.class).to(SpoofaxEditorRegistry.class);
         bind(IEclipseEditorRegistryInternal.class).to(SpoofaxEditorRegistry.class);
     }

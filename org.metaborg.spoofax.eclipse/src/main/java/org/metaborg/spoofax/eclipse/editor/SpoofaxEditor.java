@@ -6,6 +6,7 @@ import java.util.Collection;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
@@ -28,21 +29,27 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.context.IContextService;
-import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageIdentifierService;
+import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.dialect.IDialectService;
+import org.metaborg.core.outline.IOutline;
+import org.metaborg.core.outline.IOutlineService;
 import org.metaborg.core.style.ICategorizerService;
+import org.metaborg.core.style.IRegionStyle;
 import org.metaborg.core.style.IStylerService;
 import org.metaborg.core.syntax.FenceCharacters;
 import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultProcessor;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultProcessor;
 import org.metaborg.spoofax.core.tracing.ISpoofaxHoverService;
-import org.metaborg.spoofax.core.tracing.ISpoofaxReferenceResolver;
+import org.metaborg.spoofax.core.tracing.ISpoofaxResolverService;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
+import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePage;
+import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePopup;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -56,9 +63,10 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 
-public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
-    private static final Logger logger = LoggerFactory.getLogger(SpoofaxEditor.class);
+public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrategoTerm> {
+    public static final String id = SpoofaxPlugin.id + ".editor";
 
+    private static final Logger logger = LoggerFactory.getLogger(SpoofaxEditor.class);
 
     private IEclipseResourceService resourceService;
     private ILanguageIdentifierService languageIdentifier;
@@ -68,28 +76,32 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
     private IAnalysisService<IStrategoTerm, IStrategoTerm> analysisService;
     private ICategorizerService<IStrategoTerm, IStrategoTerm> categorizerService;
     private IStylerService<IStrategoTerm, IStrategoTerm> stylerService;
+    private IOutlineService<IStrategoTerm, IStrategoTerm> outlineService;
     private ICompletionService completionService;
-    private ISpoofaxReferenceResolver referenceResolver;
+    private ISpoofaxResolverService referenceResolver;
     private ISpoofaxHoverService hoverService;
-
     private ISpoofaxParseResultProcessor parseResultProcessor;
     private ISpoofaxAnalysisResultProcessor analysisResultProcessor;
+
     private GlobalSchedulingRules globalRules;
 
     private IJobManager jobManager;
 
     private final IPropertyListener editorInputChangedListener;
     private final PresentationMerger presentationMerger;
+    private final SpoofaxOutlinePage outlinePage;
+    private SpoofaxOutlinePopup outlinePopup;
 
-    private IEditorInput input;
-    private FileObject resource;
-    private IResource eclipseResource;
-    private IDocument document;
-    private ILanguageImpl language;
+    private DocumentListener documentListener;
     private ISourceViewer sourceViewer;
     private ISourceViewerExtension2 sourceViewerExt2;
     private ITextViewerExtension4 textViewerExt4;
-    private DocumentListener documentListener;
+
+    private IEditorInput input;
+    private @Nullable IResource eclipseResource;
+    private IDocument document;
+    private FileObject resource;
+    private ILanguageImpl language;
 
 
     public SpoofaxEditor() {
@@ -97,8 +109,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
 
         this.editorInputChangedListener = new EditorInputChangedListener();
         this.presentationMerger = new PresentationMerger();
-
-        setDocumentProvider(new SpoofaxDocumentProvider());
+        this.outlinePage = new SpoofaxOutlinePage(this);
     }
 
 
@@ -215,6 +226,47 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
     }
 
 
+    @Override public void setStyle(Iterable<IRegionStyle<IStrategoTerm>> style, final String text,
+        final IProgressMonitor monitor) {
+        final Display display = Display.getDefault();
+
+        final TextPresentation textPresentation = StyleUtils.createTextPresentation(style, display);
+        presentationMerger.set(textPresentation);
+
+        // Update styling on the main thread, required by Eclipse.
+        display.asyncExec(new Runnable() {
+            public void run() {
+                if(monitor.isCanceled())
+                    return;
+                // Also cancel if text presentation is not valid for current text any more.
+                if(document == null || !document.get().equals(text)) {
+                    return;
+                }
+                sourceViewer.changeTextPresentation(textPresentation, true);
+            }
+        });
+    }
+
+    @Override public void setOutline(final IOutline outline, final IProgressMonitor monitor) {
+        final Display display = Display.getDefault();
+
+        // Update outline on the main thread, required by Eclipse.
+        display.asyncExec(new Runnable() {
+            public void run() {
+                if(monitor.isCanceled())
+                    return;
+                outlinePage.update(outline);
+                outlinePopup.update(outline);
+            }
+        });
+    }
+
+
+    @Override public void openQuickOutline() {
+        outlinePopup.open();
+    }
+
+
     @Override protected void initializeEditor() {
         super.initializeEditor();
 
@@ -233,16 +285,17 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
             injector.getInstance(Key.get(new TypeLiteral<ICategorizerService<IStrategoTerm, IStrategoTerm>>() {}));
         this.stylerService =
             injector.getInstance(Key.get(new TypeLiteral<IStylerService<IStrategoTerm, IStrategoTerm>>() {}));
+        this.outlineService =
+            injector.getInstance(Key.get(new TypeLiteral<IOutlineService<IStrategoTerm, IStrategoTerm>>() {}));
         this.completionService = injector.getInstance(ICompletionService.class);
-        this.referenceResolver = injector.getInstance(ISpoofaxReferenceResolver.class);
+        this.referenceResolver = injector.getInstance(ISpoofaxResolverService.class);
         this.hoverService = injector.getInstance(ISpoofaxHoverService.class);
-
         this.parseResultProcessor = injector.getInstance(ISpoofaxParseResultProcessor.class);
         this.analysisResultProcessor = injector.getInstance(ISpoofaxAnalysisResultProcessor.class);
         this.globalRules = injector.getInstance(GlobalSchedulingRules.class);
-
         this.jobManager = Job.getJobManager();
 
+        setDocumentProvider(new SpoofaxDocumentProvider(resourceService));
         setEditorContextMenuId("#SpoofaxEditorContext");
         setSourceViewerConfiguration(createSourceViewerConfiguration());
     }
@@ -282,6 +335,9 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         // sources, such as marker annotations.
         textViewerExt4.addTextPresentationListener(presentationMerger);
 
+        // Create quick outline control.
+        this.outlinePopup = new SpoofaxOutlinePopup(getSite().getShell(), this);
+
         scheduleJob(true);
 
         return sourceViewer;
@@ -296,8 +352,6 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
             return;
         }
 
-        // Implementation based on:
-        // http://www.sigasi.com/content/how-implement-highlight-matching-brackets-your-custom-editor-eclipse
         final Iterable<FenceCharacters> fenceCharacters = syntaxService.fenceCharacters(language);
         final Collection<Character> pairMatcherChars = Lists.newArrayList();
         for(FenceCharacters fenceChars : fenceCharacters) {
@@ -324,7 +378,9 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
             document.removeDocumentListener(documentListener);
         }
         this.removePropertyListener(editorInputChangedListener);
-        textViewerExt4.removeTextPresentationListener(presentationMerger);
+        if(textViewerExt4 != null) {
+            textViewerExt4.removeTextPresentationListener(presentationMerger);
+        }
 
         input = null;
         resource = null;
@@ -338,9 +394,16 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         super.dispose();
     }
 
+    @Override public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+        if(IContentOutlinePage.class.equals(adapter)) {
+            return outlinePage;
+        }
+        return super.getAdapter(adapter);
+    }
+
 
     private boolean checkInitialized() {
-        if(input == null || document == null || sourceViewer == null) {
+        if(input == null || sourceViewer == null) {
             logger.error("Attempted to use editor before it was initialized");
             return false;
         }
@@ -361,11 +424,16 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor {
         analysisResultProcessor.invalidate(resource);
 
         final Job job =
-            new EditorUpdateJob<IStrategoTerm, IStrategoTerm>(languageIdentifier, dialectService, contextService,
-                syntaxService, analysisService, categorizerService, stylerService, parseResultProcessor,
-                analysisResultProcessor, input, eclipseResource, resource, sourceViewer, document.get(),
-                presentationMerger, instantaneous);
-        job.setRule(new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource }));
+            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, syntaxService,
+                analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
+                analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
+        final ISchedulingRule rule;
+        if(eclipseResource == null) {
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock() });
+        } else {
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
+        }
+        job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);
     }
 

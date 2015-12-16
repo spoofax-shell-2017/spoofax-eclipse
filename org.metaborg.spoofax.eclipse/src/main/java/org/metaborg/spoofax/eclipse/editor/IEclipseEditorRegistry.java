@@ -4,16 +4,16 @@ import org.metaborg.core.editor.IEditorRegistry;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 
-public interface IEclipseEditorRegistry extends IEditorRegistry {
+public interface IEclipseEditorRegistry<P> extends IEditorRegistry {
     /**
      * @return All open Spoofax editors.
      */
-    public abstract Iterable<IEclipseEditor> openEclipseEditors();
+    public abstract Iterable<IEclipseEditor<P>> openEclipseEditors();
 
     /**
      * @return Current active Spoofax editor, or null if none.
      */
-    public abstract @Nullable IEclipseEditor currentEditor();
+    public abstract @Nullable IEclipseEditor<P> currentEditor();
 
     /**
      * Returns the previously active Spoofax editor when a Spoofax editor was active, followed by activation of a
@@ -24,5 +24,5 @@ public interface IEclipseEditorRegistry extends IEditorRegistry {
      * 
      * @return Previously active Spoofax editor, or null if none.
      */
-    public abstract @Nullable IEclipseEditor previousEditor();
+    public abstract @Nullable IEclipseEditor<P> previousEditor();
 }

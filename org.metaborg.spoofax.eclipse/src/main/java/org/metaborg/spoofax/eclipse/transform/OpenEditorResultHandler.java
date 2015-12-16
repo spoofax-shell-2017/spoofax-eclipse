@@ -9,10 +9,11 @@ import org.metaborg.core.menu.IAction;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.transform.ITransformerGoal;
 import org.metaborg.core.transform.NamedGoal;
+import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.core.transform.TransformResult;
-import org.metaborg.spoofax.core.menu.StrategoTransformAction;
+import org.metaborg.spoofax.core.menu.TransformAction;
+import org.metaborg.spoofax.core.stratego.IStrategoCommon;
 import org.metaborg.spoofax.core.transform.IStrategoTransformerResultHandler;
-import org.metaborg.spoofax.core.transform.StrategoTransformerCommon;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -23,11 +24,11 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
     private final IEclipseResourceService resourceService;
     private final IMenuService menuService;
 
-    private final StrategoTransformerCommon transformer;
+    private final IStrategoCommon transformer;
 
 
     @Inject public OpenEditorResultHandler(IEclipseResourceService resourceService, IMenuService menuService,
-        StrategoTransformerCommon transformer) {
+        IStrategoCommon transformer) {
         this.resourceService = resourceService;
         this.menuService = menuService;
         this.transformer = transformer;
@@ -40,7 +41,7 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource instanceof IFile) {
                 final IFile file = (IFile) eclipseResource;
-                EditorUtils.openEditor(file);
+                EditorUtils.open(file);
             }
         }
     }
@@ -50,22 +51,33 @@ public class OpenEditorResultHandler implements IStrategoTransformerResultHandle
             return false;
         }
 
+        final IAction action;
         if(goal instanceof NamedGoal) {
             final NamedGoal namedGoal = (NamedGoal) goal;
-            final IAction action;
             try {
                 action = menuService.action(language, namedGoal.name);
             } catch(MetaborgException e) {
                 return false;
             }
-            if(action == null) {
+        } else if(goal instanceof NestedNamedGoal) {
+            final NestedNamedGoal namedGoal = (NestedNamedGoal) goal;
+            try {
+                action = menuService.nestedAction(language, namedGoal.names);
+            } catch(MetaborgException e) {
                 return false;
             }
-            if(action instanceof StrategoTransformAction) {
-                final StrategoTransformAction transformAction = (StrategoTransformAction) action;
-                return transformAction.flags.openEditor;
-            }
+        } else {
+            return false;
         }
+        
+        if(action == null) {
+            return false;
+        }
+        if(action instanceof TransformAction) {
+            final TransformAction transformAction = (TransformAction) action;
+            return transformAction.flags.openEditor;
+        }
+        
         return false;
     }
 }

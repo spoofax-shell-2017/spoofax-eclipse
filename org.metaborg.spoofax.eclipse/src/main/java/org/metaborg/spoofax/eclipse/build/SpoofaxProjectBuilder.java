@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -19,8 +18,10 @@ import org.metaborg.core.build.CleanInput;
 import org.metaborg.core.build.CleanInputBuilder;
 import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.build.dependency.IDependencyService;
+import org.metaborg.core.build.dependency.MissingDependencies;
 import org.metaborg.core.build.paths.ILanguagePathService;
 import org.metaborg.core.processing.ITask;
+import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
@@ -32,9 +33,9 @@ import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.eclipse.util.StatusUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.common.collect.Lists;
@@ -42,7 +43,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(SpoofaxProjectBuilder.class);
+    private static final ILogger logger = LoggerUtils.logger(SpoofaxProjectBuilder.class);
 
     public static final String id = SpoofaxPlugin.id + ".builder";
 
@@ -52,7 +53,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private final IDependencyService dependencyService;
     private final ISpoofaxProcessorRunner processorRunner;
 
-    private final Map<IProject, BuildState> state = Maps.newHashMap();
+    private final Map<org.eclipse.core.resources.IProject, BuildState> states = Maps.newHashMap();
 
 
     public SpoofaxProjectBuilder() {
@@ -65,60 +66,64 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     }
 
 
-    @Override protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor)
-        throws CoreException {
-        final IProject project = getProject();
+    @Override protected org.eclipse.core.resources.IProject[] build(int kind, Map<String, String> args,
+        IProgressMonitor monitor) throws CoreException {
+        final org.eclipse.core.resources.IProject eclipseProject = getProject();
+        final FileObject location = resourceService.resolve(eclipseProject);
+        final IProject project = projectService.get(location);
+        if(project == null) {
+            logger.error("Cannot build project, cannot retrieve Metaborg project for {}", eclipseProject);
+            cancel(monitor);
+            return null;
+        }
+
+        final MissingDependencies missing = dependencyService.checkDependencies(project);
+        if(!missing.empty()) {
+            logger.error("Cannot build project {}, some dependencies are missing.\n{}", project, missing.toString());
+            cancel(monitor);
+            return null;
+        }
 
         try {
+            final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task;
             if(kind == FULL_BUILD) {
-                fullBuild(project, monitor);
+                task = fullBuild(project, monitor);
             } else {
-                final IResourceDelta delta = getDelta(project);
+                final IResourceDelta delta = getDelta(eclipseProject);
                 if(delta == null) {
-                    fullBuild(project, monitor);
+                    task = fullBuild(project, monitor);
                 } else {
-                    incrBuild(project, delta, monitor);
+                    task = incrBuild(project, states.get(eclipseProject), delta, monitor);
+                }
+            }
+
+            task.schedule().block();
+            if(task.cancelled()) {
+                cancel(monitor);
+            } else {
+                final IBuildOutput<?, ?, ?> output = task.result();
+                if(output != null) {
+                    states.put(eclipseProject, output.state());
                 }
             }
         } catch(InterruptedException e) {
-            // Interrupted, build state is invalid, redo build next time.
-            keepState();
+            cancel(monitor);
         } catch(MetaborgException | FileSystemException e) {
-            // Exception, build state is invalid, redo build next time.
-            keepState();
-            logger.error("Build failed", e);
-            throw new CoreException(StatusUtils.error("Build failed", e));
+            cancel(monitor);
+            logger.error("Cannot build project {}; build failed unexpectedly", e, project);
         }
 
-        // Return value is used to declare dependencies on other projects, but right now this is
-        // not possible in Spoofax, so always return null.
+        // Return value is used to declare dependencies on other projects, but right now this is not possible in
+        // Spoofax, so always return null.
         return null;
     }
 
-    @Override protected void clean(IProgressMonitor monitor) throws CoreException {
-        final IProject project = getProject();
-
-        try {
-            clean(project, monitor);
-        } catch(InterruptedException e) {
-            // Ignore
-        } catch(MetaborgException e) {
-            logger.error("Cleaning failed", e);
-            throw new CoreException(StatusUtils.error("Cleaning failed", e));
-        } finally {
-            cleanState(project);
-        }
-    }
-
-
-    private void fullBuild(IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException,
+    private @Nullable ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> fullBuild(
+        org.metaborg.core.project.IProject project, IProgressMonitor monitor) throws InterruptedException,
         FileSystemException, MetaborgException {
-        final FileObject location = resourceService.resolve(eclipseProject);
-        final org.metaborg.core.project.IProject project = projectService.get(location);
-
-        final Iterable<FileObject> resources = ResourceUtils.find(location);
+        final Iterable<FileObject> resources = ResourceUtils.find(project.location());
         final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
-        processorRunner.updateDialects(project, creations).schedule().block();
+        processorRunner.updateDialects(project.location(), creations).schedule().block();
 
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
@@ -131,24 +136,13 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task =
-            processorRunner.build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor))
-                .schedule().block();
-        if(task.cancelled()) {
-            keepState();
-        } else {
-            final IBuildOutput<?, ?, ?> output = task.result();
-            if(output != null) {
-                state.put(eclipseProject, output.state());
-            }
-        }
+        return processorRunner
+            .build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor));
     }
 
-    private void incrBuild(IProject eclipseProject, IResourceDelta delta, IProgressMonitor monitor)
-        throws CoreException, InterruptedException, MetaborgException {
-        final FileObject location = resourceService.resolve(eclipseProject);
-        final org.metaborg.core.project.IProject project = projectService.get(location);
-
+    private ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> incrBuild(IProject project,
+        @Nullable BuildState state, IResourceDelta delta, IProgressMonitor monitor) throws CoreException,
+        InterruptedException, MetaborgException {
         final Collection<ResourceChange> changes = Lists.newLinkedList();
         delta.accept(new IResourceDeltaVisitor() {
             @Override public boolean visit(IResourceDelta innerDelta) throws CoreException {
@@ -160,38 +154,54 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             }
         });
 
-        processorRunner.updateDialects(project, changes).schedule().block();
+        processorRunner.updateDialects(project.location(), changes).schedule().block();
 
         final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
         final BuildInput input = inputBuilder
-            .withState(state.get(eclipseProject))
+            .withState(state)
             .withDefaultIncludePaths(true)
             .withSourceChanges(changes)
+            .withSelector(new SpoofaxIgnoresSelector())
             .addTransformGoal(new CompileGoal())
             .build(dependencyService, languagePathService)
             ;
         // @formatter:on
 
-        final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task =
-            processorRunner.build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor))
-                .schedule().block();
-        if(task.cancelled()) {
-            keepState();
-        } else {
-            final IBuildOutput<?, ?, ?> output = task.result();
-            if(output != null) {
-                state.put(eclipseProject, output.state());
-            }
-        }
+        return processorRunner
+            .build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor));
+    }
+
+    private void cancel(IProgressMonitor monitor) {
+        rememberLastBuiltState();
+        monitor.setCanceled(true);
     }
 
 
-    private void clean(final IProject eclipseProject, IProgressMonitor monitor) throws InterruptedException,
-        MetaborgException {
+    @Override protected void clean(IProgressMonitor monitor) throws CoreException {
+        final org.eclipse.core.resources.IProject eclipseProject = getProject();
         final FileObject location = resourceService.resolve(eclipseProject);
-        final org.metaborg.core.project.IProject project = projectService.get(location);
+        final IProject project = projectService.get(location);
+        if(project == null) {
+            logger.error("Cannot clean project, cannot retrieve Metaborg project for {}", eclipseProject);
+            monitor.setCanceled(true);
+            return;
+        }
 
+        try {
+            clean(project, monitor).schedule().block();
+        } catch(InterruptedException e) {
+            monitor.setCanceled(true);
+        } catch(MetaborgException e) {
+            monitor.setCanceled(true);
+            logger.error("Cannot clean project {}; cleaning failed unexpectedly", e, project);
+        } finally {
+            forgetLastBuiltState();
+            states.remove(project);
+        }
+    }
+
+    private ITask<?> clean(IProject project, IProgressMonitor monitor) throws MetaborgException {
         final CleanInputBuilder inputBuilder = new CleanInputBuilder(project);
         // @formatter:off
         final CleanInput input = inputBuilder
@@ -200,17 +210,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        processorRunner.clean(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor))
-            .schedule().block();
-    }
-
-
-    private void cleanState(IProject project) {
-        forgetLastBuiltState();
-        state.remove(project);
-    }
-
-    private void keepState() {
-        rememberLastBuiltState();
+        return processorRunner
+            .clean(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor));
     }
 }

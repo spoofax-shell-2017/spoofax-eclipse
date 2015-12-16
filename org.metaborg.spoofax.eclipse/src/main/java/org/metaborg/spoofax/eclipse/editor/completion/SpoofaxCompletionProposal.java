@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.editor;
+package org.metaborg.spoofax.eclipse.editor.completion;
 
 import java.util.Collection;
 

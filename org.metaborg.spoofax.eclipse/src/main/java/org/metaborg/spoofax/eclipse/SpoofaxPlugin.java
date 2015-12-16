@@ -3,6 +3,7 @@ package org.metaborg.spoofax.eclipse;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.metaborg.core.processing.IProcessorRunner;
+import org.metaborg.spoofax.core.Spoofax;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.logging.LoggingConfiguration;
 import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
@@ -10,7 +11,6 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
@@ -18,6 +18,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
 
     private static volatile SpoofaxPlugin plugin;
     private static volatile Logger logger;
+    private static volatile Spoofax spoofax;
     private static volatile Injector injector;
 
 
@@ -30,10 +31,12 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxPlugin.class);
         logger.debug("Starting Spoofax plugin");
 
-        injector = Guice.createInjector(new SpoofaxEclipseModule());
+        spoofax = new Spoofax(new SpoofaxEclipseModule(), new EclipseModulePluginLoader(id + ".module"));
+        injector = spoofax.injector();
+
         // Eagerly initialize processor runner so that language changes are processed.
         injector.getInstance(IProcessorRunner.class);
-        // Eagerly register editor registry so that editor changes are processsed.
+        // Eagerly register editor registry so that editor changes are processed.
         injector.getInstance(IEclipseEditorRegistryInternal.class).register();
         // Discover languages at startup.
         injector.getInstance(EclipseProcessor.class).discoverLanguages();
@@ -44,6 +47,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger = null;
 
         injector = null;
+        spoofax = null;
         plugin = null;
         super.stop(context);
     }
@@ -58,6 +62,10 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
 
     public static SpoofaxPlugin plugin() {
         return plugin;
+    }
+
+    public static Spoofax spoofax() {
+        return spoofax;
     }
 
     public static Injector injector() {

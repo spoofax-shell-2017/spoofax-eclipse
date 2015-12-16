@@ -23,13 +23,16 @@ Require-Bundle: org.eclipse.core.runtime,
  org.metaborg.spoofax.eclipse.externaldeps,
  org.eclipse.m2e.core,
  org.eclipse.m2e.maven.runtime,
- org.metaborg.core
+ org.metaborg.core,
+ org.eclipse.ui.views
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: metaborg.org
 Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.util
 Export-Package: org.metaborg.spoofax.eclipse,
  org.metaborg.spoofax.eclipse.build,
  org.metaborg.spoofax.eclipse.job,
+ org.metaborg.spoofax.eclipse.language,
  org.metaborg.spoofax.eclipse.nature,
+ org.metaborg.spoofax.eclipse.processing,
  org.metaborg.spoofax.eclipse.resource
 Bundle-ActivationPolicy: lazy

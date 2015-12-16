@@ -3,7 +3,7 @@ package org.metaborg.spoofax.eclipse.util.expressions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
+import org.metaborg.spoofax.eclipse.util.SelectionUtils;
 
 public class SpoofaxPropertyTester extends PropertyTester {
     @Override public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -19,7 +19,7 @@ public class SpoofaxPropertyTester extends PropertyTester {
 
 
     private boolean hasNature(Object receiver, String expectedNature) {
-        final IProject project = AbstractHandlerUtils.getProjectFromElement(receiver);
+        final IProject project = SelectionUtils.elementToProject(receiver);
 
         if(project == null) {
             return false;
@@ -33,7 +33,7 @@ public class SpoofaxPropertyTester extends PropertyTester {
     }
 
     private boolean isOpen(Object receiver) {
-        final IProject project = AbstractHandlerUtils.getProjectFromElement(receiver);
+        final IProject project = SelectionUtils.elementToProject(receiver);
 
         if(project == null) {
             return false;
