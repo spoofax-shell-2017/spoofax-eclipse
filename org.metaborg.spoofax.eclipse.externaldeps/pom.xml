@@ -169,6 +169,15 @@
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
+    <!-- Pluto dependencies -->
+    <dependency>
+      <groupId>org.sugarj</groupId>
+      <artifactId>common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cedarsoftware</groupId>
+      <artifactId>java-util-pluto-bugfix</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -212,6 +221,7 @@
               jackson-databind,
               jackson-dataformat-yaml,
               jackson-core,
+              java-util-pluto-bugfix,
               jgrapht-core,
               jcl-over-slf4j,
               kryo,
@@ -219,6 +229,7 @@
               logback-core,
               make-permissive,
               minlog,
+              common,
               objenesis,
               reflectasm,
               rxjava-core,
@@ -234,6 +245,7 @@
               ch.qos.logback.classic;provider=metaborg;mandatory:=provider,
               ch.qos.logback.core*;provider=metaborg;mandatory:=provider,
               ch.qos.logback.core;provider=metaborg;mandatory:=provider,
+              com.cedarsoftware.util,
               com.esotericsoftware.kryo*;provider=metaborg;mandatory:=provider,
               com.esotericsoftware.kryo;provider=metaborg;mandatory:=provider,
               com.esotericsoftware.minlog*;provider=metaborg;mandatory:=provider,
@@ -269,6 +281,8 @@
               org.slf4j*;provider=metaborg;mandatory:=provider,
               org.slf4j;provider=metaborg;mandatory:=provider,
               org.strategoxt*,
+              org.sugarj.common*,
+              org.sugarj.common,
               rx.*;provider=metaborg;mandatory:=provider
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
