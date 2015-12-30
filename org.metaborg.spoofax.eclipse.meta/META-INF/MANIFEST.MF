@@ -29,8 +29,9 @@ Require-Bundle: org.eclipse.ui,
  org.strategoxt.strj,
  org.spoofax.interpreter.core,
  org.metaborg.core,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ build.pluto.pluto
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org
-Eclipse-BuddyPolicy: registered
+Eclipse-RegisterBuddy: build.pluto.pluto, org.metaborg.spoofax.meta.core
