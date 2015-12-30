@@ -1,5 +1,7 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
+import java.net.MalformedURLException;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -52,7 +54,7 @@ public class PreJavaBuilder extends Builder {
                     logger.info("Building language project {}", project);
                     builder.compilePreJava(input, AntClasspathGenerator.classpaths(), new EclipseAntLogger(),
                         new EclipseCancellationToken(monitor));
-                } catch(Exception e) {
+                } catch(MetaborgException | MalformedURLException e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
                     logger.error("Cannot build language project {}; build failed unexpectedly", e, project);

@@ -27,6 +27,7 @@ import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
+import org.metaborg.spoofax.generator.language.AnalysisType;
 import org.metaborg.spoofax.generator.language.NewProjectGenerator;
 import org.metaborg.spoofax.generator.language.ProjectGenerator;
 import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
@@ -123,7 +124,7 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         final SpoofaxProjectSettings spoofaxSettings = new SpoofaxProjectSettings(settings, location);
         final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
 
-        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, extensions);
+        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, extensions, AnalysisType.NaBL_TS);
         newGenerator.generateAll();
         final ProjectGenerator generator = new ProjectGenerator(generatorSettings);
         generator.generateAll();

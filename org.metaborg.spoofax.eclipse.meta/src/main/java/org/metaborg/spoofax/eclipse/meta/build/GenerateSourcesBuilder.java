@@ -15,6 +15,7 @@ import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
+import org.metaborg.util.file.FileAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class GenerateSourcesBuilder extends Builder {
                 try {
                     logger.info("Generating sources for language project {}", project);
                     builder.initialize(input);
-                    builder.generateSources(input);
+                    builder.generateSources(input, new FileAccess());
                 } catch(Exception e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
@@ -71,7 +72,7 @@ public class GenerateSourcesBuilder extends Builder {
                     logger.info("Cleaning and generating sources for language project {}", project);
                     builder.clean(input.settings);
                     builder.initialize(input);
-                    builder.generateSources(input);
+                    builder.generateSources(input, new FileAccess());
                 } catch(Exception e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);

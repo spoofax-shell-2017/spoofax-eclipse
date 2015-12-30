@@ -30,6 +30,7 @@ import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
+import org.metaborg.spoofax.generator.language.AnalysisType;
 import org.metaborg.spoofax.generator.language.NewProjectGenerator;
 import org.metaborg.spoofax.generator.language.ProjectGenerator;
 import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
@@ -252,7 +253,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
     }
 
     private void generateFiles(GeneratorProjectSettings settings) throws Exception {
-        final NewProjectGenerator newGenerator = new NewProjectGenerator(settings);
+        final NewProjectGenerator newGenerator = new NewProjectGenerator(settings, AnalysisType.NaBL_TS);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
         final ProjectGenerator generator = new ProjectGenerator(settings);
