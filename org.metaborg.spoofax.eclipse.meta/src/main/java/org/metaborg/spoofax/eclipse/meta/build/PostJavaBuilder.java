@@ -1,5 +1,6 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -85,6 +86,8 @@ public class PostJavaBuilder extends Builder {
         ResourcesPlugin.getWorkspace().run(runnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
 
         if(runnable.succeeded()) {
+            logger.info("Refreshing language project {}", project);
+            getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
             logger.info("Reloading language project {}", project);
             discoverer.loadJob(project.location(), false).schedule();
         } else {
