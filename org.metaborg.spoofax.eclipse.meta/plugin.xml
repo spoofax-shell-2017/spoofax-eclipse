@@ -9,6 +9,18 @@
   />
   
   
+  <!-- Key bindings -->
+  <extension point="org.eclipse.ui.bindings">
+    <!-- Cmd/Ctrl+Alt+B for building project -->
+    <key
+      sequence="M1+M3+B"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      commandId="org.eclipse.ui.project.buildProject"
+    >
+    </key>
+  </extension>
+  
+  
   <!-- Nature, builder, and support commands -->
   <extension
     id="org.metaborg.spoofax.eclipse.meta.nature"

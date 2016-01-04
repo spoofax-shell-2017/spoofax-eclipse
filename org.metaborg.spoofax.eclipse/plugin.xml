@@ -46,6 +46,11 @@
   </extension>
   
   
+  <!-- Key bindings -->
+  <extension point="org.eclipse.ui.bindings">
+  </extension>
+  
+  
   <!-- Editor -->
   <extension
     point="org.eclipse.ui.editors"
