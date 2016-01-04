@@ -7,11 +7,6 @@ import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProcessor;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.IResourceService;
-import org.metaborg.core.transform.CompileGoal;
-import org.metaborg.core.transform.ITransformerGoal;
-import org.metaborg.core.transform.ITransformerResultHandler;
-import org.metaborg.core.transform.NamedGoal;
-import org.metaborg.core.transform.NestedNamedGoal;
 import org.metaborg.spoofax.core.SpoofaxModule;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
 import org.metaborg.spoofax.core.project.IMavenProjectService;
@@ -27,12 +22,10 @@ import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
 import org.metaborg.spoofax.eclipse.resource.EclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.EclipseResourceService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.eclipse.transform.OpenEditorResultHandler;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.MapBinder;
 
 public class SpoofaxEclipseModule extends SpoofaxModule {
     public SpoofaxEclipseModule() {
@@ -77,18 +70,6 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
      */
     @Override protected void bindMavenProject() {
         bind(IMavenProjectService.class).to(MavenProjectService.class).in(Singleton.class);
-    }
-
-    /**
-     * Overrides {@link SpoofaxModule#bindTransformerResultHandlers()} for transformation handlers that open new
-     * editors.
-     */
-    @Override protected void bindTransformerResultHandlers(
-        MapBinder<Class<? extends ITransformerGoal>, ITransformerResultHandler<IStrategoTerm>> binder) {
-        bind(OpenEditorResultHandler.class).in(Singleton.class);
-        binder.addBinding(NamedGoal.class).to(OpenEditorResultHandler.class);
-        binder.addBinding(NestedNamedGoal.class).to(OpenEditorResultHandler.class);
-        binder.addBinding(CompileGoal.class).to(OpenEditorResultHandler.class);
     }
 
     /**

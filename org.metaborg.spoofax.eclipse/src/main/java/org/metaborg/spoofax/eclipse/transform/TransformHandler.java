@@ -10,6 +10,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
+import org.metaborg.core.action.IActionService;
+import org.metaborg.core.action.ITransformGoal;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
@@ -44,7 +46,7 @@ public class TransformHandler extends AbstractHandler {
     private final ILanguageIdentifierService languageIdentifierService;
     private final ISourceTextService sourceTextService;
     private final IContextService contextService;
-    private final IMenuService menuService;
+    private final IActionService actionService;
     private final IStrategoTransformer transformer;
     private final ISpoofaxParseResultRequester parseResultRequester;
     private final ISpoofaxAnalysisResultRequester analysisResultRequester;
@@ -77,7 +79,7 @@ public class TransformHandler extends AbstractHandler {
             throw new ExecutionException(message);
         }
 
-        final List<String> actionNames = MenuContribution.toActionNames(event);
+        final ITransformGoal goal = MenuContribution.toGoal(event);
         final boolean hasOpenEditor = MenuContribution.toHasOpenEditor(event);
 
 
@@ -122,8 +124,8 @@ public class TransformHandler extends AbstractHandler {
         }
 
         final Job transformJob =
-            new TransformJob<>(contextService, menuService, transformer, parseResultRequester, analysisResultRequester,
-                language, resources, actionNames);
+            new TransformJob<>(contextService, transformer, parseResultRequester, analysisResultRequester,
+                language, resources, goal);
         transformJob.schedule();
 
         return null;
