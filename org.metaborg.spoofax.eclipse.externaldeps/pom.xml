@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <project
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
@@ -169,7 +168,15 @@
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
-    <!-- Pluto dependencies -->
+    <!-- Pluto and dependencies -->
+    <dependency>
+      <groupId>build.pluto</groupId>
+      <artifactId>pluto</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>build.pluto</groupId>
+      <artifactId>build-java</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.sugarj</groupId>
       <artifactId>common</artifactId>
@@ -204,6 +211,7 @@
             <Embed-Dependency>
               aopalliance,
               asm,
+              build-java,
               clj-ds,
               commons-configuration2,
               commons-configuration2-jackson,
@@ -230,6 +238,7 @@
               make-permissive,
               minlog,
               common,
+              pluto,
               objenesis,
               reflectasm,
               rxjava-core,
@@ -241,11 +250,13 @@
               !com.google.common.base.internal,
               !com.google.inject.internal.*,
               !org.apache.commons.logging.impl,
+              build.pluto*;provider=metaborg;mandatory:=provider,
+              build.pluto;provider=metaborg;mandatory:=provider,
               ch.qos.logback.classic*;provider=metaborg;mandatory:=provider,
               ch.qos.logback.classic;provider=metaborg;mandatory:=provider,
               ch.qos.logback.core*;provider=metaborg;mandatory:=provider,
               ch.qos.logback.core;provider=metaborg;mandatory:=provider,
-              com.cedarsoftware.util,
+              com.cedarsoftware.util;provider=metaborg;mandatory:=provider,
               com.esotericsoftware.kryo*;provider=metaborg;mandatory:=provider,
               com.esotericsoftware.kryo;provider=metaborg;mandatory:=provider,
               com.esotericsoftware.minlog*;provider=metaborg;mandatory:=provider,
@@ -281,8 +292,8 @@
               org.slf4j*;provider=metaborg;mandatory:=provider,
               org.slf4j;provider=metaborg;mandatory:=provider,
               org.strategoxt*,
-              org.sugarj.common*,
-              org.sugarj.common,
+              org.sugarj.common*;provider=metaborg;mandatory:=provider,
+              org.sugarj.common;provider=metaborg;mandatory:=provider,
               rx.*;provider=metaborg;mandatory:=provider
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
