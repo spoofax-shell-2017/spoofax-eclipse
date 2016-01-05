@@ -3,6 +3,9 @@ package org.metaborg.spoofax.eclipse.editor;
 import java.util.Collection;
 import java.util.Set;
 
+import org.apache.commons.vfs2.FileObject;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -17,12 +20,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.metaborg.core.editor.IEditor;
+import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
+import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 /**
  * Keeps track of all Spoofax editors, which one is currently active, and which one was active previously.
@@ -33,12 +39,20 @@ public class EditorRegistry<P> implements IWindowListener, IPartListener2, IEcli
 
     public static final String contextId = SpoofaxEditor.id + ".context";
 
+    private final IEclipseResourceService resourceService;
+
     private IContextService contextService;
     private IContextActivation contextActivation;
 
     private volatile Set<IEclipseEditor<P>> editors = Sets.newConcurrentHashSet();
     private volatile IEclipseEditor<P> currentActive;
     private volatile IEclipseEditor<P> previousActive;
+
+
+    @Inject public EditorRegistry(IEclipseResourceService resourceService) {
+        this.resourceService = resourceService;
+    }
+
 
 
     @Override public void register() {
@@ -85,6 +99,15 @@ public class EditorRegistry<P> implements IWindowListener, IPartListener2, IEcli
         }
         return openEditors;
     }
+
+    @Override public void open(FileObject resource) {
+        final IResource eclipseResource = resourceService.unresolve(resource);
+        if(eclipseResource instanceof IFile) {
+            final IFile file = (IFile) eclipseResource;
+            EditorUtils.open(file);
+        }
+    }
+
 
     @Override public Iterable<IEclipseEditor<P>> openEclipseEditors() {
         return editors;

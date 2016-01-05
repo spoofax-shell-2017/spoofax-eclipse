@@ -1,9 +1,10 @@
 package org.metaborg.spoofax.eclipse.transform;
 
+import java.util.Base64;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -13,17 +14,16 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IWorkbenchContribution;
 import org.eclipse.ui.services.IServiceLocator;
 import org.metaborg.core.MetaborgRuntimeException;
+import org.metaborg.core.action.ITransformGoal;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.LanguageIdentifier;
-import org.metaborg.core.menu.IAction;
 import org.metaborg.core.menu.IMenu;
+import org.metaborg.core.menu.IMenuAction;
 import org.metaborg.core.menu.IMenuItem;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.menu.Separator;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Injector;
@@ -64,8 +64,8 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
     private IContributionItem createItem(IMenuItem item, ILanguageImpl language, boolean hasOpenEditor) {
         if(item instanceof IMenu) {
             return createMenu((IMenu) item, language, hasOpenEditor);
-        } else if(item instanceof IAction) {
-            return createAction((IAction) item, language, hasOpenEditor);
+        } else if(item instanceof IMenuAction) {
+            return createAction((IMenuAction) item, language, hasOpenEditor);
         } else if(item instanceof Separator) {
             return new org.eclipse.jface.action.Separator();
         } else {
@@ -82,12 +82,13 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
         return menuManager;
     }
 
-    private IContributionItem createAction(IAction action, ILanguageImpl language, boolean hasOpenEditor) {
+    private IContributionItem createAction(IMenuAction action, ILanguageImpl language, boolean hasOpenEditor) {
         final CommandContributionItemParameter itemParams =
             new CommandContributionItemParameter(serviceLocator, null, transformId, CommandContributionItem.STYLE_PUSH);
         final Map<String, String> parameters = Maps.newHashMap();
         parameters.put(languageIdParam, language.id().toString());
-        parameters.put(actionNameParam, Joiner.on(" ---> ").join(action.goal().names));
+        final ITransformGoal goal = action.action().goal();
+        parameters.put(actionNameParam, Base64.getEncoder().encodeToString(SerializationUtils.serialize(goal)));
         parameters.put(hasOpenEditorParam, Boolean.toString(hasOpenEditor));
         itemParams.parameters = parameters;
         itemParams.label = action.name();
@@ -100,8 +101,8 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
         return LanguageIdentifier.parse(event.getParameter(languageIdParam));
     }
 
-    public static List<String> toActionNames(ExecutionEvent event) {
-        return Splitter.on(" ---> ").splitToList(event.getParameter(actionNameParam));
+    public static ITransformGoal toGoal(ExecutionEvent event) {
+        return SerializationUtils.deserialize(Base64.getDecoder().decode(event.getParameter(actionNameParam)));
     }
 
     public static boolean toHasOpenEditor(ExecutionEvent event) {
