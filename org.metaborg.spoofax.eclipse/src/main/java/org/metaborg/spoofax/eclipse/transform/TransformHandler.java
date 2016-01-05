@@ -2,7 +2,6 @@ package org.metaborg.spoofax.eclipse.transform;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.commands.AbstractHandler;
@@ -10,19 +9,16 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
-import org.metaborg.core.action.IActionService;
 import org.metaborg.core.action.ITransformGoal;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.language.LanguageIdentifier;
-import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.source.ISourceTextService;
-import org.metaborg.spoofax.core.menu.MenuService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultRequester;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultRequester;
-import org.metaborg.spoofax.core.transform.IStrategoTransformer;
+import org.metaborg.spoofax.core.transform.ISpoofaxTransformService;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
@@ -46,8 +42,7 @@ public class TransformHandler extends AbstractHandler {
     private final ILanguageIdentifierService languageIdentifierService;
     private final ISourceTextService sourceTextService;
     private final IContextService contextService;
-    private final IActionService actionService;
-    private final IStrategoTransformer transformer;
+    private final ISpoofaxTransformService transformService;
     private final ISpoofaxParseResultRequester parseResultRequester;
     private final ISpoofaxAnalysisResultRequester analysisResultRequester;
     private final IEclipseEditorRegistry<?> editorRegistry;
@@ -61,8 +56,7 @@ public class TransformHandler extends AbstractHandler {
         this.languageIdentifierService = injector.getInstance(ILanguageIdentifierService.class);
         this.sourceTextService = injector.getInstance(ISourceTextService.class);
         this.contextService = injector.getInstance(IContextService.class);
-        this.menuService = injector.getInstance(MenuService.class);
-        this.transformer = injector.getInstance(IStrategoTransformer.class);
+        this.transformService = injector.getInstance(ISpoofaxTransformService.class);
         this.parseResultRequester = injector.getInstance(ISpoofaxParseResultRequester.class);
         this.analysisResultRequester = injector.getInstance(ISpoofaxAnalysisResultRequester.class);
         this.editorRegistry =
@@ -124,7 +118,7 @@ public class TransformHandler extends AbstractHandler {
         }
 
         final Job transformJob =
-            new TransformJob<>(contextService, transformer, parseResultRequester, analysisResultRequester,
+            new TransformJob<>(contextService, transformService, parseResultRequester, analysisResultRequester,
                 language, resources, goal);
         transformJob.schedule();
 

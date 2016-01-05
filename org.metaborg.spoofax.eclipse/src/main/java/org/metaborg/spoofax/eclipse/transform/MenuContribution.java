@@ -1,8 +1,10 @@
 package org.metaborg.spoofax.eclipse.transform;
 
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -21,7 +23,6 @@ import org.metaborg.core.menu.IMenuItem;
 import org.metaborg.core.menu.IMenuService;
 import org.metaborg.core.menu.Separator;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
-import org.metaborg.util.serialization.SerializationUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -86,7 +87,8 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
             new CommandContributionItemParameter(serviceLocator, null, transformId, CommandContributionItem.STYLE_PUSH);
         final Map<String, String> parameters = Maps.newHashMap();
         parameters.put(languageIdParam, language.id().toString());
-        parameters.put(actionNameParam, SerializationUtils.toString(action.action().goal()));
+        final ITransformGoal goal = action.action().goal();
+        parameters.put(actionNameParam, Base64.getEncoder().encodeToString(SerializationUtils.serialize(goal)));
         parameters.put(hasOpenEditorParam, Boolean.toString(hasOpenEditor));
         itemParams.parameters = parameters;
         itemParams.label = action.name();
@@ -100,7 +102,7 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
     }
 
     public static ITransformGoal toGoal(ExecutionEvent event) {
-        return SerializationUtils.fromString(event.getParameter(actionNameParam));
+        return SerializationUtils.deserialize(Base64.getDecoder().decode(event.getParameter(actionNameParam)));
     }
 
     public static boolean toHasOpenEditor(ExecutionEvent event) {

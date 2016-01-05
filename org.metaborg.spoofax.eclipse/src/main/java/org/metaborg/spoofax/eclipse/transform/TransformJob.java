@@ -7,8 +7,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.metaborg.core.action.ITransformAction;
-import org.metaborg.core.action.TransformActionContribution;
+import org.metaborg.core.action.ITransformGoal;
 import org.metaborg.core.analysis.AnalysisFileResult;
 import org.metaborg.core.context.ContextException;
 import org.metaborg.core.context.IContext;
@@ -34,26 +33,25 @@ public class TransformJob<P, A, T> extends Job {
     private static final long killTimeMillis = 5000;
 
     private final IContextService contextService;
-    private final ITransformService<P, A, T> transformer;
+    private final ITransformService<P, A, T> transformService;
 
     private final IParseResultRequester<P> parseResultRequester;
     private final IAnalysisResultRequester<P, A> analysisResultRequester;
 
     private final ILanguageImpl language;
     private final Iterable<TransformResource> resources;
-    private final Iterable<TransformActionContribution> actionContributions;
+    private final ITransformGoal goal;
 
     private ThreadKillerJob threadKiller;
 
 
-    public TransformJob(IContextService contextService, ITransformService<P, A, T> transformer,
+    public TransformJob(IContextService contextService, ITransformService<P, A, T> transformService,
         IParseResultRequester<P> parseResultProcessor, IAnalysisResultRequester<P, A> analysisResultProcessor,
-        ILanguageImpl language, Iterable<TransformResource> resources,
-        Iterable<TransformActionContribution> actionContributions) {
+        ILanguageImpl language, Iterable<TransformResource> resources, ITransformGoal goal) {
         super("Transforming resources");
 
         this.contextService = contextService;
-        this.transformer = transformer;
+        this.transformService = transformService;
 
         this.parseResultRequester = parseResultProcessor;
         this.analysisResultRequester = analysisResultProcessor;
@@ -61,7 +59,7 @@ public class TransformJob<P, A, T> extends Job {
         this.language = language;
         this.resources = resources;
 
-        this.actionContributions = actionContributions;
+        this.goal = goal;
     }
 
 
@@ -117,18 +115,8 @@ public class TransformJob<P, A, T> extends Job {
 
     private void transform(FileObject resource, ILanguageImpl language, String text, SubMonitor monitor)
         throws IOException, ContextException, TransformException {
-        
-        final ITransformAction action = actionContribution.action;
         final IContext context = contextService.get(resource, language);
-        if(action.flags().parsed) {
-            monitor.setWorkRemaining(2);
-            monitor.setTaskName("Waiting for parse result");
-            final ParseResult<P> result = parseResultRequester.request(resource, language, text).toBlocking().single();
-            monitor.worked(1);
-            monitor.setTaskName("Transforming " + resource);
-            transformer.transform(result, context, actionContribution);
-            monitor.worked(1);
-        } else {
+        if(transformService.requiresAnalysis(context, goal)) {
             monitor.setWorkRemaining(3);
             monitor.setTaskName("Waiting for analysis result");
             final AnalysisFileResult<P, A> result =
@@ -138,9 +126,17 @@ public class TransformJob<P, A, T> extends Job {
             try(IClosableLock lock = context.read()) {
                 monitor.worked(1);
                 monitor.setTaskName("Transforming " + resource);
-                transformer.transform(result, context, actionContribution);
+                transformService.transform(result, context, goal);
                 monitor.worked(1);
             }
+        } else {
+            monitor.setWorkRemaining(2);
+            monitor.setTaskName("Waiting for parse result");
+            final ParseResult<P> result = parseResultRequester.request(resource, language, text).toBlocking().single();
+            monitor.worked(1);
+            monitor.setTaskName("Transforming " + resource);
+            transformService.transform(result, context, goal);
+            monitor.worked(1);
         }
     }
 }
