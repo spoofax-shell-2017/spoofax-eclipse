@@ -1,6 +1,5 @@
 package org.metaborg.spoofax.eclipse.transform;
 
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 
@@ -26,6 +25,7 @@ import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.BaseEncoding;
 import com.google.inject.Injector;
 
 public abstract class MenuContribution extends CompoundContributionItem implements IWorkbenchContribution {
@@ -88,7 +88,7 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
         final Map<String, String> parameters = Maps.newHashMap();
         parameters.put(languageIdParam, language.id().toString());
         final ITransformGoal goal = action.action().goal();
-        parameters.put(actionNameParam, Base64.getEncoder().encodeToString(SerializationUtils.serialize(goal)));
+        parameters.put(actionNameParam, BaseEncoding.base64().encode(SerializationUtils.serialize(goal)));
         parameters.put(hasOpenEditorParam, Boolean.toString(hasOpenEditor));
         itemParams.parameters = parameters;
         itemParams.label = action.name();
@@ -102,7 +102,7 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
     }
 
     public static ITransformGoal toGoal(ExecutionEvent event) {
-        return SerializationUtils.deserialize(Base64.getDecoder().decode(event.getParameter(actionNameParam)));
+        return SerializationUtils.deserialize(BaseEncoding.base64().decode(event.getParameter(actionNameParam)));
     }
 
     public static boolean toHasOpenEditor(ExecutionEvent event) {
