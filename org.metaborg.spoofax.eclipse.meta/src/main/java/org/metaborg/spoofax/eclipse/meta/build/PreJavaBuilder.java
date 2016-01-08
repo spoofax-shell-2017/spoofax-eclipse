@@ -20,15 +20,15 @@ import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Injector;
 
 public class PreJavaBuilder extends Builder {
     public static final String id = SpoofaxMetaPlugin.id + ".builder.prejava";
 
-    private static final Logger logger = LoggerFactory.getLogger(PreJavaBuilder.class);
+    private static final ILogger logger = LoggerUtils.logger(PreJavaBuilder.class);
 
     private final ISpoofaxProjectSettingsService projectSettingsService;
     private final SpoofaxMetaBuilder builder;
