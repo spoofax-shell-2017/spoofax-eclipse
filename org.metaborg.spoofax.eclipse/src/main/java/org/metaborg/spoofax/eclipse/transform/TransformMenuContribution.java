@@ -8,8 +8,8 @@ import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.Injector;
@@ -17,7 +17,7 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 
 public class TransformMenuContribution extends MenuContribution {
-    private static final Logger logger = LoggerFactory.getLogger(TransformMenuContribution.class);
+    private static final ILogger logger = LoggerUtils.logger(TransformMenuContribution.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifier;

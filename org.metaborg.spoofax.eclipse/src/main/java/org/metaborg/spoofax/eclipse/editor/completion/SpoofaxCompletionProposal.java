@@ -18,8 +18,8 @@ import org.metaborg.core.completion.ICompletionItem;
 import org.metaborg.core.completion.ICursorCompletionItem;
 import org.metaborg.core.completion.IPlaceholderCompletionItem;
 import org.metaborg.core.completion.ITextCompletionItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -74,7 +74,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
     }
 
 
-    private static final Logger logger = LoggerFactory.getLogger(SpoofaxCompletionProposal.class);
+    private static final ILogger logger = LoggerUtils.logger(SpoofaxCompletionProposal.class);
 
     private final ITextViewer textViewer;
     private final int offset;

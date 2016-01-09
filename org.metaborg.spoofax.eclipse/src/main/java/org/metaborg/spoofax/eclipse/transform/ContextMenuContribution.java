@@ -18,15 +18,15 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.SelectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 
 public class ContextMenuContribution extends MenuContribution {
-    private static final Logger logger = LoggerFactory.getLogger(ContextMenuContribution.class);
+    private static final ILogger logger = LoggerUtils.logger(ContextMenuContribution.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifier;

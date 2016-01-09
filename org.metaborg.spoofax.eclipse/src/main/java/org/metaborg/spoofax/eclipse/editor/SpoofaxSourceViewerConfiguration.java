@@ -30,14 +30,14 @@ import org.metaborg.spoofax.eclipse.editor.completion.SpoofaxContentAssistProces
 import org.metaborg.spoofax.eclipse.editor.tracing.SpoofaxHyperlinkDetector;
 import org.metaborg.spoofax.eclipse.editor.tracing.SpoofaxTextHover;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.Iterables;
 
 @SuppressWarnings("restriction")
 public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConfiguration {
-    private static final Logger logger = LoggerFactory.getLogger(SourceViewerConfiguration.class);
+    private static final ILogger logger = LoggerUtils.logger(SourceViewerConfiguration.class);
 
     private final IEclipseResourceService resourceService;
     private final ISyntaxService<P> syntaxService;

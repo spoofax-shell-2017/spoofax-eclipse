@@ -21,14 +21,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.editor.IEditor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 /**
  * Copied from {@link org.eclipse.jdt.internal.ui.javaeditor.ToggleCommentAction}.
  */
 public class ToggleCommentHandler extends AbstractHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ToggleCommentHandler.class);
+    private static final ILogger logger = LoggerUtils.logger(ToggleCommentHandler.class);
 
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
         final IEditorPart part = HandlerUtil.getActiveEditor(event);

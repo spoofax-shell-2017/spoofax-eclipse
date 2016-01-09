@@ -45,11 +45,11 @@ import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.concurrent.IClosableLock;
 import org.metaborg.util.iterators.Iterables2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 public class EditorUpdateJob<P, A> extends Job {
-    private static final Logger logger = LoggerFactory.getLogger(EditorUpdateJob.class);
+    private static final ILogger logger = LoggerUtils.logger(EditorUpdateJob.class);
     private static final long interruptTimeMillis = 5000;
     private static final long killTimeMillis = 10000;
 
@@ -137,18 +137,18 @@ public class EditorUpdateJob<P, A> extends Job {
                                 return;
                             MarkerUtils.clearAll(eclipseResource);
                             MarkerUtils.createMarker(eclipseResource, MessageFactory.newErrorAtTop(resource,
-                                "Failed to update editor", MessageType.INTERNAL, null));
+                                "Failed to update editor; see the console or error log for more information", MessageType.INTERNAL, e));
                         }
                     };
                     workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
                 } catch(CoreException e2) {
-                    final String message = "Failed to show internal error marker";
+                    final String message = logger.format("Failed to show internal error marker for {}", resource);
                     logger.error(message, e2);
                     return StatusUtils.silentError(message, e2);
                 }
             }
 
-            final String message = String.format("Failed to update editor for %s", resource);
+            final String message = logger.format("Failed to update editor for {}", resource);
             logger.error(message, e);
             return StatusUtils.silentError(message, e);
         } catch(Throwable e) {

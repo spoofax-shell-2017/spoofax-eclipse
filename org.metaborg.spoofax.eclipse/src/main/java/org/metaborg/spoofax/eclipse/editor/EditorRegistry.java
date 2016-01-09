@@ -23,8 +23,8 @@ import org.metaborg.core.editor.IEditor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -35,7 +35,7 @@ import com.google.inject.Inject;
  */
 public class EditorRegistry<P> implements IWindowListener, IPartListener2, IEclipseEditorRegistry<P>,
     IEclipseEditorRegistryInternal {
-    private static final Logger logger = LoggerFactory.getLogger(EditorRegistry.class);
+    private static final ILogger logger = LoggerUtils.logger(EditorRegistry.class);
 
     public static final String contextId = SpoofaxEditor.id + ".context";
 

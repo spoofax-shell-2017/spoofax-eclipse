@@ -4,14 +4,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 /**
  * Job that interrupts given thread when scheduled, and kills the thread after a certain time.
  */
 public class ThreadKillerJob extends Job {
-    private static final Logger logger = LoggerFactory.getLogger(ThreadKillerJob.class);
+    private static final ILogger logger = LoggerUtils.logger(ThreadKillerJob.class);
 
     private final Thread thread;
     private final long killTimeMillis;

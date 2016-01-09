@@ -39,18 +39,6 @@
     version="1.5.0.qualifier"
     unpack="false"
   />
-  
-  <!-- Pluto -->
-  <plugin
-    id="build.pluto.pluto"
-    version="1.7.0.qualifier"
-    unpack="false"
-  />
-  <plugin
-    id="build.pluto.build-java"
-    version="1.3.0.qualifier"
-    unpack="false"
-  />
 
   <!-- Meta languages, unpack plugins for access to jar, ctree, and packed.esv files. -->
   <plugin

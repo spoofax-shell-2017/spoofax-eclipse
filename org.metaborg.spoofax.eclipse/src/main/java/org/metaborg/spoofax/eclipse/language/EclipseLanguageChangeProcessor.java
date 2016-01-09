@@ -26,8 +26,8 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorMappingUtils;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.ResourceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
@@ -39,7 +39,7 @@ import com.google.inject.Inject;
  * associations and resource markers.
  */
 public class EclipseLanguageChangeProcessor extends LanguageChangeProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(EclipseLanguageChangeProcessor.class);
+    private static final ILogger logger = LoggerUtils.logger(EclipseLanguageChangeProcessor.class);
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifier;

@@ -10,15 +10,15 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
 public class BuilderUtils {
-    private static final Logger logger = LoggerFactory.getLogger(BuilderUtils.class);
+    private static final ILogger logger = LoggerUtils.logger(BuilderUtils.class);
 
     /**
      * Returns if project contains builder with given identifier.

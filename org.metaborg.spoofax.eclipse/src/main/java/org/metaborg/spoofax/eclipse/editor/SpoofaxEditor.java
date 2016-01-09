@@ -54,8 +54,8 @@ import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.eclipse.util.StyleUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.common.collect.Lists;
@@ -66,7 +66,7 @@ import com.google.inject.TypeLiteral;
 public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrategoTerm> {
     public static final String id = SpoofaxPlugin.id + ".editor";
 
-    private static final Logger logger = LoggerFactory.getLogger(SpoofaxEditor.class);
+    private static final ILogger logger = LoggerUtils.logger(SpoofaxEditor.class);
 
     private IEclipseResourceService resourceService;
     private ILanguageIdentifierService languageIdentifier;

@@ -5,8 +5,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
-import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.IResourceService;
+import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 /**

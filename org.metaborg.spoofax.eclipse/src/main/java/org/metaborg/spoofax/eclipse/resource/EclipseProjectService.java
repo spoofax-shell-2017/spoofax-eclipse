@@ -4,13 +4,13 @@ import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Inject;
 
 public class EclipseProjectService implements IProjectService {
-    private static final Logger logger = LoggerFactory.getLogger(EclipseProjectService.class);
+    private static final ILogger logger = LoggerUtils.logger(EclipseProjectService.class);
 
     private final IEclipseResourceService resourceService;
 

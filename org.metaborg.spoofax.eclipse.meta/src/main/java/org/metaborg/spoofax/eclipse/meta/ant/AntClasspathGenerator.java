@@ -15,14 +15,14 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.eclipse.core.runtime.FileLocator;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.util.BundleUtils;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.osgi.framework.Bundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
 public class AntClasspathGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(AntClasspathGenerator.class);
+    private static final ILogger logger = LoggerUtils.logger(AntClasspathGenerator.class);
 
     /**
      * @return List of classpath entries generated from installed Eclipse plugins.

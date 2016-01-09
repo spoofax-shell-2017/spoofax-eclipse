@@ -10,13 +10,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.Lists;
 
 public class ResourceUtils {
-    private static final Logger logger = LoggerFactory.getLogger(ResourceUtils.class);
+    private static final ILogger logger = LoggerUtils.logger(ResourceUtils.class);
 
     /**
      * Returns all resources in the workspace using given file selector.

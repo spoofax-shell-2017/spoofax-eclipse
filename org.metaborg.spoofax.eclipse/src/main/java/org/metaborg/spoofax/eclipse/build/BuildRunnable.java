@@ -22,11 +22,11 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
-    private static final Logger logger = LoggerFactory.getLogger(BuildRunnable.class);
+    private static final ILogger logger = LoggerUtils.logger(BuildRunnable.class);
 
     private final IEclipseResourceService resourceService;
     private final IBuilder<P, A, T> builder;

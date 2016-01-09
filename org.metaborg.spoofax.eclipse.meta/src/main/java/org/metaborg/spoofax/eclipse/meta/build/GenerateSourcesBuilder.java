@@ -16,15 +16,15 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
 import org.metaborg.util.file.FileAccess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Injector;
 
 public class GenerateSourcesBuilder extends Builder {
     public static final String id = SpoofaxMetaPlugin.id + ".builder.generatesources";
 
-    private static final Logger logger = LoggerFactory.getLogger(GenerateSourcesBuilder.class);
+    private static final ILogger logger = LoggerUtils.logger(GenerateSourcesBuilder.class);
 
     private final ISpoofaxProjectSettingsService projectSettingsService;
     private final SpoofaxMetaBuilder builder;
