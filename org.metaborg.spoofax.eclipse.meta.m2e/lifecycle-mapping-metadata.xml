@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lifecycleMappingMetadata>
+  <lifecycleMappings>
+    <lifecycleMapping>
+      <packagingType>spoofax-language</packagingType>
+      <lifecycleMappingId>org.metaborg.spoofax.eclipse.meta.m2e.lifecycle-mapping</lifecycleMappingId>
+    </lifecycleMapping>
+  </lifecycleMappings>
+
+  <pluginExecutions>
+    <pluginExecution>
+      <pluginExecutionFilter>
+        <groupId>org.metaborg</groupId>
+        <artifactId>spoofax-maven-plugin</artifactId>
+        <versionRange>[1.5.0-SNAPSHOT,)</versionRange>
+        <goals>
+          <goal>initialize</goal>
+          <goal>generate-sources</goal>
+          <goal>pre-compile</goal>
+          <goal>post-compile</goal>
+          <goal>run</goal>
+          <goal>package</goal>
+          <goal>clean</goal>
+        </goals>
+      </pluginExecutionFilter>
+      <action>
+        <ignore></ignore>
+      </action>
+    </pluginExecution>
+  </pluginExecutions>
+</lifecycleMappingMetadata>

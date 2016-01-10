@@ -1,7 +1,5 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
-import java.net.MalformedURLException;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -14,8 +12,6 @@ import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.core.project.settings.ISpoofaxProjectSettingsService;
 import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
-import org.metaborg.spoofax.eclipse.meta.ant.AntClasspathGenerator;
-import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntLogger;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.MetaBuildInput;
@@ -35,16 +31,16 @@ public class PreJavaBuilder extends Builder {
 
 
     public PreJavaBuilder() {
-        super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class), SpoofaxMetaPlugin.injector()
-            .getInstance(IProjectService.class));
+        super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
+            SpoofaxMetaPlugin.injector().getInstance(IProjectService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
 
 
-    @Override protected void build(final IProject project, final IProgressMonitor monitor) throws CoreException,
-        MetaborgException {
+    @Override protected void build(final IProject project, final IProgressMonitor monitor)
+        throws CoreException, MetaborgException {
         final SpoofaxProjectSettings settings = projectSettingsService.get(project);
         final MetaBuildInput input = new MetaBuildInput(project, settings);
 
@@ -52,9 +48,8 @@ public class PreJavaBuilder extends Builder {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
                     logger.info("Building language project {}", project);
-                    builder.compilePreJava(input, AntClasspathGenerator.classpaths(), new EclipseAntLogger(),
-                        new EclipseCancellationToken(monitor));
-                } catch(MetaborgException | MalformedURLException e) {
+                    builder.compilePreJava(input, null, null, new EclipseCancellationToken(monitor));
+                } catch(MetaborgException e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
                     logger.error("Cannot build language project {}; build failed unexpectedly", e, project);

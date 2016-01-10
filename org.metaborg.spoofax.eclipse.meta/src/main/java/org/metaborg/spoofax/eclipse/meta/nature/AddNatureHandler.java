@@ -4,20 +4,17 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
 
 public class AddNatureHandler extends AbstractHandler {
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
         final IProject project = AbstractHandlerUtils.toProject(event);
-        if(project == null)
+        if(project == null) {
             return null;
-
-        try {
-            SpoofaxMetaNature.add(project, null);
-        } catch(CoreException e) {
-            throw new ExecutionException("Cannot add Spoofax meta nature", e);
         }
+
+        final AddNatureJob job = new AddNatureJob(project);
+        job.schedule();
 
         return null;
     }

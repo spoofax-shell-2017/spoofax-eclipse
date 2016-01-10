@@ -34,3 +34,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org
 Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.spoofax.meta.core
+Export-Package: org.metaborg.spoofax.eclipse.meta.nature

@@ -68,4 +68,8 @@ public class SpoofaxMetaNature implements IProjectNature {
                 javaBuilderId, PostJavaBuilder.id };
         BuilderUtils.sort(project, monitor, buildOrder);
     }
+    
+    public static void remove(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
+        NatureUtils.removeFrom(id, project, monitor);
+    }
 }
