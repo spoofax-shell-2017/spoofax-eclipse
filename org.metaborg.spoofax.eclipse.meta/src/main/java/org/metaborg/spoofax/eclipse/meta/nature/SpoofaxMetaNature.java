@@ -52,23 +52,31 @@ public class SpoofaxMetaNature implements IProjectNature {
 
     public static void add(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
         addDependencyNatures(project, monitor);
+        addDependencyBuilders(project, monitor);
         NatureUtils.addTo(id, project, monitor);
         sortBuilders(project, monitor);
     }
 
-    private static void addDependencyNatures(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
+    private static void addDependencyNatures(IProject project, @Nullable IProgressMonitor monitor)
+        throws CoreException {
         NatureUtils.addTo(mavenNatureId, project, monitor);
         NatureUtils.addTo(javaNatureId, project, monitor);
         NatureUtils.addTo(SpoofaxNature.id, project, monitor);
     }
 
+    private static void addDependencyBuilders(IProject project, @Nullable IProgressMonitor monitor)
+        throws CoreException {
+        // Ensure the Java and m2e builders are actually there, sometimes they are not, or have been removed by a user.
+        BuilderUtils.append(javaBuilderId, project, monitor);
+        BuilderUtils.append(mavenBuilderId, project, monitor);
+    }
+
     private static void sortBuilders(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
-        final String[] buildOrder =
-            new String[] { mavenBuilderId, GenerateSourcesBuilder.id, SpoofaxProjectBuilder.id, PreJavaBuilder.id,
-                javaBuilderId, PostJavaBuilder.id };
+        final String[] buildOrder = new String[] { mavenBuilderId, GenerateSourcesBuilder.id, SpoofaxProjectBuilder.id,
+            PreJavaBuilder.id, javaBuilderId, PostJavaBuilder.id };
         BuilderUtils.sort(project, monitor, buildOrder);
     }
-    
+
     public static void remove(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
         NatureUtils.removeFrom(id, project, monitor);
     }
