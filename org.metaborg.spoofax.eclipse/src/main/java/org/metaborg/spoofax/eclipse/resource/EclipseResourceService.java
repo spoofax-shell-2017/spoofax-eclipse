@@ -7,13 +7,16 @@ import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IURIEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.resource.ResourceChange;
@@ -37,8 +40,13 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
 
 
     @Override public FileObject resolve(IResource resource) {
-        return resolve("eclipse://" + resource.getFullPath().toString());
+        return resolve(resource.getFullPath());
     }
+
+    @Override public FileObject resolve(IPath path) {
+        return resolve("eclipse://" + path.toString());
+    }
+
 
     @Override public @Nullable FileObject resolve(IEditorInput input) {
         if(input instanceof IFileEditorInput) {
@@ -46,10 +54,30 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
             return resolve(fileInput.getFile());
         } else if(input instanceof IPathEditorInput) {
             final IPathEditorInput pathInput = (IPathEditorInput) input;
-            return resolve(pathInput.getPath().toFile());
+            return resolve(pathInput.getPath());
         } else if(input instanceof IURIEditorInput) {
             final IURIEditorInput uriInput = (IURIEditorInput) input;
             return resolve(uriInput.getURI());
+        } else if(input instanceof IStorageEditorInput) {
+            final IStorageEditorInput storageInput = (IStorageEditorInput) input;
+            final IStorage storage;
+            try {
+                storage = storageInput.getStorage();
+            } catch(CoreException e) {
+                return null;
+            }
+
+            final IPath path = storage.getFullPath();
+            if(path != null) {
+                return resolve(path);
+            } else {
+                try {
+                    final FileObject ramFile = resolve("ram://eclipse/" + input.getName());
+                    return ramFile;
+                } catch(MetaborgRuntimeException e) {
+                    return null;
+                }
+            }
         }
         logger.error("Could not resolve editor input {}", input);
         return null;

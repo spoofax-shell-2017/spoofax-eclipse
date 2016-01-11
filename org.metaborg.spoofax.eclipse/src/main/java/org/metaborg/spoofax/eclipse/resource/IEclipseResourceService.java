@@ -3,6 +3,7 @@ package org.metaborg.spoofax.eclipse.resource;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.resource.IResourceService;
@@ -21,6 +22,15 @@ public interface IEclipseResourceService extends IResourceService {
      * @return VFS resource.
      */
     public abstract FileObject resolve(IResource resource);
+
+    /**
+     * Converts an Eclipse path into a VFS resource.
+     * 
+     * @param resource
+     *            Eclipse resource to convert.
+     * @return VFS resource.
+     */
+    public abstract FileObject resolve(IPath path);
 
     /**
      * Converts an Eclipse editor input into a VFS resource, if possible.

@@ -98,9 +98,10 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     private ITextViewerExtension4 textViewerExt4;
 
     private IEditorInput input;
+    private String inputName;
     private @Nullable IResource eclipseResource;
     private IDocument document;
-    private FileObject resource;
+    private @Nullable FileObject resource;
     private ILanguageImpl language;
 
 
@@ -135,7 +136,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         if(!checkInitialized() || enabled()) {
             return;
         }
-        logger.debug("Enabling editor for {}", resource);
+        logger.debug("Enabling editor for {}", inputName);
         documentListener = new DocumentListener();
         document.addDocumentListener(documentListener);
         scheduleJob(true);
@@ -145,7 +146,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         if(!checkInitialized() || !enabled()) {
             return;
         }
-        logger.debug("Disabling editor for {}", resource);
+        logger.debug("Disabling editor for {}", inputName);
         document.removeDocumentListener(documentListener);
         documentListener = null;
 
@@ -164,7 +165,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         if(!checkInitialized()) {
             return;
         }
-        logger.debug("Force updating editor for {}", resource);
+        logger.debug("Force updating editor for {}", inputName);
         scheduleJob(true);
     }
 
@@ -172,8 +173,12 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         if(!checkInitialized()) {
             return;
         }
-        logger.debug("Reconfiguring editor for {}", resource);
-        language = languageIdentifier.identify(resource);
+        logger.debug("Reconfiguring editor for {}", inputName);
+        if(resource != null) {
+            language = languageIdentifier.identify(resource);
+        } else {
+            language = null;
+        }
 
         final Display display = Display.getDefault();
         display.asyncExec(new Runnable() {
@@ -313,11 +318,17 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
 
         // Store resources for future use.
         resource = resourceService.resolve(input);
-        eclipseResource = resourceService.unresolve(resource);
+        if(resource != null) {
+            inputName = resource.toString();
+            eclipseResource = resourceService.unresolve(resource);
 
-        // Identify the language for future use. Will be null if this editor was opened when Eclipse opened, because
-        // languages have not been discovered yet.
-        language = languageIdentifier.identify(resource);
+            // Identify the language for future use. Will be null if this editor was opened when Eclipse opened, because
+            // languages have not been discovered yet.
+            language = languageIdentifier.identify(resource);
+        } else {
+            inputName = input.getName();
+            logger.warn("Resource for editor on {} is null, cannot update the editor", inputName);
+        }
 
         // Create source viewer after input, document, resources, and language have been set.
         sourceViewer = super.createSourceViewer(parent, ruler, styles);
@@ -348,7 +359,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
 
         if(language == null) {
             logger.debug("Cannot get language-specific fences, identified language for {} is null, "
-                + "bracket matching is disabled until language is identified", resource);
+                + "bracket matching is disabled until language is identified", inputName);
             return;
         }
 
@@ -383,6 +394,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         }
 
         input = null;
+        inputName = null;
         resource = null;
         eclipseResource = null;
         document = null;
@@ -411,7 +423,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     }
 
     private void scheduleJob(boolean instantaneous) {
-        if(!checkInitialized()) {
+        if(!checkInitialized() || resource == null) {
             return;
         }
 
@@ -423,15 +435,15 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         parseResultProcessor.invalidate(resource);
         analysisResultProcessor.invalidate(resource);
 
-        final Job job =
-            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, syntaxService,
-                analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
-                analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
+        final Job job = new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService,
+            syntaxService, analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
+            analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock() });
         } else {
-            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
+            rule = new MultiRule(
+                new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
         }
         job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);
@@ -463,7 +475,13 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
 
         // Store new resource, because these may have changed as a result of the input change.
         resource = resourceService.resolve(input);
-        eclipseResource = resourceService.unresolve(resource);
+        if(resource != null) {
+            inputName = resource.toString();
+            eclipseResource = resourceService.unresolve(resource);
+        } else {
+            inputName = input.getName();
+            logger.warn("Resource for editor on {} is null, cannot update the editor", inputName);
+        }
 
         // Reconfigure the editor because the language may have changed.
         reconfigure();
