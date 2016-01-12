@@ -46,7 +46,16 @@ public class PostJavaBuilder extends Builder {
             } catch(Exception e) {
                 workspaceMonitor.setCanceled(true);
                 monitor.setCanceled(true);
-                logger.error("Packaging language project {} failed unexpectedly", e, input.project);
+                if(e.getCause() != null) {
+                    logger.error("Exception thrown during build", e);
+                    logger.error("BUILD FAILED");
+                } else {
+                    final String message = e.getMessage();
+                    if(message != null && !message.isEmpty()) {
+                        logger.error(message);
+                    }
+                    logger.error("BUILD FAILED");
+                }
             }
         }
 
