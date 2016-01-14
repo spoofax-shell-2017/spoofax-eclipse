@@ -20,6 +20,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     private static volatile Logger logger;
     private static volatile Spoofax spoofax;
     private static volatile Injector injector;
+    private static volatile boolean doneLoading;
 
 
     @Override public void start(BundleContext context) throws Exception {
@@ -40,14 +41,16 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         injector.getInstance(IEclipseEditorRegistryInternal.class).register();
         // Discover languages at startup.
         injector.getInstance(EclipseProcessor.class).discoverLanguages();
+
+        doneLoading = true;
     }
 
     @Override public void stop(BundleContext context) throws Exception {
         logger.debug("Stopping Spoofax plugin");
-        logger = null;
-
+        doneLoading = false;
         injector = null;
         spoofax = null;
+        logger = null;
         plugin = null;
         super.stop(context);
     }
@@ -70,5 +73,9 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
 
     public static Injector injector() {
         return injector;
+    }
+    
+    public static boolean doneLoading() {
+        return doneLoading;
     }
 }

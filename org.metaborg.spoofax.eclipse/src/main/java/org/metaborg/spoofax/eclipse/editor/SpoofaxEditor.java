@@ -174,7 +174,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
             return;
         }
         logger.debug("Reconfiguring editor for {}", inputName);
-        if(resource != null) {
+        // Don't identify language if plugin is still loading, to prevent deadlocks.
+        if(resource != null && SpoofaxPlugin.doneLoading()) {
             language = languageIdentifier.identify(resource);
         } else {
             language = null;
@@ -322,9 +323,12 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
             inputName = resource.toString();
             eclipseResource = resourceService.unresolve(resource);
 
-            // Identify the language for future use. Will be null if this editor was opened when Eclipse opened, because
-            // languages have not been discovered yet.
-            language = languageIdentifier.identify(resource);
+            // Don't identify language if plugin is still loading, to prevent deadlocks.
+            if(SpoofaxPlugin.doneLoading()) {
+                // Identify the language for future use. Will be null if this editor was opened when Eclipse opened,
+                // because languages have not been discovered yet.
+                language = languageIdentifier.identify(resource);
+            }
         } else {
             inputName = input.getName();
             logger.warn("Resource for editor on {} is null, cannot update the editor", inputName);
@@ -435,15 +439,17 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         parseResultProcessor.invalidate(resource);
         analysisResultProcessor.invalidate(resource);
 
-        final Job job = new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService,
-            syntaxService, analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
-            analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
+        final Job job =
+            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, syntaxService,
+                analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
+                analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock() });
         } else {
-            rule = new MultiRule(
-                new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
+            rule =
+                new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),
+                    eclipseResource });
         }
         job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);
