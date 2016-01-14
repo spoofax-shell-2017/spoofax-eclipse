@@ -41,7 +41,7 @@ public class PostJavaBuilder extends Builder {
         @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
             try {
                 logger.info("Packaging language project {}", input.project);
-                builder.compilePostJava(input, null, null, new EclipseCancellationToken(monitor));
+                builder.compilePostJava(input);
                 success = true;
             } catch(Exception e) {
                 workspaceMonitor.setCanceled(true);
