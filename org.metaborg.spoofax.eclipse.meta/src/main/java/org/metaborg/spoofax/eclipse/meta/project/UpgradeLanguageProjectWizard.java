@@ -1,9 +1,5 @@
 package org.metaborg.spoofax.eclipse.meta.project;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.commons.vfs2.AllFileSelector;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IProject;
@@ -24,20 +20,24 @@ import org.metaborg.core.project.configuration.ILanguageSpecConfig;
 import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
 import org.metaborg.core.project.settings.IProjectSettings;
 import org.metaborg.core.project.settings.IProjectSettingsService;
-import org.metaborg.core.project.settings.ProjectSettings;
 import org.metaborg.spoofax.core.esv.ESVReader;
-import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
+import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.core.project.SpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfig;
+import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
+import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
 import org.metaborg.spoofax.generator.language.AnalysisType;
-import org.metaborg.spoofax.generator.language.NewProjectGenerator;
-import org.metaborg.spoofax.generator.language.ProjectGenerator;
-import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
+import org.metaborg.spoofax.generator.language.LanguageSpecGenerator;
+import org.metaborg.spoofax.generator.language.NewLanguageSpecGenerator;
+import org.metaborg.spoofax.generator.project.LanguageSpecGeneratorScope;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.metaborg.util.resource.ContainsFileSelector;
@@ -46,18 +46,32 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.ParseError;
 import org.spoofax.terms.io.binary.TermReader;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
 public class UpgradeLanguageProjectWizard extends Wizard {
     private static final ILogger logger = LoggerUtils.logger(UpgradeLanguageProjectWizard.class);
 
     private final IProject eclipseProject;
     private final FileObject projectLocation;
     private final UpgradeLanguageProjectWizardPage page;
+    private final ILanguageSpecService languageSpecService;
+    private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
+    private final ISpoofaxLanguageSpecPathsService pathsService;
 
-
-    public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService, IProjectService projectService,
+    public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService,
+                                        IProjectService projectService,
                                         ILanguageSpecService languageSpecService,
                                         ILanguageSpecConfigService configService,
-        IProjectSettingsService projectSettingsService, ITermFactoryService termFactoryService, IProject eclipseProject) {
+                                        ISpoofaxLanguageSpecConfigBuilder configBuilder,
+                                        ISpoofaxLanguageSpecPathsService pathsService,
+                                        IProjectSettingsService projectSettingsService,
+                                        ITermFactoryService termFactoryService,
+                                        IProject eclipseProject) {
+        this.languageSpecService = languageSpecService;
+        this.configBuilder = configBuilder;
+        this.pathsService = pathsService;
         this.eclipseProject = eclipseProject;
         this.projectLocation = resourceService.resolve(eclipseProject);
 
@@ -179,10 +193,21 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                 try {
                     final LanguageVersion version = LanguageVersion.parse(versionString);
                     final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
-                    final IProjectSettings settings = new ProjectSettings(identifier, name);
-                    final SpoofaxProjectSettings spoofaxSettings =
-                        new SpoofaxProjectSettings(settings, projectLocation);
-                    final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
+//                    final IProjectSettings settings = new ProjectSettings(identifier, name);
+//                    final SpoofaxProjectSettings spoofaxSettings =
+//                        new SpoofaxProjectSettings(settings, projectLocation);
+//                    final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
+
+                    final EclipseProject project = new EclipseProject(projectLocation, eclipseProject);
+                    final ILanguageSpec languageSpec = languageSpecService.get(project);
+                    final ISpoofaxLanguageSpecConfig config = configBuilder
+                            .withIdentifier(identifier)
+                            .withName(name)
+                            .build();
+
+                    // TODO: Use ISpoofaxLanguageSpecPathsService instead.
+                    final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
+                    final LanguageSpecGeneratorScope generatorSettings  = new LanguageSpecGeneratorScope(config, paths);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
@@ -270,18 +295,18 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         SpoofaxMetaNature.add(eclipseProject, monitor);
     }
 
-    private void upgradeClasspath(GeneratorProjectSettings settings) throws Exception {
+    private void upgradeClasspath(LanguageSpecGeneratorScope settings) throws Exception {
         final FileObject classpath = projectLocation.resolveFile(".classpath");
         classpath.delete();
         final EclipseProjectGenerator generator = new EclipseProjectGenerator(settings);
         generator.generateClasspath();
     }
 
-    private void generateFiles(GeneratorProjectSettings settings) throws Exception {
-        final NewProjectGenerator newGenerator = new NewProjectGenerator(settings, AnalysisType.NaBL_TS);
+    private void generateFiles(LanguageSpecGeneratorScope settings) throws Exception {
+        final NewLanguageSpecGenerator newGenerator = new NewLanguageSpecGenerator(settings, AnalysisType.NaBL_TS);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
-        final ProjectGenerator generator = new ProjectGenerator(settings);
+        final LanguageSpecGenerator generator = new LanguageSpecGenerator(settings);
         generator.generateAll();
     }
 }
