@@ -25,10 +25,10 @@ import rx.schedulers.Schedulers;
 
 import com.google.common.collect.Iterables;
 
-public class SpoofaxContentAssistProcessor implements IContentAssistProcessor {
-    private final ICompletionService completionService;
+public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor {
+    private final ICompletionService<P> completionService;
 
-    private final IParseResultRequester<?> parseResultRequester;
+    private final IParseResultRequester<P> parseResultRequester;
 
     private final FileObject resource;
     private final IDocument document;
@@ -38,8 +38,8 @@ public class SpoofaxContentAssistProcessor implements IContentAssistProcessor {
     private volatile ICompletionProposal[] cachedProposals;
 
 
-    public SpoofaxContentAssistProcessor(ICompletionService completionService,
-        IParseResultRequester<?> parseResultRequester, FileObject resource, IDocument document, ILanguageImpl language) {
+    public SpoofaxContentAssistProcessor(ICompletionService<P> completionService,
+        IParseResultRequester<P> parseResultRequester, FileObject resource, IDocument document, ILanguageImpl language) {
         this.completionService = completionService;
 
         this.parseResultRequester = parseResultRequester;
@@ -65,7 +65,7 @@ public class SpoofaxContentAssistProcessor implements IContentAssistProcessor {
                 if(subscriber.isUnsubscribed()) {
                     return;
                 }
-                final ParseResult<?> parseResult =
+                final ParseResult<P> parseResult =
                     parseResultRequester.request(resource, language, document.get()).toBlocking().first();
 
                 if(subscriber.isUnsubscribed()) {
@@ -92,7 +92,7 @@ public class SpoofaxContentAssistProcessor implements IContentAssistProcessor {
         return null;
     }
 
-    private ICompletionProposal[] proposals(ParseResult<?> parseResult, ITextViewer viewer, int offset) {
+    private ICompletionProposal[] proposals(ParseResult<P> parseResult, ITextViewer viewer, int offset) {
         final Iterable<ICompletion> completions;
         try {
             completions = completionService.get(parseResult, offset);
