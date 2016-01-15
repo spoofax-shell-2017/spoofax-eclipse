@@ -7,7 +7,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
 import org.metaborg.core.project.settings.IProjectSettingsService;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
@@ -19,6 +21,8 @@ import com.google.inject.Injector;
 public class UpgradeLanguageProjectHandler extends AbstractHandler {
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
+    private final ILanguageSpecService languageSpecService;
+    private final ILanguageSpecConfigService configService;
     private final IProjectSettingsService projectSettingsService;
     private final ITermFactoryService termFactoryService;
 
@@ -27,6 +31,8 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.projectService = injector.getInstance(IProjectService.class);
+        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
+        this.configService = injector.getInstance(ILanguageSpecConfigService.class);
         this.projectSettingsService = injector.getInstance(IProjectSettingsService.class);
         this.termFactoryService = injector.getInstance(ITermFactoryService.class);
     }
@@ -39,7 +45,7 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         }
 
         final UpgradeLanguageProjectWizard wizard =
-            new UpgradeLanguageProjectWizard(resourceService, projectService, projectSettingsService,
+            new UpgradeLanguageProjectWizard(resourceService, projectService, languageSpecService, configService, projectSettingsService,
                 termFactoryService, project);
         final Shell shell = HandlerUtil.getActiveWorkbenchWindow(event).getShell();
         final WizardDialog dialog = new WizardDialog(shell, wizard);

@@ -1,5 +1,6 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
+import com.google.inject.Injector;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -7,31 +8,31 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.project.IProject;
+import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.spoofax.core.project.settings.ISpoofaxProjectSettingsService;
-import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
+import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigService;
 import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
-import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.meta.core.MetaBuildInput;
+import org.metaborg.spoofax.meta.core.LanguageSpecBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-import com.google.inject.Injector;
+import java.io.IOException;
 
 public class PostJavaBuilder extends Builder {
     private static final class BuildRunnable implements IWorkspaceRunnable {
-        private final MetaBuildInput input;
+        private final LanguageSpecBuildInput input;
         private final SpoofaxMetaBuilder builder;
         private final IProgressMonitor monitor;
 
         private boolean success = false;
 
 
-        private BuildRunnable(MetaBuildInput input, SpoofaxMetaBuilder builder, IProgressMonitor monitor) {
+        private BuildRunnable(LanguageSpecBuildInput input, SpoofaxMetaBuilder builder, IProgressMonitor monitor) {
             this.input = input;
             this.builder = builder;
             this.monitor = monitor;
@@ -40,7 +41,7 @@ public class PostJavaBuilder extends Builder {
 
         @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
             try {
-                logger.info("Packaging language project {}", input.project);
+                logger.info("Packaging language project {}", input.languageSpec);
                 builder.compilePostJava(input);
                 success = true;
             } catch(Exception e) {
@@ -69,40 +70,45 @@ public class PostJavaBuilder extends Builder {
 
     private static final ILogger logger = LoggerUtils.logger(PostJavaBuilder.class);
 
-    private final ISpoofaxProjectSettingsService projectSettingsService;
+//    private final ISpoofaxProjectSettingsService projectSettingsService;
 
     private final EclipseLanguageLoader discoverer;
     private final SpoofaxMetaBuilder builder;
 
 
     public PostJavaBuilder() {
-        super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
-            SpoofaxMetaPlugin.injector().getInstance(IProjectService.class));
+        super(
+                SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
+                SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
+                SpoofaxMetaPlugin.injector().getInstance(ILanguageSpecService.class),
+                SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
+                SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
-        this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
+//        this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
         this.discoverer = injector.getInstance(EclipseLanguageLoader.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
 
 
-    @Override protected void build(IProject project, IProgressMonitor monitor) throws CoreException, MetaborgException {
-        final SpoofaxProjectSettings settings = projectSettingsService.get(project);
-        final MetaBuildInput input = new MetaBuildInput(project, settings);
+    @Override protected void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, MetaborgException, IOException {
+//        final SpoofaxProjectSettings settings = projectSettingsService.get(project);
+//        final MetaBuildInput input = new MetaBuildInput(project, settings);
+        final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final BuildRunnable runnable = new BuildRunnable(input, builder, monitor);
         ResourcesPlugin.getWorkspace().run(runnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
 
         if(runnable.succeeded()) {
-            logger.info("Refreshing language project {}", project);
+            logger.info("Refreshing language project {}", languageSpec);
             getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-            logger.info("Reloading language project {}", project);
-            discoverer.loadJob(project.location(), false).schedule();
+            logger.info("Reloading language project {}", languageSpec);
+            discoverer.loadJob(languageSpec.location(), false).schedule();
         } else {
             monitor.setCanceled(true);
         }
     }
 
-    @Override protected void clean(IProject project, IProgressMonitor monitor) {
+    @Override protected void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) {
 
     }
 

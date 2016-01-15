@@ -35,7 +35,7 @@ public class CleanRunnable<P, A, T> implements IWorkspaceRunnable {
             this.progressReporter = new EclipseProgressReporter(monitor);
         }
 
-        final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
+        final IProject eclipseProject = ((EclipseProject) input.languageSpec).eclipseProject;
         MarkerUtils.clearAllRec(eclipseProject);
 
         try {

@@ -17,7 +17,11 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
+import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.project.configuration.ILanguageSpecConfig;
+import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
 import org.metaborg.core.project.settings.IProjectSettings;
 import org.metaborg.core.project.settings.IProjectSettingsService;
 import org.metaborg.core.project.settings.ProjectSettings;
@@ -51,6 +55,8 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
 
     public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService, IProjectService projectService,
+                                        ILanguageSpecService languageSpecService,
+                                        ILanguageSpecConfigService configService,
         IProjectSettingsService projectSettingsService, ITermFactoryService termFactoryService, IProject eclipseProject) {
         this.eclipseProject = eclipseProject;
         this.projectLocation = resourceService.resolve(eclipseProject);
@@ -82,8 +88,27 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
         }
 
-        // Try to get identifiers from project settings.
+        // Try to get identifiers from language specification configuration.
         final org.metaborg.core.project.IProject metaborgProject = projectService.get(projectLocation);
+        final ILanguageSpec languageSpec = languageSpecService.get(metaborgProject);
+        if(metaborgProject != null) {
+            ILanguageSpecConfig config = null;
+            try {
+                config = configService.get(languageSpec);
+            } catch (IOException e) {
+                logger.warn("Could not read configuration file for {}.", e, languageSpec);
+            }
+
+            if(config != null) {
+                final LanguageIdentifier identifier = config.identifier();
+                groupId = groupId == null ? identifier.groupId : groupId;
+                id = id == null ? identifier.id : id;
+                version = version == null ? identifier.version.toString() : version;
+                name = name == null ? config.name() : name;
+            }
+        }
+
+        // Try to get identifiers from project settings.
         if(metaborgProject != null) {
             final IProjectSettings settings = projectSettingsService.get(metaborgProject);
             if(settings != null) {

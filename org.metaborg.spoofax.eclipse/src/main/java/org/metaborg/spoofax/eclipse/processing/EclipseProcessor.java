@@ -19,6 +19,7 @@ import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.processing.ITask;
+import org.metaborg.core.project.ILanguageSpec;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
@@ -78,7 +79,7 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         final IWorkspaceRunnable runnable =
             new BuildRunnable<>(resourceService, builder, input, progressReporter, cancellationToken, outputRef);
         final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, outputRef);
+            new RunnableTask<>(workspace, runnable, getResource(input.languageSpec), null, cancellationToken, outputRef);
         return task;
     }
 
@@ -89,7 +90,7 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         }
         final IWorkspaceRunnable runnable = new CleanRunnable<>(builder, input, progressReporter, cancellationToken);
         final ITask<?> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, null);
+            new RunnableTask<>(workspace, runnable, getResource(input.languageSpec), null, cancellationToken, null);
         return task;
     }
 
@@ -132,11 +133,15 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         // GTODO: remove resource change listener on plugin stop
     }
 
-
-    private IResource getResource(org.metaborg.core.project.IProject project) {
-        final EclipseProject eclipseProject = (EclipseProject) project;
+    private IResource getResource(ILanguageSpec languageSpec) {
+        final EclipseProject eclipseProject = (EclipseProject) languageSpec;
         return eclipseProject.eclipseProject;
     }
+
+//    private IResource getResource(org.metaborg.core.project.IProject project) {
+//        final EclipseProject eclipseProject = (EclipseProject) project;
+//        return eclipseProject.eclipseProject;
+//    }
 
     private @Nullable IResource getResource(FileObject resource) {
         final IResource eclipseResource = resourceService.unresolve(resource);

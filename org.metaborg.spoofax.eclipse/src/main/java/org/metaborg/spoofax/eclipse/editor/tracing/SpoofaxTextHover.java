@@ -100,26 +100,27 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
 
 
     @SuppressWarnings("unchecked") private StringBuilder annotationHover(IRegion region) {
-        final IAnnotationModelExtension2 annotationModel =
-            (IAnnotationModelExtension2) sourceViewer.getVisualAnnotationModel();
-        final StringBuilder stringBuilder = new StringBuilder();
-        if(annotationModel == null) {
-            return stringBuilder;
-        }
-        for(Annotation annotation : Iterables2.<Annotation>fromOnce(annotationModel.getAnnotationIterator(
-            region.getOffset(), region.getLength(), true, true))) {
-            // Ignore certain annotations types.
-            switch(annotation.getType()) {
-                case "org.eclipse.ui.workbench.texteditor.quickdiffDeletion":
-                case "org.eclipse.ui.workbench.texteditor.quickdiffChange":
-                case "org.eclipse.ui.workbench.texteditor.quickdiffAddition":
-                case "org.eclipse.ui.workbench.texteditor.quickdiffUnchanged":
-                    continue;
-                default:
-            }
-            stringBuilder.append(annotation.getText());
-            stringBuilder.append("<br/>");
-        }
-        return stringBuilder;
+        throw new RuntimeException("ERROR");
+//        final IAnnotationModelExtension2 annotationModel =
+//            (IAnnotationModelExtension2) sourceViewer.getVisualAnnotationModel();
+//        final StringBuilder stringBuilder = new StringBuilder();
+//        if(annotationModel == null) {
+//            return stringBuilder;
+//        }
+//        for(Annotation annotation : Iterables2.<Annotation>fromOnce(annotationModel.getAnnotationIterator(
+//            region.getOffset(), region.getLength(), true, true))) {
+//            // Ignore certain annotations types.
+//            switch(annotation.getType()) {
+//                case "org.eclipse.ui.workbench.texteditor.quickdiffDeletion":
+//                case "org.eclipse.ui.workbench.texteditor.quickdiffChange":
+//                case "org.eclipse.ui.workbench.texteditor.quickdiffAddition":
+//                case "org.eclipse.ui.workbench.texteditor.quickdiffUnchanged":
+//                    continue;
+//                default:
+//            }
+//            stringBuilder.append(annotation.getText());
+//            stringBuilder.append("<br/>");
+//        }
+//        return stringBuilder;
     }
 }
