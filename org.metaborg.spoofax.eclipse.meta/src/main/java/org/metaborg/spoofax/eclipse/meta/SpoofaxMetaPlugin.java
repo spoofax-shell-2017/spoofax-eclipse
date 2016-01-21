@@ -25,7 +25,7 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin {
 
         spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax(), new SpoofaxEclipseMetaModule(),
             new EclipseModulePluginLoader(id + ".module"));
-        injector = spoofaxMeta.injector();
+        injector = spoofaxMeta.injector;
     }
 
     @Override public void stop(BundleContext context) throws Exception {
