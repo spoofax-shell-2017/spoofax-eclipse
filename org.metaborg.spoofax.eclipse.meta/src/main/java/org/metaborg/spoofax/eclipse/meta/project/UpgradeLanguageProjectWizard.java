@@ -18,8 +18,8 @@ import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.project.configuration.ILanguageSpecConfig;
 import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
-import org.metaborg.core.project.settings.IProjectSettings;
-import org.metaborg.core.project.settings.IProjectSettingsService;
+import org.metaborg.core.project.settings.ILegacyProjectSettings;
+import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
 import org.metaborg.spoofax.core.esv.ESVReader;
 import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPaths;
 import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
@@ -66,7 +66,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                                         ILanguageSpecConfigService configService,
                                         ISpoofaxLanguageSpecConfigBuilder configBuilder,
                                         ISpoofaxLanguageSpecPathsService pathsService,
-                                        IProjectSettingsService projectSettingsService,
+                                        ILegacyProjectSettingsService projectSettingsService,
                                         ITermFactoryService termFactoryService,
                                         IProject eclipseProject) {
         this.languageSpecService = languageSpecService;
@@ -124,7 +124,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
         // Try to get identifiers from project settings.
         if(metaborgProject != null) {
-            final IProjectSettings settings = projectSettingsService.get(metaborgProject);
+            final ILegacyProjectSettings settings = projectSettingsService.get(metaborgProject);
             if(settings != null) {
                 final LanguageIdentifier identifier = settings.identifier();
                 groupId = groupId == null ? identifier.groupId : groupId;
@@ -135,7 +135,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         }
         
         // Try to get identifiers from generated settings file.
-        final IProjectSettings settings = projectSettingsService.get(projectLocation);
+        final ILegacyProjectSettings settings = projectSettingsService.get(projectLocation);
         if(settings != null) {
             final LanguageIdentifier identifier = settings.identifier();
             groupId = groupId == null ? identifier.groupId : groupId;

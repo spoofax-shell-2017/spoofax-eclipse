@@ -10,7 +10,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
-import org.metaborg.core.project.settings.IProjectSettingsService;
+import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
 import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
 import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
@@ -27,7 +27,7 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
     private final ILanguageSpecConfigService configService;
     private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
     private final ISpoofaxLanguageSpecPathsService pathsService;
-    private final IProjectSettingsService projectSettingsService;
+    private final ILegacyProjectSettingsService projectSettingsService;
     private final ITermFactoryService termFactoryService;
 
 
@@ -39,7 +39,7 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         this.configService = injector.getInstance(ILanguageSpecConfigService.class);
         this.configBuilder = injector.getInstance(ISpoofaxLanguageSpecConfigBuilder.class);
         this.pathsService = injector.getInstance(ISpoofaxLanguageSpecPathsService.class);
-        this.projectSettingsService = injector.getInstance(IProjectSettingsService.class);
+        this.projectSettingsService = injector.getInstance(ILegacyProjectSettingsService.class);
         this.termFactoryService = injector.getInstance(ITermFactoryService.class);
     }
 
