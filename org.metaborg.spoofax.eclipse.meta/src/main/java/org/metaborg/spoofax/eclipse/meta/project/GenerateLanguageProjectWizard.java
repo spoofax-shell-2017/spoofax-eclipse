@@ -1,9 +1,6 @@
 package org.metaborg.spoofax.eclipse.meta.project;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-
+import com.google.inject.Injector;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -19,27 +16,37 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
+import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.ProjectException;
-import org.metaborg.core.project.settings.IProjectSettings;
-import org.metaborg.core.project.settings.ProjectSettings;
-import org.metaborg.spoofax.core.project.settings.SpoofaxProjectSettings;
+import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.core.project.SpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfig;
+import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
+import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
 import org.metaborg.spoofax.generator.language.AnalysisType;
-import org.metaborg.spoofax.generator.language.NewProjectGenerator;
-import org.metaborg.spoofax.generator.language.ProjectGenerator;
-import org.metaborg.spoofax.generator.project.GeneratorProjectSettings;
+import org.metaborg.spoofax.generator.language.LanguageSpecGenerator;
+import org.metaborg.spoofax.generator.language.NewLanguageSpecGenerator;
+import org.metaborg.spoofax.generator.project.LanguageSpecGeneratorScope;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-import com.google.inject.Injector;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 
 public class GenerateLanguageProjectWizard extends Wizard implements INewWizard {
     private static final ILogger logger = LoggerUtils.logger(GenerateLanguageProjectWizard.class);
 
     private final IEclipseResourceService resourceService;
+    private final ILanguageSpecService languageSpecService;
+    private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
+    private final ISpoofaxLanguageSpecPathsService pathsService;
 
     private final GenerateLanguageProjectWizardPage page;
 
@@ -50,6 +57,9 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         final Injector injector = SpoofaxMetaPlugin.injector();
 
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
+        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
+        this.configBuilder = injector.getInstance(ISpoofaxLanguageSpecConfigBuilder.class);
+        this.pathsService = injector.getInstance(ISpoofaxLanguageSpecPathsService.class);
 
         this.page = new GenerateLanguageProjectWizardPage();
 
@@ -104,34 +114,40 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
     }
 
     private void createProject(IProgressMonitor monitor, String groupId, String id, String versionString, String name,
-        String[] extensions, IProject project, URI projectLocation) throws ProjectException, IOException, CoreException {
+        String[] extensions, IProject eclipseProject, URI projectLocation) throws ProjectException, IOException, CoreException {
         if(projectLocation != null) {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            final IProjectDescription description = workspace.newProjectDescription(project.getName());
+            final IProjectDescription description = workspace.newProjectDescription(eclipseProject.getName());
             description.setLocationURI(projectLocation);
-            project.create(description, monitor);
+            eclipseProject.create(description, monitor);
         } else {
-            project.create(monitor);
+            eclipseProject.create(monitor);
         }
-        lastProject = project;
-        project.open(monitor);
+        lastProject = eclipseProject;
+        eclipseProject.open(monitor);
 
-        final FileObject location = resourceService.resolve(project);
+        final FileObject location = resourceService.resolve(eclipseProject);
 
         final LanguageVersion version = LanguageVersion.parse(versionString);
         final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
-        final IProjectSettings settings = new ProjectSettings(identifier, name);
-        final SpoofaxProjectSettings spoofaxSettings = new SpoofaxProjectSettings(settings, location);
-        final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
+        final EclipseProject project = new EclipseProject(location, eclipseProject);
+        final ILanguageSpec languageSpec = languageSpecService.get(project);
+        final ISpoofaxLanguageSpecConfig config = configBuilder
+                .withIdentifier(identifier)
+                .withName(name)
+                .build();
+        // TODO: Use ISpoofaxLanguageSpecPathsService instead.
+        final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
+        final LanguageSpecGeneratorScope generatorSettings  = new LanguageSpecGeneratorScope(config, paths);
 
-        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, extensions, AnalysisType.NaBL_TS);
+        final NewLanguageSpecGenerator newGenerator = new NewLanguageSpecGenerator(generatorSettings, AnalysisType.NaBL_TS);
         newGenerator.generateAll();
-        final ProjectGenerator generator = new ProjectGenerator(generatorSettings);
+        final LanguageSpecGenerator generator = new LanguageSpecGenerator(generatorSettings);
         generator.generateAll();
         final EclipseProjectGenerator eclipseGenerator = new EclipseProjectGenerator(generatorSettings);
         eclipseGenerator.generateAll();
 
-        SpoofaxMetaNature.add(project, monitor);
+        SpoofaxMetaNature.add(eclipseProject, monitor);
     }
 
     private void rollback() {

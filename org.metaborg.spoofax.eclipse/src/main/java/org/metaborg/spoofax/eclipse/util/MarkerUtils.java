@@ -202,8 +202,6 @@ public final class MarkerUtils {
      * 
      * @param type
      *            Spoofax message type.
-     * @param severity
-     *            Spoofax severity.
      * @return Eclipse message type.
      */
     public static String type(MessageType type) {

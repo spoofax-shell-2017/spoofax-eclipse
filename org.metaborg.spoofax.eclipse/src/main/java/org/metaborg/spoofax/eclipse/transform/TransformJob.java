@@ -103,7 +103,7 @@ public class TransformJob<P, A, T> extends Job {
             loopMonitor.setTaskName("Transforming " + resource);
             try {
                 transform(resource, language, transformResource.text, loopMonitor.newChild(1));
-            } catch(IOException | ContextException | TransformException e) {
+            } catch(ContextException | TransformException e) {
                 final String message = logger.format("Transformation failed for {}", resource);
                 logger.error(message, e);
                 return StatusUtils.error(message, e);
@@ -114,7 +114,7 @@ public class TransformJob<P, A, T> extends Job {
     }
 
     private void transform(FileObject resource, ILanguageImpl language, String text, SubMonitor monitor)
-        throws IOException, ContextException, TransformException {
+        throws ContextException, TransformException {
         final IContext context = contextService.get(resource, language);
         if(transformService.requiresAnalysis(context, goal)) {
             monitor.setWorkRemaining(3);

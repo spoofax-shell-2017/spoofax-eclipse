@@ -59,7 +59,7 @@ public class EclipseResourceFileObject extends AbstractFileObject {
         updateFileInfo();
     }
 
-    private void updateResource() throws Exception {
+    private void updateResource() {
         final String path = name.getPath();
         resource = root.findMember(path);
         if(resource != null) {

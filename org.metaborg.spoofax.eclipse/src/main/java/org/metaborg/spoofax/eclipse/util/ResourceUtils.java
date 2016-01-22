@@ -73,7 +73,7 @@ public class ResourceUtils {
      * 
      * @param resourceService
      *            Resource service used to convert resources.
-     * @param resources
+     * @param eclipseResources
      *            The VFS resources to convert.
      * @return Eclipse resources.
      */
@@ -85,7 +85,7 @@ public class ResourceUtils {
             if(resource != null) {
                 resources.add(resource);
             } else {
-                logger.error("Cannot resolve {}", resource);
+                logger.error("Cannot resolve {}", eclipseResource);
             }
         }
         return resources;

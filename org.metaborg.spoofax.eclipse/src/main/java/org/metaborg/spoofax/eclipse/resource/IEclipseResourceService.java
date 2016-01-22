@@ -21,16 +21,16 @@ public interface IEclipseResourceService extends IResourceService {
      *            Eclipse resource to convert.
      * @return VFS resource.
      */
-    public abstract FileObject resolve(IResource resource);
+    FileObject resolve(IResource resource);
 
     /**
      * Converts an Eclipse path into a VFS resource.
      * 
-     * @param resource
-     *            Eclipse resource to convert.
+     * @param path
+     *            Path to convert.
      * @return VFS resource.
      */
-    public abstract FileObject resolve(IPath path);
+    FileObject resolve(IPath path);
 
     /**
      * Converts an Eclipse editor input into a VFS resource, if possible.
@@ -39,7 +39,7 @@ public interface IEclipseResourceService extends IResourceService {
      *            Eclipse editor input to resolve.
      * @return VFS resource, or null if it could not be converted.
      */
-    public abstract @Nullable FileObject resolve(IEditorInput input);
+    @Nullable FileObject resolve(IEditorInput input);
 
     /**
      * Converts an Eclipse resource delta into a resource change.
@@ -50,7 +50,7 @@ public interface IEclipseResourceService extends IResourceService {
      * @throws MetaborgRuntimeException
      *             When Eclipse resource delta could not be converted.
      */
-    public abstract @Nullable ResourceChange resolve(IResourceDelta delta);
+    @Nullable ResourceChange resolve(IResourceDelta delta);
 
     /**
      * Converts a VFS resource into an Eclipse resource, if possible
@@ -59,5 +59,5 @@ public interface IEclipseResourceService extends IResourceService {
      *            VFS resource
      * @return Eclipse resource, or null if it could not be converted.
      */
-    public abstract @Nullable IResource unresolve(FileObject resource);
+    @Nullable IResource unresolve(FileObject resource);
 }

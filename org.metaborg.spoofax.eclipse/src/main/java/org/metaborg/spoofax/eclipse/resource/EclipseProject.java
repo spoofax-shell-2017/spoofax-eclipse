@@ -1,9 +1,10 @@
 package org.metaborg.spoofax.eclipse.resource;
 
 import org.apache.commons.vfs2.FileObject;
+import org.metaborg.core.project.ILanguageSpec;
 import org.metaborg.core.project.IProject;
 
-public class EclipseProject implements IProject {
+public class EclipseProject implements IProject, ILanguageSpec {
     public final FileObject location;
     public final org.eclipse.core.resources.IProject eclipseProject;
 

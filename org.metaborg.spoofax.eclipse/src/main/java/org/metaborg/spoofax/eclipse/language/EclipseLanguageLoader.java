@@ -23,14 +23,11 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.language.ILanguageComponent;
-import org.metaborg.core.language.ILanguageDiscoveryRequest;
-import org.metaborg.core.language.ILanguageDiscoveryService;
-import org.metaborg.core.language.ILanguageService;
+import org.metaborg.core.language.*;
 import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.project.settings.IProjectSettings;
-import org.metaborg.core.project.settings.IProjectSettingsService;
+import org.metaborg.core.project.settings.ILegacyProjectSettings;
+import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
 import org.metaborg.core.resource.ResourceUtils;
@@ -52,19 +49,19 @@ public class EclipseLanguageLoader implements IResourceChangeListener {
 
     private final IEclipseResourceService resourceService;
     private final ILanguageService languageService;
-    private final ILanguageDiscoveryService languageDiscoveryService;
+    private final INewLanguageDiscoveryService languageDiscoveryService;
     private final IDialectProcessor dialectProcessor;
     private final IProjectService projectService;
-    private final IProjectSettingsService projectSettingsService;
+    private final ILegacyProjectSettingsService projectSettingsService;
 
     private final GlobalSchedulingRules globalRules;
     private final IWorkspaceRoot workspaceRoot;
 
 
     @Inject public EclipseLanguageLoader(IEclipseResourceService resourceService, ILanguageService languageService,
-        ILanguageDiscoveryService languageDiscoveryService, IDialectProcessor dialectProcessor,
-        IProjectService projectService, IProjectSettingsService projectSettingsService,
-        GlobalSchedulingRules globalRules) {
+                                         INewLanguageDiscoveryService languageDiscoveryService, IDialectProcessor dialectProcessor,
+                                         IProjectService projectService, ILegacyProjectSettingsService projectSettingsService,
+                                         GlobalSchedulingRules globalRules) {
         this.resourceService = resourceService;
         this.languageService = languageService;
         this.languageDiscoveryService = languageDiscoveryService;
@@ -155,9 +152,9 @@ public class EclipseLanguageLoader implements IResourceChangeListener {
      */
     public void load(FileObject location, boolean skipUnavailable) {
         try {
-            final Iterable<ILanguageDiscoveryRequest> requests = languageDiscoveryService.request(location);
+            final Iterable<INewLanguageDiscoveryRequest> requests = languageDiscoveryService.request(location);
             if(skipUnavailable) {
-                for(ILanguageDiscoveryRequest request : requests) {
+                for(INewLanguageDiscoveryRequest request : requests) {
                     if(!request.available()) {
                         logger.debug("Skipping loading language component at {}, "
                             + "some resources are unavailable or the configuration is invalid", location);
@@ -280,7 +277,7 @@ public class EclipseLanguageLoader implements IResourceChangeListener {
     public boolean isLanguageProject(IProject eclipseProject) {
         final FileObject resource = resourceService.resolve(eclipseProject);
         final org.metaborg.core.project.IProject project = projectService.get(resource);
-        IProjectSettings settings = projectSettingsService.get(project);
+        ILegacyProjectSettings settings = projectSettingsService.get(project);
         if(settings == null) {
             settings = projectSettingsService.get(resource);
         }

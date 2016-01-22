@@ -7,8 +7,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.project.settings.IProjectSettingsService;
+import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
+import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
+import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -19,7 +23,11 @@ import com.google.inject.Injector;
 public class UpgradeLanguageProjectHandler extends AbstractHandler {
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
-    private final IProjectSettingsService projectSettingsService;
+    private final ILanguageSpecService languageSpecService;
+    private final ILanguageSpecConfigService configService;
+    private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
+    private final ISpoofaxLanguageSpecPathsService pathsService;
+    private final ILegacyProjectSettingsService projectSettingsService;
     private final ITermFactoryService termFactoryService;
 
 
@@ -27,7 +35,11 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.projectService = injector.getInstance(IProjectService.class);
-        this.projectSettingsService = injector.getInstance(IProjectSettingsService.class);
+        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
+        this.configService = injector.getInstance(ILanguageSpecConfigService.class);
+        this.configBuilder = injector.getInstance(ISpoofaxLanguageSpecConfigBuilder.class);
+        this.pathsService = injector.getInstance(ISpoofaxLanguageSpecPathsService.class);
+        this.projectSettingsService = injector.getInstance(ILegacyProjectSettingsService.class);
         this.termFactoryService = injector.getInstance(ITermFactoryService.class);
     }
 
@@ -39,8 +51,16 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         }
 
         final UpgradeLanguageProjectWizard wizard =
-            new UpgradeLanguageProjectWizard(resourceService, projectService, projectSettingsService,
-                termFactoryService, project);
+            new UpgradeLanguageProjectWizard(
+                    resourceService,
+                    projectService,
+                    languageSpecService,
+                    configService,
+                    configBuilder,
+                    pathsService,
+                    projectSettingsService,
+                    termFactoryService,
+                    project);
         final Shell shell = HandlerUtil.getActiveWorkbenchWindow(event).getShell();
         final WizardDialog dialog = new WizardDialog(shell, wizard);
         dialog.open();

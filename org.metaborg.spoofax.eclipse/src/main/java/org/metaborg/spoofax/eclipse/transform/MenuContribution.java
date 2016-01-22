@@ -57,7 +57,7 @@ public abstract class MenuContribution extends CompoundContributionItem implemen
         for(IMenuItem menuItem : menuItems) {
             items.add(createItem(menuItem, language, hasOpenEditor));
         }
-        return items.toArray(new IContributionItem[0]);
+        return items.toArray(new IContributionItem[items.size()]);
     }
 
 

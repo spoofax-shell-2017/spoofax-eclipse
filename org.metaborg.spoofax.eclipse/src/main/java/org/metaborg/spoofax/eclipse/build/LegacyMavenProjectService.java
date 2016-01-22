@@ -10,18 +10,18 @@ import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.metaborg.core.project.IProject;
-import org.metaborg.spoofax.core.project.IMavenProjectService;
+import org.metaborg.spoofax.core.project.ILegacyMavenProjectService;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 
 import com.google.inject.Inject;
 
-public class MavenProjectService implements IMavenProjectService {
+public class LegacyMavenProjectService implements ILegacyMavenProjectService {
     private final IEclipseResourceService resourceService;
     private final IMavenProjectRegistry mavenProjectRegistry;
 
 
-    @Inject public MavenProjectService(IEclipseResourceService resourceService) {
+    @Inject public LegacyMavenProjectService(IEclipseResourceService resourceService) {
         this.resourceService = resourceService;
         this.mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
     }

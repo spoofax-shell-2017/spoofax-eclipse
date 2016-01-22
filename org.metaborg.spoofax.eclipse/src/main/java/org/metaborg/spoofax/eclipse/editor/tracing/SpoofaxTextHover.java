@@ -106,8 +106,9 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
         if(annotationModel == null) {
             return stringBuilder;
         }
-        for(Annotation annotation : Iterables2.<Annotation>fromOnce(annotationModel.getAnnotationIterator(
-            region.getOffset(), region.getLength(), true, true))) {
+        final Iterable<Annotation> annotations = Iterables2.<Annotation>fromOnce(annotationModel.getAnnotationIterator(
+                region.getOffset(), region.getLength(), true, true));
+        for(Annotation annotation : annotations) {
             // Ignore certain annotations types.
             switch(annotation.getType()) {
                 case "org.eclipse.ui.workbench.texteditor.quickdiffDeletion":
