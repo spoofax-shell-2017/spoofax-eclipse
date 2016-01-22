@@ -27,7 +27,7 @@ public class AntClasspathGenerator {
     /**
      * @return List of classpath entries generated from installed Eclipse plugins.
      */
-    public static URL[] classpaths() throws MalformedURLException {
+    public static URL[] classpaths() {
         final Collection<URL> classpath = Lists.newLinkedList();
         final Map<String, Bundle> bundles = BundleUtils.bundlesBySymbolicName(SpoofaxMetaPlugin.context());
 
@@ -94,6 +94,6 @@ public class AntClasspathGenerator {
             }
         }
 
-        return classpath.toArray(new URL[0]);
+        return classpath.toArray(new URL[classpath.size()]);
     }
 }

@@ -43,7 +43,7 @@ public class ToggleCommentHandler extends AbstractHandler {
         final ISourceViewer sourceViewer = editor.sourceViewer();
         final String partitioning = configuration.getConfiguredDocumentPartitioning(sourceViewer);
         final String[] types = configuration.getConfiguredContentTypes(sourceViewer);
-        final Map<String, String[]> prefixesMap = new HashMap<String, String[]>(types.length);
+        final Map<String, String[]> prefixesMap = new HashMap<>(types.length);
         for(int i = 0; i < types.length; i++) {
             String type = types[i];
             String[] prefixes = configuration.getDefaultPrefixes(sourceViewer, type);

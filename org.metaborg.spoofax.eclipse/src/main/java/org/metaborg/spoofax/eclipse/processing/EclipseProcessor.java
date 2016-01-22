@@ -138,11 +138,6 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         return eclipseProject.eclipseProject;
     }
 
-//    private IResource getResource(org.metaborg.core.project.IProject project) {
-//        final EclipseProject eclipseProject = (EclipseProject) project;
-//        return eclipseProject.eclipseProject;
-//    }
-
     private @Nullable IResource getResource(FileObject resource) {
         final IResource eclipseResource = resourceService.unresolve(resource);
         return eclipseResource;

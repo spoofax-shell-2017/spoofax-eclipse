@@ -70,8 +70,6 @@ public class PostJavaBuilder extends Builder {
 
     private static final ILogger logger = LoggerUtils.logger(PostJavaBuilder.class);
 
-//    private final ISpoofaxProjectSettingsService projectSettingsService;
-
     private final EclipseLanguageLoader discoverer;
     private final SpoofaxMetaBuilder builder;
 
@@ -84,15 +82,12 @@ public class PostJavaBuilder extends Builder {
                 SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
                 SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
-//        this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
         this.discoverer = injector.getInstance(EclipseLanguageLoader.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
 
 
-    @Override protected void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, MetaborgException, IOException {
-//        final SpoofaxProjectSettings settings = projectSettingsService.get(project);
-//        final MetaBuildInput input = new MetaBuildInput(project, settings);
+    @Override protected void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, IOException {
         final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final BuildRunnable runnable = new BuildRunnable(input, builder, monitor);

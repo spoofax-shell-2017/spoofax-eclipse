@@ -79,6 +79,6 @@ public class ContextMenuContribution extends MenuContribution {
             }
             items.add(menuManager);
         }
-        return items.toArray(new IContributionItem[0]);
+        return items.toArray(new IContributionItem[items.size()]);
     }
 }

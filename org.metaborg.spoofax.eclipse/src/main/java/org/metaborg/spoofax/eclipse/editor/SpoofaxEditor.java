@@ -307,9 +307,9 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     }
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
-        return new SpoofaxSourceViewerConfiguration<IStrategoTerm, IStrategoTerm>(resourceService, syntaxService,
-            parseResultProcessor, analysisResultProcessor, referenceResolver, hoverService, completionService,
-            getPreferenceStore(), this);
+        return new SpoofaxSourceViewerConfiguration<>(resourceService, syntaxService,
+                parseResultProcessor, analysisResultProcessor, referenceResolver, hoverService, completionService,
+                getPreferenceStore(), this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
@@ -381,7 +381,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         }
 
         final ICharacterPairMatcher matcher =
-            new DefaultCharacterPairMatcher(ArrayUtils.toPrimitive(pairMatcherChars.toArray(new Character[0])));
+            new DefaultCharacterPairMatcher(ArrayUtils.toPrimitive(pairMatcherChars.toArray(new Character[pairMatcherChars.size()])));
         support.setCharacterPairMatcher(matcher);
         SpoofaxEditorPreferences.setPairMatcherKeys(support);
     }

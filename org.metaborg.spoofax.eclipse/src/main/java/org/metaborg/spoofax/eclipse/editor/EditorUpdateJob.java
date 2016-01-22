@@ -218,7 +218,7 @@ public class EditorUpdateJob<P, A> extends Job {
         }
 
         // Sleep before showing parse messages to prevent showing irrelevant messages while user is still typing.
-        if(!instantaneous && eclipseResource != null) {
+        if(!instantaneous) {
             try {
                 monitor.subTask("Waiting");
                 Thread.sleep(300);

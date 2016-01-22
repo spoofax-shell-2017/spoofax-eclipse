@@ -15,43 +15,43 @@ public interface IEclipseEditor<P> extends IEditor {
     /**
      * @return Current input, or null if the editor has not been initialized yet, or if it has been disposed.
      */
-    public abstract @Nullable IEditorInput input();
+    @Nullable IEditorInput input();
 
     /**
      * @return Current Eclipse resource, or null if the editor has not been initialized yet, or if it has been disposed.
      */
-    public abstract @Nullable IResource eclipseResource();
+    @Nullable IResource eclipseResource();
 
     /**
      * @return Current document, or null if the editor has not been initialized yet, or if it has been disposed.
      */
-    public abstract @Nullable IDocument document();
+    @Nullable IDocument document();
 
     /**
      * @return Source viewer, or null if the editor has not been initialized yet, or if it has been disposed.
      */
-    public abstract @Nullable ISourceViewer sourceViewer();
+    @Nullable ISourceViewer sourceViewer();
 
     /**
      * @return Source viewer configuration, or null if the editor has not been initialized yet, or if it has been
      *         disposed.
      */
-    public abstract @Nullable SourceViewerConfiguration configuration();
+    @Nullable SourceViewerConfiguration configuration();
 
 
     /**
      * Sets the text styling, using given text and monitor for cancellation. Can be called from any thread.
      */
-    public abstract void setStyle(Iterable<IRegionStyle<P>> style, String text, IProgressMonitor monitor);
+    void setStyle(Iterable<IRegionStyle<P>> style, String text, IProgressMonitor monitor);
 
     /**
      * Sets the outline information, using given monitor for cancellation. Can be called from any thread.
      */
-    public abstract void setOutline(IOutline outline, IProgressMonitor monitor);
+    void setOutline(IOutline outline, IProgressMonitor monitor);
 
 
     /**
      * Opens the quick outline with previously set outline information.
      */
-    public abstract void openQuickOutline();
+    void openQuickOutline();
 }

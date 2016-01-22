@@ -24,7 +24,6 @@ import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
 import org.metaborg.spoofax.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
@@ -131,10 +130,6 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
 
         final LanguageVersion version = LanguageVersion.parse(versionString);
         final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
-//        final IProjectSettings settings = new ProjectSettings(identifier, name);
-//        final SpoofaxProjectSettings spoofaxSettings = new SpoofaxProjectSettings(settings, location);
-//        final GeneratorProjectSettings generatorSettings = new GeneratorProjectSettings(spoofaxSettings);
-
         final EclipseProject project = new EclipseProject(location, eclipseProject);
         final ILanguageSpec languageSpec = languageSpecService.get(project);
         final ISpoofaxLanguageSpecConfig config = configBuilder
@@ -144,13 +139,6 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         // TODO: Use ISpoofaxLanguageSpecPathsService instead.
         final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
         final LanguageSpecGeneratorScope generatorSettings  = new LanguageSpecGeneratorScope(config, paths);
-
-//        final NewProjectGenerator newGenerator = new NewProjectGenerator(generatorSettings, extensions, AnalysisType.NaBL_TS);
-//        newGenerator.generateAll();
-//        final ProjectGenerator generator = new ProjectGenerator(generatorSettings);
-//        generator.generateAll();
-//        final EclipseProjectGenerator eclipseGenerator = new EclipseProjectGenerator(generatorSettings);
-//        eclipseGenerator.generateAll();
 
         final NewLanguageSpecGenerator newGenerator = new NewLanguageSpecGenerator(generatorSettings, AnalysisType.NaBL_TS);
         newGenerator.generateAll();

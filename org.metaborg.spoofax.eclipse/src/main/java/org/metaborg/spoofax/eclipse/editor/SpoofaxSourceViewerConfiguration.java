@@ -107,8 +107,8 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
         }
 
         return new IHyperlinkDetector[] {
-            new SpoofaxHyperlinkDetector<P, A>(resourceService, parseResultRequester, analysisResultRequester,
-                referenceResolver, resource, language, editor), new URLHyperlinkDetector() };
+                new SpoofaxHyperlinkDetector<>(resourceService, parseResultRequester, analysisResultRequester,
+                        referenceResolver, resource, language, editor), new URLHyperlinkDetector() };
     }
 
     @Override public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
@@ -121,8 +121,8 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
             return null;
         }
 
-        return new SpoofaxTextHover<P, A>(parseResultRequester, analysisResultRequester, hoverService, resource,
-            language, (ISourceViewerExtension2) editor.sourceViewer());
+        return new SpoofaxTextHover<>(parseResultRequester, analysisResultRequester, hoverService, resource,
+                language, (ISourceViewerExtension2) editor.sourceViewer());
     }
 
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {

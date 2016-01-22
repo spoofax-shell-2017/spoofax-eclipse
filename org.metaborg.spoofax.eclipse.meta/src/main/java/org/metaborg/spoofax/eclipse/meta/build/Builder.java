@@ -49,7 +49,6 @@ public abstract class Builder extends IncrementalProjectBuilder {
 
         try {
             final ILanguageSpec languageSpec = languageSpec();
-//            final IProject project = project();
             if(languageSpec == null) {
                 logger.error("Cannot {} language project; cannot retrieve Metaborg project for {}", description(),
                     getProject());
@@ -102,12 +101,6 @@ public abstract class Builder extends IncrementalProjectBuilder {
         return new LanguageSpecBuildInput(languageSpec, config, paths);
     }
 
-//    private IProject project() {
-//        final org.eclipse.core.resources.IProject eclipseProject = getProject();
-//        final FileObject location = resourceService.resolve(eclipseProject);
-//        final IProject project = projectService.get(location);
-//        return project;
-//    }
 
     private ILanguageSpec languageSpec() {
         final org.eclipse.core.resources.IProject eclipseProject = getProject();
@@ -118,9 +111,9 @@ public abstract class Builder extends IncrementalProjectBuilder {
     }
 
 
-    protected abstract void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, MetaborgException, IOException;
+    protected abstract void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, IOException;
 
-    protected abstract void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, MetaborgException, IOException;
+    protected abstract void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, IOException;
 
     protected abstract String description();
 }

@@ -27,7 +27,6 @@ public class PreJavaBuilder extends Builder {
 
     private static final ILogger logger = LoggerUtils.logger(PreJavaBuilder.class);
 
-//    private final ISpoofaxProjectSettingsService projectSettingsService;
     private final SpoofaxMetaBuilder builder;
 
 
@@ -39,15 +38,12 @@ public class PreJavaBuilder extends Builder {
                 SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
                 SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
-//        this.projectSettingsService = injector.getInstance(ISpoofaxProjectSettingsService.class);
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
 
 
     @Override protected void build(final ILanguageSpec languageSpec, final IProgressMonitor monitor)
-            throws CoreException, MetaborgException, IOException {
-//        final SpoofaxProjectSettings settings = projectSettingsService.get(project);
-//        final MetaBuildInput input = new MetaBuildInput(project, settings);
+            throws CoreException, IOException {
         final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
@@ -77,7 +73,7 @@ public class PreJavaBuilder extends Builder {
         ResourcesPlugin.getWorkspace().run(runnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
     }
 
-    @Override protected void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, MetaborgException {
+    @Override protected void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException {
 
     }
 
