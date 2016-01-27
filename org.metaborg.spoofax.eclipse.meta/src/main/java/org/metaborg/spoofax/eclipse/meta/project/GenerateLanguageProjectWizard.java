@@ -135,7 +135,7 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         final ISpoofaxLanguageSpecConfig config = configBuilder
                 .withIdentifier(identifier)
                 .withName(name)
-                .build();
+                .build(languageSpec.location());
         // TODO: Use ISpoofaxLanguageSpecPathsService instead.
         final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
         final LanguageSpecGeneratorScope generatorSettings  = new LanguageSpecGeneratorScope(config, paths);

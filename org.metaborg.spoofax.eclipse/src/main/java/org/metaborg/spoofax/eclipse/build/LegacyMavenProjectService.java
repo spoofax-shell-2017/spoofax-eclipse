@@ -16,6 +16,7 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 
 import com.google.inject.Inject;
 
+@Deprecated
 public class LegacyMavenProjectService implements ILegacyMavenProjectService {
     private final IEclipseResourceService resourceService;
     private final IMavenProjectRegistry mavenProjectRegistry;

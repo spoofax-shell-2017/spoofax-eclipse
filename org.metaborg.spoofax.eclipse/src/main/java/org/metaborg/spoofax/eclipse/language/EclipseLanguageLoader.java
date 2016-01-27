@@ -49,7 +49,7 @@ public class EclipseLanguageLoader implements IResourceChangeListener {
 
     private final IEclipseResourceService resourceService;
     private final ILanguageService languageService;
-    private final INewLanguageDiscoveryService languageDiscoveryService;
+    private final ILanguageDiscoveryService languageDiscoveryService;
     private final IDialectProcessor dialectProcessor;
     private final IProjectService projectService;
     private final ILegacyProjectSettingsService projectSettingsService;
@@ -59,7 +59,7 @@ public class EclipseLanguageLoader implements IResourceChangeListener {
 
 
     @Inject public EclipseLanguageLoader(IEclipseResourceService resourceService, ILanguageService languageService,
-                                         INewLanguageDiscoveryService languageDiscoveryService, IDialectProcessor dialectProcessor,
+                                         ILanguageDiscoveryService languageDiscoveryService, IDialectProcessor dialectProcessor,
                                          IProjectService projectService, ILegacyProjectSettingsService projectSettingsService,
                                          GlobalSchedulingRules globalRules) {
         this.resourceService = resourceService;
@@ -152,9 +152,9 @@ public class EclipseLanguageLoader implements IResourceChangeListener {
      */
     public void load(FileObject location, boolean skipUnavailable) {
         try {
-            final Iterable<INewLanguageDiscoveryRequest> requests = languageDiscoveryService.request(location);
+            final Iterable<ILanguageDiscoveryRequest> requests = languageDiscoveryService.request(location);
             if(skipUnavailable) {
-                for(INewLanguageDiscoveryRequest request : requests) {
+                for(ILanguageDiscoveryRequest request : requests) {
                     if(!request.available()) {
                         logger.debug("Skipping loading language component at {}, "
                             + "some resources are unavailable or the configuration is invalid", location);

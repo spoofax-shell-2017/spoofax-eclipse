@@ -13,9 +13,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.action.CompileGoal;
 import org.metaborg.core.build.*;
-import org.metaborg.core.build.dependency.INewDependencyService;
+import org.metaborg.core.build.dependency.IDependencyService;
 import org.metaborg.core.build.dependency.MissingDependencies;
-import org.metaborg.core.build.paths.INewLanguagePathService;
+import org.metaborg.core.build.paths.ILanguagePathService;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.core.project.ILanguageSpec;
 import org.metaborg.core.project.ILanguageSpecService;
@@ -44,10 +44,10 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     public static final String id = SpoofaxPlugin.id + ".builder";
 
     private final IEclipseResourceService resourceService;
-    private final INewLanguagePathService languagePathService;
+    private final ILanguagePathService languagePathService;
     private final IProjectService projectService;
     private final ILanguageSpecService languageSpecService;
-    private final INewDependencyService dependencyService;
+    private final IDependencyService dependencyService;
     private final ISpoofaxProcessorRunner processorRunner;
 
     private final Map<org.eclipse.core.resources.IProject, BuildState> states = Maps.newHashMap();
@@ -56,10 +56,10 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     public SpoofaxProjectBuilder() {
         final Injector injector = SpoofaxPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
-        this.languagePathService = injector.getInstance(INewLanguagePathService.class);
+        this.languagePathService = injector.getInstance(ILanguagePathService.class);
         this.projectService = injector.getInstance(IProjectService.class);
         this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
-        this.dependencyService = injector.getInstance(INewDependencyService.class);
+        this.dependencyService = injector.getInstance(IDependencyService.class);
         this.processorRunner = injector.getInstance(ISpoofaxProcessorRunner.class);
     }
 
@@ -129,7 +129,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
         processorRunner.updateDialects(languageSpec.location(), creations).schedule().block();
 
-        final NewBuildInputBuilder inputBuilder = new NewBuildInputBuilder(languageSpec);
+        final BuildInputBuilder inputBuilder = new BuildInputBuilder(languageSpec);
         // @formatter:off
         final BuildInput input = inputBuilder
             .withDefaultIncludePaths(true)
@@ -160,7 +160,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
 
         processorRunner.updateDialects(languageSpec.location(), changes).schedule().block();
 
-        final NewBuildInputBuilder inputBuilder = new NewBuildInputBuilder(languageSpec);
+        final BuildInputBuilder inputBuilder = new BuildInputBuilder(languageSpec);
         // @formatter:off
         final BuildInput input = inputBuilder
             .withState(state)
