@@ -30,6 +30,10 @@ import org.metaborg.core.outline.IOutline;
 import org.metaborg.core.outline.IOutlineService;
 import org.metaborg.core.processing.analyze.IAnalysisResultUpdater;
 import org.metaborg.core.processing.parse.IParseResultUpdater;
+import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.ILanguageSpecService;
+import org.metaborg.core.project.IProject;
+import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.style.ICategorizerService;
 import org.metaborg.core.style.IRegionCategory;
 import org.metaborg.core.style.IRegionStyle;
@@ -57,6 +61,8 @@ public class EditorUpdateJob<P, A> extends Job {
     private final ILanguageIdentifierService languageIdentifierService;
     private final IDialectService dialectService;
     private final IContextService contextService;
+    private final IProjectService projectService;
+    private final ILanguageSpecService languageSpecService;
     private final ISyntaxService<P> syntaxService;
     private final IAnalysisService<P, A> analyzer;
     private final ICategorizerService<P, A> categorizer;
@@ -77,7 +83,8 @@ public class EditorUpdateJob<P, A> extends Job {
 
     public EditorUpdateJob(IEclipseResourceService resourceService,
         ILanguageIdentifierService languageIdentifierService, IDialectService dialectService,
-        IContextService contextService, ISyntaxService<P> syntaxService, IAnalysisService<P, A> analyzer,
+        IContextService contextService, IProjectService projectService,
+        ILanguageSpecService languageSpecService, ISyntaxService<P> syntaxService, IAnalysisService<P, A> analyzer,
         ICategorizerService<P, A> categorizer, IStylerService<P, A> styler, IOutlineService<P, A> outlineService,
         IParseResultUpdater<P> parseResultProcessor, IAnalysisResultUpdater<P, A> analysisResultProcessor,
         IEclipseEditor<P> editor, IEditorInput input, @Nullable IResource eclipseResource, FileObject resource,
@@ -89,6 +96,8 @@ public class EditorUpdateJob<P, A> extends Job {
         this.languageIdentifierService = languageIdentifierService;
         this.dialectService = dialectService;
         this.contextService = contextService;
+        this.projectService = projectService;
+        this.languageSpecService = languageSpecService;
         this.syntaxService = syntaxService;
         this.analyzer = analyzer;
         this.categorizer = categorizer;
@@ -176,7 +185,8 @@ public class EditorUpdateJob<P, A> extends Job {
         final SubMonitor monitor = SubMonitor.convert(progressMonitor, 11);
 
         monitor.subTask("Identifying language");
-        final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource);
+        final ILanguageSpec languageSpec = this.languageSpecService.get(this.projectService.get(resource));
+        final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource, languageSpec);
         if(parserLanguage == null) {
             throw new MetaborgException("Language could not be identified");
         }
@@ -255,7 +265,7 @@ public class EditorUpdateJob<P, A> extends Job {
         if(!contextService.available(language))
             return StatusUtils.success();
         monitor.subTask("Analyzing");
-        final IContext context = contextService.get(resource, language);
+        final IContext context = contextService.get(resource, languageSpec, language);
         final AnalysisResult<P, A> analysisResult = analyze(parseResult, context);
         monitor.worked(1);
 

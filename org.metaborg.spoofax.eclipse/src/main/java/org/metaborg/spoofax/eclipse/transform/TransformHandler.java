@@ -15,6 +15,9 @@ import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.language.LanguageIdentifier;
+import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.ILanguageSpecService;
+import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.source.ISourceTextService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultRequester;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultRequester;
@@ -42,6 +45,8 @@ public class TransformHandler extends AbstractHandler {
     private final ILanguageIdentifierService languageIdentifierService;
     private final ISourceTextService sourceTextService;
     private final IContextService contextService;
+    private final IProjectService projectService;
+    private final ILanguageSpecService languageSpecService;
     private final ISpoofaxTransformService transformService;
     private final ISpoofaxParseResultRequester parseResultRequester;
     private final ISpoofaxAnalysisResultRequester analysisResultRequester;
@@ -56,6 +61,8 @@ public class TransformHandler extends AbstractHandler {
         this.languageIdentifierService = injector.getInstance(ILanguageIdentifierService.class);
         this.sourceTextService = injector.getInstance(ISourceTextService.class);
         this.contextService = injector.getInstance(IContextService.class);
+        this.projectService = injector.getInstance(IProjectService.class);
+        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
         this.transformService = injector.getInstance(ISpoofaxTransformService.class);
         this.parseResultRequester = injector.getInstance(ISpoofaxParseResultRequester.class);
         this.analysisResultRequester = injector.getInstance(ISpoofaxAnalysisResultRequester.class);
@@ -76,7 +83,6 @@ public class TransformHandler extends AbstractHandler {
         final ITransformGoal goal = MenuContribution.toGoal(event);
         final boolean hasOpenEditor = MenuContribution.toHasOpenEditor(event);
 
-
         final Iterable<TransformResource> resources;
         if(hasOpenEditor) {
             final IEclipseEditor<?> editor = editorRegistry.previousEditor();
@@ -91,7 +97,7 @@ public class TransformHandler extends AbstractHandler {
                 throw new ExecutionException(message);
             }
 
-            resources = Iterables2.singleton(new TransformResource(editor.resource(), editor.document().get()));
+            resources = Iterables2.singleton(createTransformResource(editor.resource(), editor.document().get()));
         } else {
             final Iterable<IResource> eclipseResources = AbstractHandlerUtils.toResources(event);
             if(eclipseResources == null) {
@@ -109,7 +115,7 @@ public class TransformHandler extends AbstractHandler {
 
                 try {
                     final String text = sourceTextService.text(resource);
-                    transformResources.add(new TransformResource(resource, text));
+                    transformResources.add(createTransformResource(resource, text));
                 } catch(IOException e) {
                     logger.error("Cannot transform {}; exception while retrieving text, skipping", e, resource);
                 }
@@ -123,5 +129,11 @@ public class TransformHandler extends AbstractHandler {
         transformJob.schedule();
 
         return null;
+    }
+
+    private TransformResource createTransformResource(FileObject resource, String text) {
+        // TODO: Can't the project be determined by the editor?
+        ILanguageSpec project = this.languageSpecService.get(this.projectService.get(resource));
+        return new TransformResource(project, resource, text);
     }
 }

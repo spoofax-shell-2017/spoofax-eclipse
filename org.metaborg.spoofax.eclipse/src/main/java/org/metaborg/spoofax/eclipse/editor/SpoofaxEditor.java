@@ -38,6 +38,8 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.outline.IOutline;
 import org.metaborg.core.outline.IOutlineService;
+import org.metaborg.core.project.ILanguageSpecService;
+import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.style.ICategorizerService;
 import org.metaborg.core.style.IRegionStyle;
 import org.metaborg.core.style.IStylerService;
@@ -71,6 +73,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     private IEclipseResourceService resourceService;
     private ILanguageIdentifierService languageIdentifier;
     private IDialectService dialectService;
+    private IProjectService projectService;
+    private ILanguageSpecService languageSpecService;
     private IContextService contextService;
     private ISyntaxService<IStrategoTerm> syntaxService;
     private IAnalysisService<IStrategoTerm, IStrategoTerm> analysisService;
@@ -284,6 +288,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         this.languageIdentifier = injector.getInstance(ILanguageIdentifierService.class);
         this.dialectService = injector.getInstance(IDialectService.class);
         this.contextService = injector.getInstance(IContextService.class);
+        this.projectService = injector.getInstance(IProjectService.class);
+        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
         this.syntaxService = injector.getInstance(Key.get(new TypeLiteral<ISyntaxService<IStrategoTerm>>() {}));
         this.analysisService =
             injector.getInstance(Key.get(new TypeLiteral<IAnalysisService<IStrategoTerm, IStrategoTerm>>() {}));
@@ -440,7 +446,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         analysisResultProcessor.invalidate(resource);
 
         final Job job =
-            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, syntaxService,
+            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, projectService, languageSpecService, syntaxService,
                 analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
                 analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
