@@ -21,6 +21,7 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.metaborg.core.editor.IEditor;
 import org.metaborg.core.language.ILanguageImpl;
+import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -101,7 +102,7 @@ public class EditorRegistry<P> implements IWindowListener, IPartListener2, IEcli
         return openEditors;
     }
 
-    @Override public void open(ILanguageImpl project, FileObject resource) {
+    @Override public void open(FileObject resource, IProject project) {
         final IResource eclipseResource = resourceService.unresolve(resource);
         if(eclipseResource instanceof IFile) {
             final IFile file = (IFile) eclipseResource;

@@ -134,6 +134,6 @@ public class TransformHandler extends AbstractHandler {
     private TransformResource createTransformResource(FileObject resource, String text) {
         // TODO: Can't the project be determined by the editor?
         ILanguageSpec project = this.languageSpecService.get(this.projectService.get(resource));
-        return new TransformResource(project, resource, text);
+        return new TransformResource(resource, project, text);
     }
 }

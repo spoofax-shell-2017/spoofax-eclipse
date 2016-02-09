@@ -16,6 +16,7 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.IProject;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.core.transform.ITransformService;
 import org.metaborg.core.transform.TransformException;
