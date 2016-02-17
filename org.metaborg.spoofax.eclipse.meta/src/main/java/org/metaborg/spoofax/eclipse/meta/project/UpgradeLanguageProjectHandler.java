@@ -7,16 +7,16 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
 import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
-import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.meta.core.config.ILanguageSpecConfigService;
+import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
+import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPathsService;
 
 import com.google.inject.Injector;
 

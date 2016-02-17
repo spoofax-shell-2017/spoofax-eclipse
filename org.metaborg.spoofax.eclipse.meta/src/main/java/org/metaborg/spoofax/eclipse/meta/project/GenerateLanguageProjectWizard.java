@@ -16,23 +16,24 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
-import org.metaborg.core.project.ILanguageSpec;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.ProjectException;
-import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
-import org.metaborg.spoofax.core.project.SpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfig;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.meta.core.project.ILanguageSpec;
+import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
+import org.metaborg.spoofax.generator.IGeneratorSettings;
 import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
 import org.metaborg.spoofax.generator.language.AnalysisType;
 import org.metaborg.spoofax.generator.language.LanguageSpecGenerator;
 import org.metaborg.spoofax.generator.language.NewLanguageSpecGenerator;
-import org.metaborg.spoofax.generator.project.LanguageSpecGeneratorScope;
+import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
+import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.meta.core.project.GeneratorSettings;
+import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -138,7 +139,7 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
                 .build(languageSpec.location());
         // TODO: Use ISpoofaxLanguageSpecPathsService instead.
         final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
-        final LanguageSpecGeneratorScope generatorSettings  = new LanguageSpecGeneratorScope(config, paths);
+        final IGeneratorSettings generatorSettings  = new GeneratorSettings(config, paths);
 
         final NewLanguageSpecGenerator newGenerator = new NewLanguageSpecGenerator(generatorSettings, AnalysisType.NaBL_TS);
         newGenerator.generateAll();

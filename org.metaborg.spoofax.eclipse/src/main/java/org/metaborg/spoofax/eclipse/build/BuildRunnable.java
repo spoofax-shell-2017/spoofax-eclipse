@@ -62,7 +62,7 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
             return;
         }
 
-        final IProject eclipseProject = ((EclipseProject) input.languageSpec).eclipseProject;
+        final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAll(eclipseProject);
 
         for(FileObject resource : output.changedResources()) {

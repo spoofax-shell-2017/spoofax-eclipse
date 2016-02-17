@@ -79,7 +79,7 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         final IWorkspaceRunnable runnable =
             new BuildRunnable<>(resourceService, builder, input, progressReporter, cancellationToken, outputRef);
         final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.languageSpec), null, cancellationToken, outputRef);
+            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, outputRef);
         return task;
     }
 
@@ -90,7 +90,7 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         }
         final IWorkspaceRunnable runnable = new CleanRunnable<>(builder, input, progressReporter, cancellationToken);
         final ITask<?> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.languageSpec), null, cancellationToken, null);
+            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, null);
         return task;
     }
 

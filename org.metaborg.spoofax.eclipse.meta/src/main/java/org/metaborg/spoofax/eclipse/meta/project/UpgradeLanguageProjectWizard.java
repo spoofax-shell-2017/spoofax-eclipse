@@ -13,19 +13,14 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
-import org.metaborg.core.project.ILanguageSpec;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.project.configuration.ILanguageSpecConfig;
-import org.metaborg.core.project.configuration.ILanguageSpecConfigService;
 import org.metaborg.core.project.settings.ILegacyProjectSettings;
 import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
+import org.metaborg.meta.core.config.ILanguageSpecConfig;
+import org.metaborg.meta.core.config.ILanguageSpecConfigService;
+import org.metaborg.meta.core.project.ILanguageSpec;
+import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.core.esv.ESVReader;
-import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
-import org.metaborg.spoofax.core.project.SpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfig;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigBuilder;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
@@ -33,11 +28,17 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
+import org.metaborg.spoofax.generator.IGeneratorSettings;
 import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
 import org.metaborg.spoofax.generator.language.AnalysisType;
 import org.metaborg.spoofax.generator.language.LanguageSpecGenerator;
 import org.metaborg.spoofax.generator.language.NewLanguageSpecGenerator;
-import org.metaborg.spoofax.generator.project.LanguageSpecGeneratorScope;
+import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
+import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.meta.core.project.GeneratorSettings;
+import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.metaborg.util.resource.ContainsFileSelector;
@@ -203,7 +204,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
                     // TODO: Use ISpoofaxLanguageSpecPathsService instead.
                     final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
-                    final LanguageSpecGeneratorScope generatorSettings  = new LanguageSpecGeneratorScope(config, paths);
+                    final IGeneratorSettings generatorSettings  = new GeneratorSettings(config, paths);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
@@ -291,14 +292,14 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         SpoofaxMetaNature.add(eclipseProject, monitor);
     }
 
-    private void upgradeClasspath(LanguageSpecGeneratorScope settings) throws Exception {
+    private void upgradeClasspath(IGeneratorSettings settings) throws Exception {
         final FileObject classpath = projectLocation.resolveFile(".classpath");
         classpath.delete();
         final EclipseProjectGenerator generator = new EclipseProjectGenerator(settings);
         generator.generateClasspath();
     }
 
-    private void generateFiles(LanguageSpecGeneratorScope settings) throws Exception {
+    private void generateFiles(IGeneratorSettings settings) throws Exception {
         final NewLanguageSpecGenerator newGenerator = new NewLanguageSpecGenerator(settings, AnalysisType.NaBL_TS);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
