@@ -19,7 +19,7 @@ import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.processing.ITask;
-import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
@@ -133,8 +133,8 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         // GTODO: remove resource change listener on plugin stop
     }
 
-    private IResource getResource(ILanguageSpec languageSpec) {
-        final EclipseProject eclipseProject = (EclipseProject) languageSpec;
+    private IResource getResource(IProject project) {
+        final EclipseProject eclipseProject = (EclipseProject) project;
         return eclipseProject.eclipseProject;
     }
 

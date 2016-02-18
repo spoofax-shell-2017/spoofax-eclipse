@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.metaborg.core.MetaborgException;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.meta.core.project.ILanguageSpec;
@@ -31,13 +30,15 @@ public abstract class Builder extends IncrementalProjectBuilder {
     private final ISpoofaxLanguageSpecConfigService configService;
     private final ISpoofaxLanguageSpecPathsService pathsService;
 
-    public Builder(IEclipseResourceService resourceService, IProjectService projectService, ILanguageSpecService languageSpecService, ISpoofaxLanguageSpecConfigService configService, ISpoofaxLanguageSpecPathsService pathsService) {
+    
+    public Builder(IEclipseResourceService resourceService, IProjectService projectService,
+        ILanguageSpecService languageSpecService, ISpoofaxLanguageSpecConfigService configService,
+        ISpoofaxLanguageSpecPathsService pathsService) {
         this.resourceService = resourceService;
         this.projectService = projectService;
         this.languageSpecService = languageSpecService;
         this.configService = configService;
         this.pathsService = pathsService;
-
     }
 
 
@@ -62,7 +63,8 @@ public abstract class Builder extends IncrementalProjectBuilder {
                 // Ignore
             } catch(Exception e) {
                 monitor.setCanceled(true);
-                logger.error("Cannot {} language project {}; build failed unexpectedly", e, description(), languageSpec);
+                logger.error("Cannot {} language project {}; build failed unexpectedly", e, description(),
+                    languageSpec);
             }
             return null;
         } finally {
@@ -74,7 +76,7 @@ public abstract class Builder extends IncrementalProjectBuilder {
     @Override protected final void clean(IProgressMonitor monitor) throws CoreException {
         try {
             final ILanguageSpec languageSpec = languageSpec();
-//            final IProject project = project();
+            // final IProject project = project();
             if(languageSpec == null) {
                 logger.error("Cannot clean language project; cannot retrieve Metaborg project for {}", getProject());
                 monitor.setCanceled(true);
@@ -111,9 +113,11 @@ public abstract class Builder extends IncrementalProjectBuilder {
     }
 
 
-    protected abstract void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, IOException;
+    protected abstract void build(ILanguageSpec languageSpec, IProgressMonitor monitor)
+        throws CoreException, IOException;
 
-    protected abstract void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, IOException;
+    protected abstract void clean(ILanguageSpec languageSpec, IProgressMonitor monitor)
+        throws CoreException, IOException;
 
     protected abstract String description();
 }

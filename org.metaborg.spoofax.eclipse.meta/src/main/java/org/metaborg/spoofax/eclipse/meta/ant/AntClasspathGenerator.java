@@ -3,7 +3,6 @@ package org.metaborg.spoofax.eclipse.meta.ant;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Collection;

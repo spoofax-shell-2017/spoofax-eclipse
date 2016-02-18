@@ -1,7 +1,5 @@
 package org.metaborg.spoofax.eclipse.transform;
 
-import java.io.IOException;
-
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -15,7 +13,6 @@ import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
-import org.metaborg.core.project.ILanguageSpec;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.core.transform.ITransformService;
@@ -104,7 +101,8 @@ public class TransformJob<P, A, T> extends Job {
             final FileObject resource = transformResource.resource;
             loopMonitor.setTaskName("Transforming " + resource);
             try {
-                transform(resource, transformResource.project, language, transformResource.text, loopMonitor.newChild(1));
+                transform(resource, transformResource.project, language, transformResource.text,
+                    loopMonitor.newChild(1));
             } catch(ContextException | TransformException e) {
                 final String message = logger.format("Transformation failed for {}", resource);
                 logger.error(message, e);
@@ -115,8 +113,8 @@ public class TransformJob<P, A, T> extends Job {
         return StatusUtils.success();
     }
 
-    private void transform(FileObject resource, ILanguageSpec project, ILanguageImpl language, String text, SubMonitor monitor)
-        throws ContextException, TransformException {
+    private void transform(FileObject resource, IProject project, ILanguageImpl language, String text,
+        SubMonitor monitor) throws ContextException, TransformException {
         final IContext context = contextService.get(resource, project, language);
         if(transformService.requiresAnalysis(context, goal)) {
             monitor.setWorkRemaining(3);

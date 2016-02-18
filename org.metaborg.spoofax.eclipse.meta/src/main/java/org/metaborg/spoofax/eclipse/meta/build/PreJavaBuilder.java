@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
-import com.google.inject.Injector;
+import java.io.IOException;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -20,7 +21,7 @@ import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPathsService;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-import java.io.IOException;
+import com.google.inject.Injector;
 
 public class PreJavaBuilder extends Builder {
     public static final String id = SpoofaxMetaPlugin.id + ".builder.prejava";
@@ -31,19 +32,18 @@ public class PreJavaBuilder extends Builder {
 
 
     public PreJavaBuilder() {
-        super(
-                SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
-                SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
-                SpoofaxMetaPlugin.injector().getInstance(ILanguageSpecService.class),
-                SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
-                SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
+        super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
+            SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
+            SpoofaxMetaPlugin.injector().getInstance(ILanguageSpecService.class),
+            SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
+            SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
 
 
     @Override protected void build(final ILanguageSpec languageSpec, final IProgressMonitor monitor)
-            throws CoreException, IOException {
+        throws CoreException, IOException {
         final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {

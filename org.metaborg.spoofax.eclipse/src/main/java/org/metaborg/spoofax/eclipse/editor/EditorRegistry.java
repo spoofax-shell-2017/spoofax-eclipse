@@ -20,7 +20,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.metaborg.core.editor.IEditor;
-import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
@@ -35,8 +34,8 @@ import com.google.inject.Inject;
 /**
  * Keeps track of all Spoofax editors, which one is currently active, and which one was active previously.
  */
-public class EditorRegistry<P> implements IWindowListener, IPartListener2, IEclipseEditorRegistry<P>,
-    IEclipseEditorRegistryInternal {
+public class EditorRegistry<P>
+    implements IWindowListener, IPartListener2, IEclipseEditorRegistry<P>, IEclipseEditorRegistryInternal {
     private static final ILogger logger = LoggerUtils.logger(EditorRegistry.class);
 
     public static final String contextId = SpoofaxEditor.id + ".context";
@@ -56,8 +55,7 @@ public class EditorRegistry<P> implements IWindowListener, IPartListener2, IEcli
     }
 
 
-
-    @Override public void register() {
+    @SuppressWarnings("cast") @Override public void register() {
         final IWorkbench workbench = PlatformUI.getWorkbench();
         contextService = (IContextService) workbench.getService(IContextService.class);
 

@@ -1,8 +1,8 @@
 package org.metaborg.spoofax.eclipse.build;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.inject.Injector;
+import java.util.Collection;
+import java.util.Map;
+
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.eclipse.core.resources.IResourceDelta;
@@ -12,13 +12,16 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.action.CompileGoal;
-import org.metaborg.core.build.*;
+import org.metaborg.core.build.BuildInput;
+import org.metaborg.core.build.BuildInputBuilder;
+import org.metaborg.core.build.BuildState;
+import org.metaborg.core.build.CleanInput;
+import org.metaborg.core.build.CleanInputBuilder;
+import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.build.dependency.IDependencyService;
 import org.metaborg.core.build.dependency.MissingDependencies;
 import org.metaborg.core.build.paths.ILanguagePathService;
 import org.metaborg.core.processing.ITask;
-import org.metaborg.core.project.ILanguageSpec;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.ResourceChange;
@@ -35,8 +38,9 @@ import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
-import java.util.Collection;
-import java.util.Map;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.inject.Injector;
 
 public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private static final ILogger logger = LoggerUtils.logger(SpoofaxProjectBuilder.class);
@@ -46,7 +50,6 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
     private final IEclipseResourceService resourceService;
     private final ILanguagePathService languagePathService;
     private final IProjectService projectService;
-    private final ILanguageSpecService languageSpecService;
     private final IDependencyService dependencyService;
     private final ISpoofaxProcessorRunner processorRunner;
 
@@ -58,7 +61,6 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.languagePathService = injector.getInstance(ILanguagePathService.class);
         this.projectService = injector.getInstance(IProjectService.class);
-        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
         this.dependencyService = injector.getInstance(IDependencyService.class);
         this.processorRunner = injector.getInstance(ISpoofaxProcessorRunner.class);
     }
@@ -74,14 +76,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             cancel(monitor);
             return null;
         }
-        final ILanguageSpec languageSpec = languageSpecService.get(project);
-        if(languageSpec == null) {
-            logger.error("Cannot clean project, cannot retrieve Metaborg language specification for project {}", eclipseProject);
-            monitor.setCanceled(true);
-            return null;
-        }
 
-        final MissingDependencies missing = dependencyService.checkDependencies(languageSpec);
+        final MissingDependencies missing = dependencyService.checkDependencies(project);
         if(!missing.empty()) {
             logger.error("Cannot build project {}, some dependencies are missing.\n{}", project, missing.toString());
             cancel(monitor);
@@ -91,13 +87,13 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         try {
             final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task;
             if(kind == FULL_BUILD) {
-                task = fullBuild(languageSpec, monitor);
+                task = fullBuild(project, monitor);
             } else {
                 final IResourceDelta delta = getDelta(eclipseProject);
                 if(delta == null) {
-                    task = fullBuild(languageSpec, monitor);
+                    task = fullBuild(project, monitor);
                 } else {
-                    task = incrBuild(languageSpec, states.get(eclipseProject), delta, monitor);
+                    task = incrBuild(project, states.get(eclipseProject), delta, monitor);
                 }
             }
 
@@ -122,14 +118,13 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private @Nullable ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> fullBuild(
-        ILanguageSpec languageSpec, IProgressMonitor monitor) throws InterruptedException,
-        FileSystemException, MetaborgException {
-        final Iterable<FileObject> resources = ResourceUtils.find(languageSpec.location());
+    private @Nullable ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> fullBuild(IProject project,
+        IProgressMonitor monitor) throws InterruptedException, FileSystemException, MetaborgException {
+        final Iterable<FileObject> resources = ResourceUtils.find(project.location());
         final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
-        processorRunner.updateDialects(languageSpec.location(), creations).schedule().block();
+        processorRunner.updateDialects(project.location(), creations).schedule().block();
 
-        final BuildInputBuilder inputBuilder = new BuildInputBuilder(languageSpec);
+        final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
         final BuildInput input = inputBuilder
             .withDefaultIncludePaths(true)
@@ -140,13 +135,13 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        return processorRunner
-            .build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor));
+        return processorRunner.build(input, new EclipseProgressReporter(monitor),
+            new EclipseCancellationToken(monitor));
     }
 
-    private ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> incrBuild(ILanguageSpec languageSpec,
-        @Nullable BuildState state, IResourceDelta delta, IProgressMonitor monitor) throws CoreException,
-        InterruptedException, MetaborgException {
+    private ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> incrBuild(IProject project,
+        @Nullable BuildState state, IResourceDelta delta, IProgressMonitor monitor)
+            throws CoreException, InterruptedException, MetaborgException {
         final Collection<ResourceChange> changes = Lists.newLinkedList();
         delta.accept(new IResourceDeltaVisitor() {
             @Override public boolean visit(IResourceDelta innerDelta) throws CoreException {
@@ -158,9 +153,9 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             }
         });
 
-        processorRunner.updateDialects(languageSpec.location(), changes).schedule().block();
+        processorRunner.updateDialects(project.location(), changes).schedule().block();
 
-        final BuildInputBuilder inputBuilder = new BuildInputBuilder(languageSpec);
+        final BuildInputBuilder inputBuilder = new BuildInputBuilder(project);
         // @formatter:off
         final BuildInput input = inputBuilder
             .withState(state)
@@ -172,8 +167,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        return processorRunner
-            .build(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor));
+        return processorRunner.build(input, new EclipseProgressReporter(monitor),
+            new EclipseCancellationToken(monitor));
     }
 
     private void cancel(IProgressMonitor monitor) {
@@ -191,15 +186,9 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             monitor.setCanceled(true);
             return;
         }
-        final ILanguageSpec languageSpec = languageSpecService.get(project);
-        if(languageSpec == null) {
-            logger.error("Cannot clean project, cannot retrieve Metaborg language specification for project {}", eclipseProject);
-            monitor.setCanceled(true);
-            return;
-        }
 
         try {
-            clean(languageSpec, monitor).schedule().block();
+            clean(project, monitor).schedule().block();
         } catch(InterruptedException e) {
             monitor.setCanceled(true);
         } catch(MetaborgException e) {
@@ -211,8 +200,8 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private ITask<?> clean(ILanguageSpec languageSpec, IProgressMonitor monitor) throws MetaborgException {
-        final CleanInputBuilder inputBuilder = new CleanInputBuilder(languageSpec);
+    private ITask<?> clean(IProject project, IProgressMonitor monitor) throws MetaborgException {
+        final CleanInputBuilder inputBuilder = new CleanInputBuilder(project);
         // @formatter:off
         final CleanInput input = inputBuilder
             .withSelector(new SpoofaxIgnoresSelector())
@@ -220,7 +209,7 @@ public class SpoofaxProjectBuilder extends IncrementalProjectBuilder {
             ;
         // @formatter:on
 
-        return processorRunner
-            .clean(input, new EclipseProgressReporter(monitor), new EclipseCancellationToken(monitor));
+        return processorRunner.clean(input, new EclipseProgressReporter(monitor),
+            new EclipseCancellationToken(monitor));
     }
 }
