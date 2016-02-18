@@ -8,14 +8,12 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.meta.core.project.ILanguageSpec;
-import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.meta.core.LanguageSpecBuildInput;
+import org.metaborg.spoofax.meta.core.SpoofaxLanguageSpecBuildInput;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
-import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigService;
-import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
 import org.metaborg.util.file.FileAccess;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -33,17 +31,15 @@ public class GenerateSourcesBuilder extends Builder {
     public GenerateSourcesBuilder() {
         super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
             SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
-            SpoofaxMetaPlugin.injector().getInstance(ILanguageSpecService.class),
-            SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
-            SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
+            SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
     }
 
 
-    @Override protected void build(final ILanguageSpec languageSpec, final IProgressMonitor monitor)
+    @Override protected void build(final ISpoofaxLanguageSpec languageSpec, final IProgressMonitor monitor)
         throws CoreException, IOException {
-        final LanguageSpecBuildInput input = createBuildInput(languageSpec);
+        final SpoofaxLanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
@@ -62,9 +58,9 @@ public class GenerateSourcesBuilder extends Builder {
         ResourcesPlugin.getWorkspace().run(runnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
     }
 
-    @Override protected void clean(final ILanguageSpec languageSpec, final IProgressMonitor monitor)
+    @Override protected void clean(final ISpoofaxLanguageSpec languageSpec, final IProgressMonitor monitor)
         throws CoreException, IOException {
-        final LanguageSpecBuildInput input = createBuildInput(languageSpec);
+        final SpoofaxLanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {

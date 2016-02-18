@@ -10,14 +10,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.meta.core.project.ILanguageSpec;
-import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.meta.core.LanguageSpecBuildInput;
-import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
-import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigService;
-import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPathsService;
+import org.metaborg.spoofax.meta.core.SpoofaxLanguageSpecBuildInput;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -26,19 +22,14 @@ public abstract class Builder extends IncrementalProjectBuilder {
 
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
-    private final ILanguageSpecService languageSpecService;
-    private final ISpoofaxLanguageSpecConfigService configService;
-    private final ISpoofaxLanguageSpecPathsService pathsService;
+    private final ISpoofaxLanguageSpecService languageSpecService;
 
-    
+
     public Builder(IEclipseResourceService resourceService, IProjectService projectService,
-        ILanguageSpecService languageSpecService, ISpoofaxLanguageSpecConfigService configService,
-        ISpoofaxLanguageSpecPathsService pathsService) {
+        ISpoofaxLanguageSpecService languageSpecService) {
         this.resourceService = resourceService;
         this.projectService = projectService;
         this.languageSpecService = languageSpecService;
-        this.configService = configService;
-        this.pathsService = pathsService;
     }
 
 
@@ -49,7 +40,7 @@ public abstract class Builder extends IncrementalProjectBuilder {
         }
 
         try {
-            final ILanguageSpec languageSpec = languageSpec();
+            final ISpoofaxLanguageSpec languageSpec = languageSpec();
             if(languageSpec == null) {
                 logger.error("Cannot {} language project; cannot retrieve Metaborg project for {}", description(),
                     getProject());
@@ -75,7 +66,7 @@ public abstract class Builder extends IncrementalProjectBuilder {
 
     @Override protected final void clean(IProgressMonitor monitor) throws CoreException {
         try {
-            final ILanguageSpec languageSpec = languageSpec();
+            final ISpoofaxLanguageSpec languageSpec = languageSpec();
             // final IProject project = project();
             if(languageSpec == null) {
                 logger.error("Cannot clean language project; cannot retrieve Metaborg project for {}", getProject());
@@ -97,26 +88,24 @@ public abstract class Builder extends IncrementalProjectBuilder {
         }
     }
 
-    protected LanguageSpecBuildInput createBuildInput(ILanguageSpec languageSpec) throws IOException {
-        final ISpoofaxLanguageSpecConfig config = this.configService.get(languageSpec);
-        final ISpoofaxLanguageSpecPaths paths = this.pathsService.get(languageSpec);
-        return new LanguageSpecBuildInput(languageSpec, config, paths);
+    protected SpoofaxLanguageSpecBuildInput createBuildInput(ISpoofaxLanguageSpec languageSpec) throws IOException {
+        return new SpoofaxLanguageSpecBuildInput(languageSpec);
     }
 
 
-    private ILanguageSpec languageSpec() {
+    private ISpoofaxLanguageSpec languageSpec() {
         final org.eclipse.core.resources.IProject eclipseProject = getProject();
         final FileObject location = resourceService.resolve(eclipseProject);
         final IProject project = projectService.get(location);
-        final ILanguageSpec languageSpec = languageSpecService.get(project);
+        final ISpoofaxLanguageSpec languageSpec = languageSpecService.get(project);
         return languageSpec;
     }
 
 
-    protected abstract void build(ILanguageSpec languageSpec, IProgressMonitor monitor)
+    protected abstract void build(ISpoofaxLanguageSpec languageSpec, IProgressMonitor monitor)
         throws CoreException, IOException;
 
-    protected abstract void clean(ILanguageSpec languageSpec, IProgressMonitor monitor)
+    protected abstract void clean(ISpoofaxLanguageSpec languageSpec, IProgressMonitor monitor)
         throws CoreException, IOException;
 
     protected abstract String description();
