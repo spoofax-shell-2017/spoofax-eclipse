@@ -8,10 +8,11 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.meta.core.SpoofaxLanguageSpecBuildInput;
+import org.metaborg.spoofax.meta.core.build.LanguageSpecBuildInput;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
 import org.metaborg.util.log.ILogger;
@@ -57,11 +58,14 @@ public abstract class Builder extends IncrementalProjectBuilder {
                 logger.error("Cannot {} language project {}; build failed unexpectedly", e, description(),
                     languageSpec);
             }
-            return null;
+        } catch(ConfigException e) {
+            monitor.setCanceled(true);
+            logger.error("Cannot get language specification project for project {}", e, getProject());
         } finally {
             // Always forget last build state to force a full build next time.
             forgetLastBuiltState();
         }
+        return null;
     }
 
     @Override protected final void clean(IProgressMonitor monitor) throws CoreException {
@@ -82,18 +86,21 @@ public abstract class Builder extends IncrementalProjectBuilder {
                 monitor.setCanceled(true);
                 logger.error("Cannot clean language project {}; build failed unexpectedly", e, languageSpec);
             }
+        } catch(ConfigException e) {
+            monitor.setCanceled(true);
+            logger.error("Cannot get language specification project for project {}", e, getProject());
         } finally {
             // Always forget last build state to force a full build next time.
             forgetLastBuiltState();
         }
     }
 
-    protected SpoofaxLanguageSpecBuildInput createBuildInput(ISpoofaxLanguageSpec languageSpec) throws IOException {
-        return new SpoofaxLanguageSpecBuildInput(languageSpec);
+    protected LanguageSpecBuildInput createBuildInput(ISpoofaxLanguageSpec languageSpec) throws IOException {
+        return new LanguageSpecBuildInput(languageSpec);
     }
 
 
-    private ISpoofaxLanguageSpec languageSpec() {
+    private ISpoofaxLanguageSpec languageSpec() throws ConfigException {
         final org.eclipse.core.resources.IProject eclipseProject = getProject();
         final FileObject location = resourceService.resolve(eclipseProject);
         final IProject project = projectService.get(location);

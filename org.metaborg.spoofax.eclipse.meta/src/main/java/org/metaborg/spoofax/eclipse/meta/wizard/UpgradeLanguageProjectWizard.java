@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
+import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
 import org.metaborg.core.project.IProjectService;
@@ -55,6 +56,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
     private final IProject eclipseProject;
     private final FileObject projectLocation;
     private final UpgradeLanguageProjectWizardPage page;
+
     private final ILanguageSpecService languageSpecService;
     private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
 
@@ -95,18 +97,23 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
         }
 
-        // Try to get identifiers from language specification configuration.
         final org.metaborg.core.project.IProject metaborgProject = projectService.get(projectLocation);
-        final ILanguageSpec languageSpec = languageSpecService.get(metaborgProject);
-        if(languageSpec != null) {
-            final ILanguageSpecConfig config = languageSpec.config();
-            if(config != null) {
-                final LanguageIdentifier identifier = config.identifier();
-                groupId = groupId == null ? identifier.groupId : groupId;
-                id = id == null ? identifier.id : id;
-                version = version == null ? identifier.version.toString() : version;
-                name = name == null ? config.name() : name;
+
+        // Try to get identifiers from language specification configuration.
+        try {
+            final ILanguageSpec languageSpec = languageSpecService.get(metaborgProject);
+            if(languageSpec != null) {
+                final ILanguageSpecConfig config = languageSpec.config();
+                if(config != null) {
+                    final LanguageIdentifier identifier = config.identifier();
+                    groupId = groupId == null ? identifier.groupId : groupId;
+                    id = id == null ? identifier.id : id;
+                    version = version == null ? identifier.version.toString() : version;
+                    name = name == null ? config.name() : name;
+                }
             }
+        } catch(ConfigException e) {
+            // Ignore
         }
 
         // Try to get identifiers from project settings.

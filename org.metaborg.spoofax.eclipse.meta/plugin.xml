@@ -110,7 +110,7 @@
     />
     <handler 
       commandId="org.metaborg.spoofax.eclipse.meta.command.language.upgrade"
-      class="org.metaborg.spoofax.eclipse.meta.project.UpgradeLanguageProjectHandler"
+      class="org.metaborg.spoofax.eclipse.meta.wizard.UpgradeLanguageProjectHandler"
     />
   </extension>
 
@@ -220,9 +220,8 @@
       category="org.metaborg.spoofax.eclipse.meta.newwizard.category"
       project="true"
       hasPages="true"
-      class="org.metaborg.spoofax.eclipse.meta.project.GenerateLanguageProjectWizard"
+      class="org.metaborg.spoofax.eclipse.meta.wizard.GenerateLanguageProjectWizard"
     >
-      
     </wizard>
   </extension>
 </plugin>

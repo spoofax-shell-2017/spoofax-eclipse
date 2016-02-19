@@ -1,23 +1,21 @@
 package org.metaborg.spoofax.eclipse.meta.project;
 
-import java.io.IOException;
-
 import org.apache.commons.vfs2.FileObject;
+import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.project.IProject;
-import org.metaborg.meta.core.project.ILanguageSpec;
-import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigService;
-import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
 import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Inject;
 
-public class EclipseLanguageSpecService implements ILanguageSpecService {
+public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
     private static final ILogger logger = LoggerUtils.logger(EclipseLanguageSpecService.class);
 
     private final ISpoofaxLanguageSpecConfigService configService;
@@ -33,11 +31,7 @@ public class EclipseLanguageSpecService implements ILanguageSpecService {
             return true;
         }
 
-        try {
-            if(!configService.available(project.location())) {
-                return false;
-            }
-        } catch(IOException e) {
+        if(!configService.available(project.location())) {
             return false;
         }
 
@@ -48,26 +42,22 @@ public class EclipseLanguageSpecService implements ILanguageSpecService {
         return true;
     }
 
-    @Override public @Nullable ILanguageSpec get(IProject project) {
+    @Override public @Nullable ISpoofaxLanguageSpec get(IProject project) throws ConfigException {
         if(project instanceof EclipseLanguageSpec) {
             return (EclipseLanguageSpec) project;
         }
 
         final FileObject location = project.location();
         final ISpoofaxLanguageSpecConfig config;
-        try {
-            if(!configService.available(location)) {
-                return null;
-            }
-            config = configService.get(location);
-            if(config == null) {
-                // Configuration should never be null if it is available, but sanity check anyway.
-                return null;
-            }
-        } catch(IOException e) {
+        if(!configService.available(location)) {
             return null;
         }
-        final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
+        config = configService.get(location);
+        if(config == null) {
+            // Configuration should never be null if it is available, but sanity check anyway.
+            return null;
+        }
+        SpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
 
         if(!(project instanceof EclipseProject)) {
             logger.warn("Project {} is not an Eclipse project, cannot convert to a language specification project",
