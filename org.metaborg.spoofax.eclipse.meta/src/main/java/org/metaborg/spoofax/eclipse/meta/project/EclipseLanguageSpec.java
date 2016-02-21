@@ -11,10 +11,10 @@ public class EclipseLanguageSpec extends EclipseProject implements ISpoofaxLangu
     private final ISpoofaxLanguageSpecConfig config;
     private final ISpoofaxLanguageSpecPaths paths;
 
-    
+
     public EclipseLanguageSpec(ISpoofaxLanguageSpecConfig config, ISpoofaxLanguageSpecPaths paths, FileObject location,
         IProject eclipseProject) {
-        super(location, eclipseProject);
+        super(location, config, eclipseProject);
         this.config = config;
         this.paths = paths;
     }

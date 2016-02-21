@@ -191,7 +191,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                     final LanguageVersion version = LanguageVersion.parse(versionString);
                     final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
 
-                    final EclipseProject project = new EclipseProject(projectLocation, eclipseProject);
+                    final EclipseProject project = new EclipseProject(projectLocation, null, eclipseProject);
                     final ILanguageSpec languageSpec = languageSpecService.get(project);
                     final ISpoofaxLanguageSpecConfig config =
                         configBuilder.withIdentifier(identifier).withName(name).build(languageSpec.location());
