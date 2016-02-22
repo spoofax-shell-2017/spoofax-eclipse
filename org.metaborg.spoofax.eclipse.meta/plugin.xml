@@ -8,6 +8,12 @@
     schema="schema/org.metaborg.spoofax.eclipse.meta.module.exsd"
   />
   
+  <!-- Startup -->
+  <extension
+    point="org.eclipse.ui.startup"
+  >
+    <startup class="org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin"/>
+  </extension>
   
   <!-- Key bindings -->
   <extension point="org.eclipse.ui.bindings">

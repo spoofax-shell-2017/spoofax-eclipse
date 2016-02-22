@@ -9,7 +9,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
+import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.meta.core.build.LanguageSpecBuildInput;
@@ -69,7 +69,7 @@ public class PostJavaBuilder extends Builder {
 
     private static final ILogger logger = LoggerUtils.logger(PostJavaBuilder.class);
 
-    private final EclipseLanguageLoader discoverer;
+    private final LanguageLoader discoverer;
     private final LanguageSpecBuilder builder;
 
 
@@ -78,7 +78,7 @@ public class PostJavaBuilder extends Builder {
             SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
             SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
-        this.discoverer = injector.getInstance(EclipseLanguageLoader.class);
+        this.discoverer = injector.getInstance(LanguageLoader.class);
         this.builder = injector.getInstance(LanguageSpecBuilder.class);
     }
 

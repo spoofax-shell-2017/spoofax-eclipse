@@ -27,10 +27,9 @@ import org.metaborg.spoofax.eclipse.build.BuildRunnable;
 import org.metaborg.spoofax.eclipse.build.CleanRunnable;
 import org.metaborg.spoofax.eclipse.build.ProcessDialectsRunnable;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
-import org.metaborg.spoofax.eclipse.language.DiscoverAllLanguagesJob;
-import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
 import org.metaborg.spoofax.eclipse.language.LanguageComponentChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageImplChangeJob;
+import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -49,7 +48,7 @@ public class EclipseProcessor implements ISpoofaxProcessor {
     private final ILanguageChangeProcessor processor;
 
     private final GlobalSchedulingRules globalRules;
-    private final EclipseLanguageLoader languageDiscoverer;
+    private final LanguageLoader languageLoader;
 
     private final IWorkspace workspace;
 
@@ -57,14 +56,14 @@ public class EclipseProcessor implements ISpoofaxProcessor {
 
     @Inject public EclipseProcessor(IEclipseResourceService resourceService, IDialectProcessor dialectProcessor,
         ISpoofaxBuilder builder, ILanguageChangeProcessor processor, GlobalSchedulingRules globalRules,
-        EclipseLanguageLoader languageDiscoverer) {
+        LanguageLoader languageLoader) {
         this.resourceService = resourceService;
         this.dialectProcessor = dialectProcessor;
         this.builder = builder;
         this.processor = processor;
 
         this.globalRules = globalRules;
-        this.languageDiscoverer = languageDiscoverer;
+        this.languageLoader = languageLoader;
 
         this.workspace = ResourcesPlugin.getWorkspace();
     }
@@ -125,13 +124,9 @@ public class EclipseProcessor implements ISpoofaxProcessor {
 
 
     public void discoverLanguages() {
-        final Job job = new DiscoverAllLanguagesJob(languageDiscoverer);
-        job.setRule(new MultiRule(new ISchedulingRule[] { workspace.getRoot(), globalRules.startupWriteLock(),
-            globalRules.languageServiceLock() }));
-        job.schedule();
-        workspace.addResourceChangeListener(languageDiscoverer);
-        // GTODO: remove resource change listener on plugin stop
+        languageLoader.loadFromPluginsJob().schedule();
     }
+
 
     private IResource getResource(IProject project) {
         final EclipseProject eclipseProject = (EclipseProject) project;

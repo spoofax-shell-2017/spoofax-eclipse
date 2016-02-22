@@ -6,7 +6,6 @@ import java.net.URI;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.provider.local.LocalFile;
-import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IStorage;
@@ -134,7 +133,8 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
                 final IPath location = Path.fromOSString(uri.getPath());
                 eclipseResource = root.getFileForLocation(location);
                 if(eclipseResource == null) {
-                    eclipseResource = root.getContainerForLocation(location);    
+                    // If resource is a direct path to a project, getContainerForLocation needs to be used.
+                    eclipseResource = root.getContainerForLocation(location);
                 }
             }
             return eclipseResource;

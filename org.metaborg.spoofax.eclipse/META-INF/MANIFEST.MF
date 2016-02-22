@@ -21,8 +21,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.spoofax.interpreter.core,
  org.metaborg.spoofax.eclipse.util,
  org.metaborg.spoofax.eclipse.externaldeps,
- org.eclipse.m2e.core,
- org.eclipse.m2e.maven.runtime,
  org.metaborg.core,
  org.eclipse.ui.views
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

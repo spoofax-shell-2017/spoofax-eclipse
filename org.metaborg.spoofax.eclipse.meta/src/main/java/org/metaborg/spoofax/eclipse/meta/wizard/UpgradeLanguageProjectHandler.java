@@ -8,7 +8,6 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
 import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
@@ -23,7 +22,6 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
     private final IProjectService projectService;
     private final ILanguageSpecService languageSpecService;
     private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
-    private final ILegacyProjectSettingsService projectSettingsService;
     private final ITermFactoryService termFactoryService;
 
 
@@ -33,7 +31,6 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         this.projectService = injector.getInstance(IProjectService.class);
         this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
         this.configBuilder = injector.getInstance(ISpoofaxLanguageSpecConfigBuilder.class);
-        this.projectSettingsService = injector.getInstance(ILegacyProjectSettingsService.class);
         this.termFactoryService = injector.getInstance(ITermFactoryService.class);
     }
 
@@ -45,7 +42,7 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
         }
 
         final UpgradeLanguageProjectWizard wizard = new UpgradeLanguageProjectWizard(resourceService, projectService,
-            languageSpecService, configBuilder, projectSettingsService, termFactoryService, project);
+            languageSpecService, configBuilder, termFactoryService, project);
         final Shell shell = HandlerUtil.getActiveWorkbenchWindow(event).getShell();
         final WizardDialog dialog = new WizardDialog(shell, wizard);
         dialog.open();

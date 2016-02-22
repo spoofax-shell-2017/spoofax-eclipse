@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+  id="org.metaborg.spoofax.eclipse.meta.m2e.feature"
+  label="Spoofax Eclipse meta-tooling M2E integration"
+  version="2.0.0.qualifier"
+  plugin="org.metaborg.spoofax.eclipse.meta.m2e"
+>
+  <requires>
+    <import plugin="org.eclipse.m2e.core"/>
+  </requires>
+
+  <includes
+    id="org.metaborg.spoofax.eclipse.meta.feature"
+    version="2.0.0.qualifier"
+    search-location="both"
+  />
+
+  <plugin
+    id="org.metaborg.spoofax.eclipse.meta.m2e"
+    download-size="0"
+    install-size="0"
+    version="2.0.0.qualifier"
+    unpack="false"
+  />
+</feature>

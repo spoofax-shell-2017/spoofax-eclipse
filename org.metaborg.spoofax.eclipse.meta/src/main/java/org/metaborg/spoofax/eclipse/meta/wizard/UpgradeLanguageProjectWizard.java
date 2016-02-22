@@ -19,8 +19,6 @@ import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.core.project.settings.ILegacyProjectSettings;
-import org.metaborg.core.project.settings.ILegacyProjectSettingsService;
 import org.metaborg.meta.core.config.ILanguageSpecConfig;
 import org.metaborg.meta.core.project.ILanguageSpec;
 import org.metaborg.meta.core.project.ILanguageSpecService;
@@ -63,8 +61,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
     public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService, IProjectService projectService,
         ILanguageSpecService languageSpecService, ISpoofaxLanguageSpecConfigBuilder configBuilder,
-        ILegacyProjectSettingsService projectSettingsService, ITermFactoryService termFactoryService,
-        IProject eclipseProject) {
+        ITermFactoryService termFactoryService, IProject eclipseProject) {
         this.languageSpecService = languageSpecService;
         this.configBuilder = configBuilder;
         this.eclipseProject = eclipseProject;
@@ -94,13 +91,12 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                 name = ESVReader.getProperty(esvTerm, "LanguageName");
             }
         } catch(ParseError | IOException e) {
-
+            // Ignore
         }
-
-        final org.metaborg.core.project.IProject metaborgProject = projectService.get(projectLocation);
 
         // Try to get identifiers from language specification configuration.
         try {
+            final org.metaborg.core.project.IProject metaborgProject = projectService.get(projectLocation);
             final ILanguageSpec languageSpec = languageSpecService.get(metaborgProject);
             if(languageSpec != null) {
                 final ILanguageSpecConfig config = languageSpec.config();
@@ -114,30 +110,6 @@ public class UpgradeLanguageProjectWizard extends Wizard {
             }
         } catch(ConfigException e) {
             // Ignore
-        }
-
-        // Try to get identifiers from project settings.
-        if(metaborgProject != null) {
-            final ILegacyProjectSettings settings = projectSettingsService.get(metaborgProject);
-            if(settings != null) {
-                final LanguageIdentifier identifier = settings.identifier();
-                groupId = groupId == null ? identifier.groupId : groupId;
-                id = id == null ? identifier.id : id;
-                version = version == null ? identifier.version.toString() : version;
-                name = name == null ? settings.name() : name;
-            }
-        }
-
-        // Try to get identifiers from generated settings file.
-        final ILegacyProjectSettings settings = projectSettingsService.get(projectLocation);
-        if(settings != null)
-
-        {
-            final LanguageIdentifier identifier = settings.identifier();
-            groupId = groupId == null ? identifier.groupId : groupId;
-            id = id == null ? identifier.id : id;
-            version = version == null ? identifier.version.toString() : version;
-            name = name == null ? settings.name() : name;
         }
 
         groupId = groupId == null ? "" : groupId;
@@ -196,7 +168,6 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                     final ISpoofaxLanguageSpecConfig config =
                         configBuilder.withIdentifier(identifier).withName(name).build(languageSpec.location());
 
-                    // TODO: Use ISpoofaxLanguageSpecPathsService instead.
                     final ISpoofaxLanguageSpecPaths paths =
                         new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
                     final IGeneratorSettings generatorSettings = new GeneratorSettings(config, paths);

@@ -39,7 +39,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         injector.getInstance(IProcessorRunner.class);
         // Eagerly register editor registry so that editor changes are processed.
         injector.getInstance(IEclipseEditorRegistryInternal.class).register();
-        // Discover languages at startup.
+        // Discover language components and dialects from plugins at startup.
         injector.getInstance(EclipseProcessor.class).discoverLanguages();
 
         doneLoading = true;
@@ -58,7 +58,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     @Override public void earlyStartup() {
         /*
          * Ignore early startup, but this forces this plugin to be started when Eclipse starts. This is required for
-         * setting up editor associations for languages in plugins, and languages in the workspace, as soon as possible.
+         * setting up editor associations for language components and dialects in plugins as soon as possible.
          */
     }
 
@@ -74,7 +74,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     public static Injector injector() {
         return injector;
     }
-    
+
     public static boolean doneLoading() {
         return doneLoading;
     }

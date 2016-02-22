@@ -47,6 +47,13 @@ public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
             return (EclipseLanguageSpec) project;
         }
 
+        if(!(project instanceof EclipseProject)) {
+            logger.error("Project {} is not an Eclipse project, cannot convert to a language specification project",
+                project);
+            return null;
+        }
+        final EclipseProject eclipseProject = (EclipseProject) project;
+
         final FileObject location = project.location();
         final ISpoofaxLanguageSpecConfig config;
         if(!configService.available(location)) {
@@ -57,15 +64,8 @@ public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
             // Configuration should never be null if it is available, but sanity check anyway.
             return null;
         }
-        SpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
 
-        if(!(project instanceof EclipseProject)) {
-            logger.warn("Project {} is not an Eclipse project, cannot convert to a language specification project",
-                project);
-            return null;
-        }
-        final EclipseProject eclipseProject = (EclipseProject) project;
-
+        final SpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
         return new EclipseLanguageSpec(config, paths, location, eclipseProject.eclipseProject);
     }
 }

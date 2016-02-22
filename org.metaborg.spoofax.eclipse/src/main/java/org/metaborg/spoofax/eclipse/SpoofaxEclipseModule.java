@@ -9,14 +9,12 @@ import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.core.SpoofaxModule;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
-import org.metaborg.spoofax.core.project.ILegacyMavenProjectService;
-import org.metaborg.spoofax.eclipse.build.LegacyMavenProjectService;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.editor.SpoofaxEditorRegistry;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.EclipseLanguageChangeProcessor;
-import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
+import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
 import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
 import org.metaborg.spoofax.eclipse.resource.EclipseProjectService;
@@ -42,7 +40,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
 
         bind(GlobalSchedulingRules.class).in(Singleton.class);
         bind(EclipseLanguageChangeProcessor.class).in(Singleton.class);
-        bind(EclipseLanguageLoader.class).in(Singleton.class);
+        bind(LanguageLoader.class).in(Singleton.class);
     }
 
 
@@ -63,13 +61,6 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
      */
     @Override protected void bindProject() {
         bind(IProjectService.class).to(EclipseProjectService.class).in(Singleton.class);
-    }
-
-    /**
-     * Overrides {@link SpoofaxModule#bindMavenProject()} for non-dummy implementation of Maven project service.
-     */
-    @Override protected void bindMavenProject() {
-        bind(ILegacyMavenProjectService.class).to(LegacyMavenProjectService.class).in(Singleton.class);
     }
 
     /**
