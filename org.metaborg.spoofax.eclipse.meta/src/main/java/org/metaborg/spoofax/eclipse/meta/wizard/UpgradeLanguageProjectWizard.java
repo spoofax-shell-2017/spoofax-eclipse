@@ -30,14 +30,13 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
-import org.metaborg.spoofax.generator.IGeneratorSettings;
-import org.metaborg.spoofax.generator.eclipse.language.EclipseProjectGenerator;
-import org.metaborg.spoofax.generator.language.AnalysisType;
-import org.metaborg.spoofax.generator.language.LanguageSpecGenerator;
-import org.metaborg.spoofax.generator.language.NewLanguageSpecGenerator;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
-import org.metaborg.spoofax.meta.core.project.GeneratorSettings;
+import org.metaborg.spoofax.meta.core.generator.GeneratorSettings;
+import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
+import org.metaborg.spoofax.meta.core.generator.language.ContinuousLanguageSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGenerator;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
 import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
@@ -170,7 +169,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
 
                     final ISpoofaxLanguageSpecPaths paths =
                         new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
-                    final IGeneratorSettings generatorSettings = new GeneratorSettings(config, paths);
+                    final GeneratorSettings generatorSettings = new GeneratorSettings(config, paths);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
@@ -258,18 +257,18 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         SpoofaxMetaNature.add(eclipseProject, monitor);
     }
 
-    private void upgradeClasspath(IGeneratorSettings settings) throws Exception {
+    private void upgradeClasspath(GeneratorSettings settings) throws Exception {
         final FileObject classpath = projectLocation.resolveFile(".classpath");
         classpath.delete();
-        final EclipseProjectGenerator generator = new EclipseProjectGenerator(settings);
+        final EclipseLangSpecGenerator generator = new EclipseLangSpecGenerator(settings);
         generator.generateClasspath();
     }
 
-    private void generateFiles(IGeneratorSettings settings) throws Exception {
-        final NewLanguageSpecGenerator newGenerator = new NewLanguageSpecGenerator(settings, AnalysisType.NaBL_TS);
+    private void generateFiles(GeneratorSettings settings) throws Exception {
+        final LanguageSpecGenerator newGenerator = new LanguageSpecGenerator(settings, AnalysisType.NaBL_TS);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
-        final LanguageSpecGenerator generator = new LanguageSpecGenerator(settings);
+        final ContinuousLanguageSpecGenerator generator = new ContinuousLanguageSpecGenerator(settings);
         generator.generateAll();
     }
 }
