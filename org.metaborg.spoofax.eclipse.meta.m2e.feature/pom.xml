@@ -5,9 +5,9 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>org.metaborg.spoofax.eclipse.updatesite</artifactId>
-  <packaging>eclipse-update-site</packaging>
-  <description>Spoofax Eclipse update site</description>
+  <artifactId>org.metaborg.spoofax.eclipse.meta.m2e.feature</artifactId>
+  <packaging>eclipse-feature</packaging>
+  <description>Spoofax Eclipse meta-tooling M2E feature</description>
   <url>https://github.com/metaborg/spoofax-eclipse</url>
 
   <parent>
@@ -23,18 +23,6 @@
       <email>g.d.p.konat@tudelft.nl</email>
       <organization>Delft University of Technology</organization>
       <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
-    </developer>
-    <developer>
-      <name>Vlad Vergu</name>
-      <email>v.a.vergu@tudelft.nl</email>
-      <organization>Delft University of Technology</organization>
-      <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
-    </developer>
-    <developer>
-      <name>Oskar van Rest</name>
-      <email>oskar.van.rest@oracle.com</email>
-      <organization>Oracle Labs</organization>
-      <organizationUrl>https://labs.oracle.com</organizationUrl>
     </developer>
   </developers>
 

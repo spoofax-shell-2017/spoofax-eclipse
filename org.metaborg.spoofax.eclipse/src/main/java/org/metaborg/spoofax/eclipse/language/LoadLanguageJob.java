@@ -7,13 +7,13 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 
 public class LoadLanguageJob extends Job {
-    private final EclipseLanguageLoader discoverer;
+    private final LanguageLoader discoverer;
 
     private final FileObject location;
     private final boolean skipUnavailable;
 
 
-    public LoadLanguageJob(EclipseLanguageLoader discoverer, FileObject location, boolean skipUnavailable) {
+    public LoadLanguageJob(LanguageLoader discoverer, FileObject location, boolean skipUnavailable) {
         super("Loading Spoofax language");
         setPriority(Job.SHORT);
 

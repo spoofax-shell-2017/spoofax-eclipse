@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>org.metaborg.spoofax.eclipse.meta.externaldeps</artifactId>
+  <packaging>bundle</packaging>
+  <description>Bundle to import meta non-Eclipse external dependencies into Eclipse</description>
+  <url>https://github.com/metaborg/spoofax-eclipse</url>
+
+  <parent>
+    <groupId>org.metaborg</groupId>
+    <artifactId>parent</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>../../releng/parent</relativePath>
+  </parent>
+
+  <dependencies>
+    <!-- Mustache -->
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+    </dependency>
+    <!-- Pluto and dependencies -->
+    <dependency>
+      <groupId>build.pluto</groupId>
+      <artifactId>pluto</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>build.pluto</groupId>
+      <artifactId>build-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sugarj</groupId>
+      <artifactId>common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.cedarsoftware</groupId>
+      <artifactId>java-util-pluto-fixes</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <!-- Generate MANIFEST.MF from project, to make project available to Eclipse plugins. -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <unpackBundle>true</unpackBundle>
+          <instructions>
+            <!-- Fix names not to include the groupId. -->
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Bundle-Name>${project.artifactId}</Bundle-Name>
+            <!-- Replace SNAPSHOT in the manifest version with given qualifier. -->
+            <Bundle-Version>$(replace;${project.version};-SNAPSHOT;.${forceContextQualifier})</Bundle-Version>
+            <!-- Embed dependencies into plugin bundle, so they are exportable. -->
+            <Embed-Dependency>
+              compiler,
+              pluto,
+              build-java,
+              common,
+              java-util-pluto-fixes
+            </Embed-Dependency>
+            <!-- Export dependency packages -->
+            <Export-Package>
+              com.github.mustachejava;provider=metaborg;mandatory:=provider,
+              com.github.mustachejava*;provider=metaborg;mandatory:=provider,
+              build.pluto*;provider=metaborg;mandatory:=provider,
+              org.sugarj.common*;provider=metaborg;mandatory:=provider,
+              org.sugarj.common;provider=metaborg;mandatory:=provider,
+              build.pluto;provider=metaborg;mandatory:=provider,
+              com.cedarsoftware.util;provider=metaborg;mandatory:=provider
+            </Export-Package>
+            <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
+            <Import-Package>
+              !sun*,
+              !javax*,
+              !groovy*,
+              !com.google*,
+              !org.apache*,
+              !org.codehaus*,
+              !org.jruby*,
+              *
+            </Import-Package>
+            <!-- Don't generate uses declarations in exported packages. -->
+            <_nouses>true</_nouses>
+            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
+              some libraries require. -->
+            <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
+          </instructions>
+        </configuration>
+      </plugin>
+      <!-- Add the generated MANIFEST.MF is used in the resulting JAR file. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <developers>
+    <developer>
+      <name>Gabriël Konat</name>
+      <email>g.d.p.konat@tudelft.nl</email>
+      <organization>Delft University of Technology</organization>
+      <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:metaborg/mb-exec-deps.git</connection>
+    <developerConnection>scm:git:git@github.com:metaborg/mb-exec-deps.git</developerConnection>
+    <url>https://github.com/metaborg/mb-exec-deps</url>
+  </scm>
+</project>

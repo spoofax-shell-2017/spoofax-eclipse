@@ -16,7 +16,7 @@ import com.google.common.collect.Lists;
 /**
  * Utility functions for selections.
  */
-public class SelectionUtils {    
+public class SelectionUtils {
     /**
      * Converts given selection into a structured selection.
      * 
@@ -73,7 +73,7 @@ public class SelectionUtils {
      *            Selected element to convert.
      * @return Resource converted from selected element, or null if no resource could be converted.
      */
-    public static @Nullable IResource elementToResource(Object selected) {
+    @SuppressWarnings("cast") public static @Nullable IResource elementToResource(Object selected) {
         if(selected instanceof IProjectNature) {
             // Test for resource nature as well, in the Package explorer, Java resources of class JavaProject,
             // which implements IProjectNature.
@@ -131,7 +131,7 @@ public class SelectionUtils {
      *            Selected element to convert.
      * @return File converted from selected element, or null if no file could be converted.
      */
-    public static @Nullable IFile elementToFile(Object selected) {
+    @SuppressWarnings("cast") public static @Nullable IFile elementToFile(Object selected) {
         if(selected instanceof IFile) {
             return (IFile) selected;
         } else if(selected instanceof IAdaptable) {
@@ -184,7 +184,7 @@ public class SelectionUtils {
      *            Selected element to convert.
      * @return Project converted from selected element, or null if no project could be converted.
      */
-    public static @Nullable IProject elementToProject(Object selected) {
+    @SuppressWarnings("cast") public static @Nullable IProject elementToProject(Object selected) {
         if(selected instanceof IProjectNature) {
             // Test for project nature as well, in the Package explorer, Java projects of class JavaProject,
             // which implements IProjectNature.

@@ -38,7 +38,6 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.dialect.IDialectService;
 import org.metaborg.core.outline.IOutline;
 import org.metaborg.core.outline.IOutlineService;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.style.ICategorizerService;
 import org.metaborg.core.style.IRegionStyle;
@@ -74,7 +73,6 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     private ILanguageIdentifierService languageIdentifier;
     private IDialectService dialectService;
     private IProjectService projectService;
-    private ILanguageSpecService languageSpecService;
     private IContextService contextService;
     private ISyntaxService<IStrategoTerm> syntaxService;
     private IAnalysisService<IStrategoTerm, IStrategoTerm> analysisService;
@@ -289,7 +287,6 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         this.dialectService = injector.getInstance(IDialectService.class);
         this.contextService = injector.getInstance(IContextService.class);
         this.projectService = injector.getInstance(IProjectService.class);
-        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
         this.syntaxService = injector.getInstance(Key.get(new TypeLiteral<ISyntaxService<IStrategoTerm>>() {}));
         this.analysisService =
             injector.getInstance(Key.get(new TypeLiteral<IAnalysisService<IStrategoTerm, IStrategoTerm>>() {}));
@@ -313,9 +310,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     }
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
-        return new SpoofaxSourceViewerConfiguration<>(resourceService, syntaxService,
-                parseResultProcessor, analysisResultProcessor, referenceResolver, hoverService, completionService,
-                getPreferenceStore(), this);
+        return new SpoofaxSourceViewerConfiguration<>(resourceService, syntaxService, parseResultProcessor,
+            analysisResultProcessor, referenceResolver, hoverService, completionService, getPreferenceStore(), this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
@@ -386,8 +382,8 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
             pairMatcherChars.add(close.charAt(0));
         }
 
-        final ICharacterPairMatcher matcher =
-            new DefaultCharacterPairMatcher(ArrayUtils.toPrimitive(pairMatcherChars.toArray(new Character[pairMatcherChars.size()])));
+        final ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(
+            ArrayUtils.toPrimitive(pairMatcherChars.toArray(new Character[pairMatcherChars.size()])));
         support.setCharacterPairMatcher(matcher);
         SpoofaxEditorPreferences.setPairMatcherKeys(support);
     }
@@ -446,16 +442,15 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
         analysisResultProcessor.invalidate(resource);
 
         final Job job =
-            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, projectService, languageSpecService, syntaxService,
-                analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
+            new EditorUpdateJob<>(resourceService, languageIdentifier, dialectService, contextService, projectService,
+                syntaxService, analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
                 analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock() });
         } else {
-            rule =
-                new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),
-                    eclipseResource });
+            rule = new MultiRule(
+                new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
         }
         job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);

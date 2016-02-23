@@ -46,6 +46,7 @@ import org.eclipse.ui.internal.misc.StringMatcher;
 /**
  * Abstract class for showing a filtered tree in a lightweight popup dialog.
  */
+@SuppressWarnings("restriction")
 public abstract class FilteringInfoPopup extends PopupDialog implements DisposeListener {
 
     /**
@@ -117,7 +118,7 @@ public abstract class FilteringInfoPopup extends PopupDialog implements DisposeL
         // Title and status text must be set to get the title label created, so force empty values here.
         if(hasHeader())
             setTitleText(""); //$NON-NLS-1$
-        setInfoText(""); //  //$NON-NLS-1$
+        setInfoText(""); // //$NON-NLS-1$
 
         // Status field text can only be computed after widgets are created.
         setInfoText(getStatusFieldText());
@@ -439,7 +440,7 @@ public abstract class FilteringInfoPopup extends PopupDialog implements DisposeL
     /**
      * {@inheritDoc}
      */
-    public void setInformation(String information) {
+    @SuppressWarnings("unused") public void setInformation(String information) {
         // this method is ignored, see IInformationControlExtension2
     }
 
@@ -494,7 +495,7 @@ public abstract class FilteringInfoPopup extends PopupDialog implements DisposeL
     /**
      * {@inheritDoc}
      */
-    public void setSizeConstraints(int maxWidth, int maxHeight) {
+    @SuppressWarnings("unused") public void setSizeConstraints(int maxWidth, int maxHeight) {
         // ignore
     }
 

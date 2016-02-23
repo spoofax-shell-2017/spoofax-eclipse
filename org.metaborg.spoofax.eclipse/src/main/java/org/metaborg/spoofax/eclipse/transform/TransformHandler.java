@@ -15,8 +15,7 @@ import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.language.LanguageIdentifier;
-import org.metaborg.core.project.ILanguageSpec;
-import org.metaborg.core.project.ILanguageSpecService;
+import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.source.ISourceTextService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultRequester;
@@ -46,7 +45,6 @@ public class TransformHandler extends AbstractHandler {
     private final ISourceTextService sourceTextService;
     private final IContextService contextService;
     private final IProjectService projectService;
-    private final ILanguageSpecService languageSpecService;
     private final ISpoofaxTransformService transformService;
     private final ISpoofaxParseResultRequester parseResultRequester;
     private final ISpoofaxAnalysisResultRequester analysisResultRequester;
@@ -62,7 +60,6 @@ public class TransformHandler extends AbstractHandler {
         this.sourceTextService = injector.getInstance(ISourceTextService.class);
         this.contextService = injector.getInstance(IContextService.class);
         this.projectService = injector.getInstance(IProjectService.class);
-        this.languageSpecService = injector.getInstance(ILanguageSpecService.class);
         this.transformService = injector.getInstance(ISpoofaxTransformService.class);
         this.parseResultRequester = injector.getInstance(ISpoofaxParseResultRequester.class);
         this.analysisResultRequester = injector.getInstance(ISpoofaxAnalysisResultRequester.class);
@@ -101,9 +98,8 @@ public class TransformHandler extends AbstractHandler {
         } else {
             final Iterable<IResource> eclipseResources = AbstractHandlerUtils.toResources(event);
             if(eclipseResources == null) {
-                final String message =
-                    logger.format("Cannot transform resource of {}; selection is null or not a structed selection",
-                        language);
+                final String message = logger
+                    .format("Cannot transform resource of {}; selection is null or not a structed selection", language);
                 throw new ExecutionException(message);
             }
             final Collection<TransformResource> transformResources = Lists.newLinkedList();
@@ -123,17 +119,15 @@ public class TransformHandler extends AbstractHandler {
             resources = transformResources;
         }
 
-        final Job transformJob =
-            new TransformJob<>(contextService, transformService, parseResultRequester, analysisResultRequester,
-                language, resources, goal);
+        final Job transformJob = new TransformJob<>(contextService, transformService, parseResultRequester,
+            analysisResultRequester, language, resources, goal);
         transformJob.schedule();
 
         return null;
     }
 
     private TransformResource createTransformResource(FileObject resource, String text) {
-        // TODO: Can't the project be determined by the editor?
-        ILanguageSpec project = this.languageSpecService.get(this.projectService.get(resource));
+        final IProject project = projectService.get(resource);
         return new TransformResource(resource, project, text);
     }
 }

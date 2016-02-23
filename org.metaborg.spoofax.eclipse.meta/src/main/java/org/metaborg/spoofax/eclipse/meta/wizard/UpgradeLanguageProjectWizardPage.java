@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.project;
+package org.metaborg.spoofax.eclipse.meta.wizard;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;

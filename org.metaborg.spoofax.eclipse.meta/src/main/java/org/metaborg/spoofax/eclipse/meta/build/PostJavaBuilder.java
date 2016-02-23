@@ -1,38 +1,37 @@
 package org.metaborg.spoofax.eclipse.meta.build;
 
-import com.google.inject.Injector;
+import java.io.IOException;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.metaborg.core.MetaborgException;
-import org.metaborg.core.project.ILanguageSpec;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.spoofax.core.project.ISpoofaxLanguageSpecPathsService;
-import org.metaborg.spoofax.core.project.configuration.ISpoofaxLanguageSpecConfigService;
-import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
+import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.meta.core.LanguageSpecBuildInput;
-import org.metaborg.spoofax.meta.core.SpoofaxMetaBuilder;
+import org.metaborg.spoofax.meta.core.build.LanguageSpecBuildInput;
+import org.metaborg.spoofax.meta.core.build.LanguageSpecBuilder;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
+import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-import java.io.IOException;
+import com.google.inject.Injector;
 
 public class PostJavaBuilder extends Builder {
     private static final class BuildRunnable implements IWorkspaceRunnable {
         private final LanguageSpecBuildInput input;
-        private final SpoofaxMetaBuilder builder;
+        private final LanguageSpecBuilder builder;
         private final IProgressMonitor monitor;
 
         private boolean success = false;
 
 
-        private BuildRunnable(LanguageSpecBuildInput input, SpoofaxMetaBuilder builder, IProgressMonitor monitor) {
+        private BuildRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder,
+            IProgressMonitor monitor) {
             this.input = input;
             this.builder = builder;
             this.monitor = monitor;
@@ -70,24 +69,22 @@ public class PostJavaBuilder extends Builder {
 
     private static final ILogger logger = LoggerUtils.logger(PostJavaBuilder.class);
 
-    private final EclipseLanguageLoader discoverer;
-    private final SpoofaxMetaBuilder builder;
+    private final LanguageLoader discoverer;
+    private final LanguageSpecBuilder builder;
 
 
     public PostJavaBuilder() {
-        super(
-                SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
-                SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
-                SpoofaxMetaPlugin.injector().getInstance(ILanguageSpecService.class),
-                SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecConfigService.class),
-                SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecPathsService.class));
+        super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
+            SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
+            SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecService.class));
         final Injector injector = SpoofaxMetaPlugin.injector();
-        this.discoverer = injector.getInstance(EclipseLanguageLoader.class);
-        this.builder = injector.getInstance(SpoofaxMetaBuilder.class);
+        this.discoverer = injector.getInstance(LanguageLoader.class);
+        this.builder = injector.getInstance(LanguageSpecBuilder.class);
     }
 
 
-    @Override protected void build(ILanguageSpec languageSpec, IProgressMonitor monitor) throws CoreException, IOException {
+    @Override protected void build(ISpoofaxLanguageSpec languageSpec, IProgressMonitor monitor)
+        throws CoreException, IOException {
         final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
         final BuildRunnable runnable = new BuildRunnable(input, builder, monitor);
@@ -103,7 +100,7 @@ public class PostJavaBuilder extends Builder {
         }
     }
 
-    @Override protected void clean(ILanguageSpec languageSpec, IProgressMonitor monitor) {
+    @Override protected void clean(ISpoofaxLanguageSpec languageSpec, IProgressMonitor monitor) {
 
     }
 

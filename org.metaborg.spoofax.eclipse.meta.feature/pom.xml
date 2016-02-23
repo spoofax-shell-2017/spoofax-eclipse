@@ -1,43 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>org.metaborg.spoofax.eclipse.meta.feature</artifactId>
-	<packaging>eclipse-feature</packaging>
-	<description>Spoofax Eclipse meta-tooling feature</description>
-	<url>https://github.com/metaborg/spoofax-deploy</url>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>org.metaborg.spoofax.eclipse.meta.feature</artifactId>
+  <packaging>eclipse-feature</packaging>
+  <description>Spoofax Eclipse meta-tooling feature</description>
+  <url>https://github.com/metaborg/spoofax-eclipse</url>
 
-	<parent>
-		<groupId>org.metaborg</groupId>
-		<artifactId>parent.eclipse.plugin</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
-		<relativePath>../../releng/parent/eclipse/plugin</relativePath>
-	</parent>
+  <parent>
+    <groupId>org.metaborg</groupId>
+    <artifactId>parent.eclipse.plugin</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>../../releng/parent/eclipse/plugin</relativePath>
+  </parent>
 
-	<developers>
-		<developer>
-			<name>Gabriël Konat</name>
-			<email>g.d.p.konat@tudelft.nl</email>
-			<organization>Delft University of Technology</organization>
-			<organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
-		</developer>
-		<developer>
-			<name>Vlad Vergu</name>
-			<email>v.a.vergu@tudelft.nl</email>
-			<organization>Delft University of Technology</organization>
-			<organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
-		</developer>
-		<developer>
-			<name>Oskar van Rest</name>
-			<email>oskar.van.rest@oracle.com</email>
-			<organization>Oracle Labs</organization>
-			<organizationUrl>https://labs.oracle.com</organizationUrl>
-		</developer>
-	</developers>
+  <developers>
+    <developer>
+      <name>Gabriël Konat</name>
+      <email>g.d.p.konat@tudelft.nl</email>
+      <organization>Delft University of Technology</organization>
+      <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
+    </developer>
+    <developer>
+      <name>Vlad Vergu</name>
+      <email>v.a.vergu@tudelft.nl</email>
+      <organization>Delft University of Technology</organization>
+      <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
+    </developer>
+    <developer>
+      <name>Oskar van Rest</name>
+      <email>oskar.van.rest@oracle.com</email>
+      <organization>Oracle Labs</organization>
+      <organizationUrl>https://labs.oracle.com</organizationUrl>
+    </developer>
+  </developers>
 
-	<scm>
-		<connection>scm:git:git@github.com:metaborg/spoofax-deploy.git</connection>
-		<developerConnection>scm:git:git@github.com:metaborg/spoofax-deploy.git</developerConnection>
-		<url>https://github.com/metaborg/spoofax-deploy</url>
-	</scm>
+  <scm>
+    <connection>scm:git:git@github.com:metaborg/spoofax-eclipse.git</connection>
+    <developerConnection>scm:git:git@github.com:metaborg/spoofax-eclipse.git</developerConnection>
+    <url>https://github.com/metaborg/spoofax-eclipse</url>
+  </scm>
 </project>

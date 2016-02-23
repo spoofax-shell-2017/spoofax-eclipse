@@ -39,11 +39,6 @@
     version="2.0.0.qualifier"
     unpack="false"
   />
-  <plugin
-    id="org.metaborg.spoofax.eclipse.meta.m2e"
-    version="2.0.0.qualifier"
-    unpack="false"
-  />
 
   <!-- Meta languages, unpack plugins for access to jar, ctree, and packed.esv files. -->
   <plugin
@@ -92,6 +87,11 @@
     unpack="true"
   />
   <plugin
+    id="org.metaborg.meta.lang.spt.eclipse"
+    version="2.0.0.qualifier"
+    unpack="true"
+  />
+  <plugin
     id="org.metaborg.meta.lib.analysis.eclipse"
     version="2.0.0.qualifier"
     unpack="true"
@@ -101,8 +101,10 @@
     version="2.0.0.qualifier"
     unpack="true"
   />
+  
+  <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
-    id="org.metaborg.meta.lang.spt.eclipse"
+    id="org.metaborg.spoofax.eclipse.meta.externaldeps"
     version="2.0.0.qualifier"
     unpack="true"
   />

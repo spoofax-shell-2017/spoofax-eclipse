@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.meta.project;
+package org.metaborg.spoofax.eclipse.meta.wizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;

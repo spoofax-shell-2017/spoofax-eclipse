@@ -5,7 +5,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
-import org.metaborg.spoofax.eclipse.language.EclipseLanguageLoader;
+import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
@@ -14,13 +14,13 @@ import com.google.inject.Injector;
 
 public class LoadLanguageHandler extends AbstractHandler {
     private final IEclipseResourceService resourceService;
-    private final EclipseLanguageLoader loader;
+    private final LanguageLoader loader;
 
 
     public LoadLanguageHandler() {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
-        this.loader = injector.getInstance(EclipseLanguageLoader.class);
+        this.loader = injector.getInstance(LanguageLoader.class);
     }
 
 

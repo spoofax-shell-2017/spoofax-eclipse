@@ -8,7 +8,7 @@
   <artifactId>org.metaborg.spoofax.eclipse.feature</artifactId>
   <packaging>eclipse-feature</packaging>
   <description>Spoofax Eclipse runtime feature</description>
-  <url>https://github.com/metaborg/spoofax-deploy</url>
+  <url>https://github.com/metaborg/spoofax-eclipse</url>
 
   <parent>
     <groupId>org.metaborg</groupId>
@@ -39,8 +39,8 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:metaborg/spoofax-deploy.git</connection>
-    <developerConnection>scm:git:git@github.com:metaborg/spoofax-deploy.git</developerConnection>
-    <url>https://github.com/metaborg/spoofax-deploy</url>
+    <connection>scm:git:git@github.com:metaborg/spoofax-eclipse.git</connection>
+    <developerConnection>scm:git:git@github.com:metaborg/spoofax-eclipse.git</developerConnection>
+    <url>https://github.com/metaborg/spoofax-eclipse</url>
   </scm>
 </project>

@@ -1,6 +1,7 @@
 package org.metaborg.spoofax.eclipse.resource;
 
 import java.io.File;
+import java.net.URI;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemManager;
@@ -23,6 +24,7 @@ import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.resource.ResourceChangeKind;
 import org.metaborg.core.resource.ResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.util.file.FileUtils;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -127,8 +129,13 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
             IResource eclipseResource = root.findMember(path);
             if(eclipseResource == null) {
                 // Path might be absolute, try to get absolute file.
-                final IPath location = Path.fromOSString(path);
+                final URI uri = FileUtils.toURI(resource);
+                final IPath location = Path.fromOSString(uri.getPath());
                 eclipseResource = root.getFileForLocation(location);
+                if(eclipseResource == null) {
+                    // If resource is a direct path to a project, getContainerForLocation needs to be used.
+                    eclipseResource = root.getContainerForLocation(location);
+                }
             }
             return eclipseResource;
         }

@@ -1,26 +1,18 @@
 package org.metaborg.spoofax.eclipse.resource;
 
 import org.apache.commons.vfs2.FileObject;
-import org.metaborg.core.project.ILanguageSpec;
+import org.metaborg.core.config.IProjectConfig;
 import org.metaborg.core.project.IProject;
+import org.metaborg.core.project.Project;
+import org.metaborg.spoofax.eclipse.util.Nullable;
 
-public class EclipseProject implements IProject, ILanguageSpec {
-    public final FileObject location;
+public class EclipseProject extends Project implements IProject {
     public final org.eclipse.core.resources.IProject eclipseProject;
 
 
-    public EclipseProject(FileObject location, org.eclipse.core.resources.IProject eclipseProject) {
-        this.location = location;
+    public EclipseProject(FileObject location, @Nullable IProjectConfig config,
+        org.eclipse.core.resources.IProject eclipseProject) {
+        super(location, config);
         this.eclipseProject = eclipseProject;
-    }
-
-
-    @Override public FileObject location() {
-        return location;
-    }
-    
-    
-    @Override public String toString() {
-        return location.toString();
     }
 }

@@ -8,6 +8,7 @@ Bundle-Vendor: metaborg.org
 Require-Bundle: org.metaborg.util,
  org.metaborg.spoofax.eclipse.meta,
  org.metaborg.spoofax.eclipse.externaldeps,
+ org.metaborg.spoofax.eclipse.meta.externaldeps,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.equinox.registry,

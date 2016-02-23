@@ -30,8 +30,6 @@ import org.metaborg.core.outline.IOutline;
 import org.metaborg.core.outline.IOutlineService;
 import org.metaborg.core.processing.analyze.IAnalysisResultUpdater;
 import org.metaborg.core.processing.parse.IParseResultUpdater;
-import org.metaborg.core.project.ILanguageSpec;
-import org.metaborg.core.project.ILanguageSpecService;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.style.ICategorizerService;
@@ -62,7 +60,6 @@ public class EditorUpdateJob<P, A> extends Job {
     private final IDialectService dialectService;
     private final IContextService contextService;
     private final IProjectService projectService;
-    private final ILanguageSpecService languageSpecService;
     private final ISyntaxService<P> syntaxService;
     private final IAnalysisService<P, A> analyzer;
     private final ICategorizerService<P, A> categorizer;
@@ -83,12 +80,11 @@ public class EditorUpdateJob<P, A> extends Job {
 
     public EditorUpdateJob(IEclipseResourceService resourceService,
         ILanguageIdentifierService languageIdentifierService, IDialectService dialectService,
-        IContextService contextService, IProjectService projectService,
-        ILanguageSpecService languageSpecService, ISyntaxService<P> syntaxService, IAnalysisService<P, A> analyzer,
-        ICategorizerService<P, A> categorizer, IStylerService<P, A> styler, IOutlineService<P, A> outlineService,
-        IParseResultUpdater<P> parseResultProcessor, IAnalysisResultUpdater<P, A> analysisResultProcessor,
-        IEclipseEditor<P> editor, IEditorInput input, @Nullable IResource eclipseResource, FileObject resource,
-        String text, boolean instantaneous) {
+        IContextService contextService, IProjectService projectService, ISyntaxService<P> syntaxService,
+        IAnalysisService<P, A> analyzer, ICategorizerService<P, A> categorizer, IStylerService<P, A> styler,
+        IOutlineService<P, A> outlineService, IParseResultUpdater<P> parseResultProcessor,
+        IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<P> editor, IEditorInput input,
+        @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous) {
         super("Updating Spoofax editor");
         setPriority(Job.SHORT);
 
@@ -97,7 +93,6 @@ public class EditorUpdateJob<P, A> extends Job {
         this.dialectService = dialectService;
         this.contextService = contextService;
         this.projectService = projectService;
-        this.languageSpecService = languageSpecService;
         this.syntaxService = syntaxService;
         this.analyzer = analyzer;
         this.categorizer = categorizer;
@@ -145,8 +140,10 @@ public class EditorUpdateJob<P, A> extends Job {
                             if(workspaceMonitor.isCanceled())
                                 return;
                             MarkerUtils.clearAll(eclipseResource);
-                            MarkerUtils.createMarker(eclipseResource, MessageFactory.newErrorAtTop(resource,
-                                "Failed to update editor; see the console or error log for more information", MessageType.INTERNAL, e));
+                            MarkerUtils.createMarker(eclipseResource,
+                                MessageFactory.newErrorAtTop(resource,
+                                    "Failed to update editor; see the console or error log for more information",
+                                    MessageType.INTERNAL, e));
                         }
                     };
                     workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
@@ -180,13 +177,13 @@ public class EditorUpdateJob<P, A> extends Job {
     }
 
 
-    private IStatus update(IWorkspace workspace, final IProgressMonitor progressMonitor) throws MetaborgException,
-        CoreException {
+    private IStatus update(IWorkspace workspace, final IProgressMonitor progressMonitor)
+        throws MetaborgException, CoreException {
         final SubMonitor monitor = SubMonitor.convert(progressMonitor, 11);
 
         monitor.subTask("Identifying language");
-        final ILanguageSpec languageSpec = this.languageSpecService.get(this.projectService.get(resource));
-        final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource, languageSpec);
+        final IProject project = projectService.get(resource);
+        final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource, project);
         if(parserLanguage == null) {
             throw new MetaborgException("Language could not be identified");
         }
@@ -265,7 +262,7 @@ public class EditorUpdateJob<P, A> extends Job {
         if(!contextService.available(language))
             return StatusUtils.success();
         monitor.subTask("Analyzing");
-        final IContext context = contextService.get(resource, languageSpec, language);
+        final IContext context = contextService.get(resource, project, language);
         final AnalysisResult<P, A> analysisResult = analyze(parseResult, context);
         monitor.worked(1);
 
@@ -289,8 +286,8 @@ public class EditorUpdateJob<P, A> extends Job {
             parseResultProcessor.error(resource, e);
             throw e;
         } catch(ThreadDeath e) {
-            parseResultProcessor.error(resource, new ParseException(resource, parserLanguage,
-                "Editor update job killed", e));
+            parseResultProcessor.error(resource,
+                new ParseException(resource, parserLanguage, "Editor update job killed", e));
             throw e;
         }
         return parseResult;
@@ -334,8 +331,8 @@ public class EditorUpdateJob<P, A> extends Job {
         workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
     }
 
-    private AnalysisResult<P, A> analyze(ParseResult<P> parseResult, IContext context) throws AnalysisException,
-        ThreadDeath {
+    private AnalysisResult<P, A> analyze(ParseResult<P> parseResult, IContext context)
+        throws AnalysisException, ThreadDeath {
         final AnalysisResult<P, A> analysisResult;
         try(IClosableLock lock = context.write()) {
             analysisResultProcessor.invalidate(parseResult.source);

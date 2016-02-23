@@ -9,6 +9,7 @@ import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.BuildLogger;
 import org.eclipse.ant.core.AntRunner;
 import org.eclipse.core.runtime.CoreException;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.processing.EclipseCancellationToken;
@@ -41,14 +42,19 @@ public class EclipseAntRunner implements IAntRunner {
     }
 
 
-    @Override public void execute(String target, @Nullable ICancellationToken cancellationToken) throws CoreException {
+    @Override public void execute(String target, @Nullable ICancellationToken cancellationToken)
+        throws MetaborgException {
         runner.setExecutionTargets(new String[] { target });
 
-        if(cancellationToken instanceof EclipseCancellationToken) {
-            final EclipseCancellationToken eclipseCancellationToken = (EclipseCancellationToken) cancellationToken;
-            runner.run(eclipseCancellationToken.monitor);
-        } else {
-            runner.run();
+        try {
+            if(cancellationToken instanceof EclipseCancellationToken) {
+                final EclipseCancellationToken eclipseCancellationToken = (EclipseCancellationToken) cancellationToken;
+                runner.run(eclipseCancellationToken.monitor);
+            } else {
+                runner.run();
+            }
+        } catch(CoreException e) {
+            throw new MetaborgException("Ant runner failed", e);
         }
     }
 }
