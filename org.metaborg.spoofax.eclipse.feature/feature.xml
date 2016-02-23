@@ -113,11 +113,6 @@
     unpack="true"
   />
   <plugin
-    id="org.metaborg.spoofax.generator"
-    version="2.0.0.qualifier"
-    unpack="false"
-  />
-  <plugin
     id="org.metaborg.spoofax.nativebundle"
     version="2.0.0.qualifier"
     unpack="true"
