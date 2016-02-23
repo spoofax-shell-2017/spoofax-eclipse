@@ -49,6 +49,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger.debug("Stopping Spoofax plugin");
         doneLoading = false;
         injector = null;
+        spoofax.close();
         spoofax = null;
         logger = null;
         plugin = null;

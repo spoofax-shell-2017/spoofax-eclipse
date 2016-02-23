@@ -42,6 +42,7 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin implements IStartup {
     @Override public void stop(BundleContext context) throws Exception {
         logger.debug("Stopping Spoofax meta plugin");
         injector = null;
+        spoofaxMeta.close();
         spoofaxMeta = null;
         logger = null;
         bundleContext = null;
