@@ -2,11 +2,13 @@ package org.metaborg.spoofax.eclipse.resource;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
-import org.metaborg.core.config.ConfigException;
+import org.metaborg.core.config.ConfigRequest;
 import org.metaborg.core.config.IProjectConfig;
 import org.metaborg.core.config.IProjectConfigService;
+import org.metaborg.core.messages.StreamMessagePrinter;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
+import org.metaborg.core.source.ISourceTextService;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -15,12 +17,14 @@ import com.google.inject.Inject;
 public class EclipseProjectService implements IProjectService {
     private static final ILogger logger = LoggerUtils.logger(EclipseProjectService.class);
 
+    private final ISourceTextService sourceTextService;
     private final IEclipseResourceService resourceService;
     private final IProjectConfigService projectConfigService;
 
 
-    @Inject public EclipseProjectService(IEclipseResourceService resourceService,
+    @Inject public EclipseProjectService(ISourceTextService sourceTextService, IEclipseResourceService resourceService,
         IProjectConfigService projectConfigService) {
+        this.sourceTextService = sourceTextService;
         this.resourceService = resourceService;
         this.projectConfigService = projectConfigService;
     }
@@ -41,13 +45,14 @@ public class EclipseProjectService implements IProjectService {
 
         final FileObject location = resourceService.resolve(eclipseProject);
 
-        final IProjectConfig config;
-        try {
-            config = projectConfigService.get(location);
-        } catch(ConfigException e) {
-            logger.error("Cannot get project for {}, configuration could not be retrieved", e, resource);
+        final ConfigRequest<IProjectConfig> configRequest = projectConfigService.get(location);
+        if(!configRequest.valid()) {
+            logger.error("Errors occurred when retrieving project configuration from project directory {}", location);
+            configRequest.reportErrors(new StreamMessagePrinter(sourceTextService, false, false, logger));
             return null;
         }
+
+        final IProjectConfig config = configRequest.config();
 
         return new EclipseProject(location, config, eclipseProject);
     }

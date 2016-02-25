@@ -2,7 +2,10 @@ package org.metaborg.spoofax.eclipse.meta.project;
 
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.core.config.ConfigException;
+import org.metaborg.core.config.ConfigRequest;
+import org.metaborg.core.messages.StreamMessagePrinter;
 import org.metaborg.core.project.IProject;
+import org.metaborg.core.source.ISourceTextService;
 import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
@@ -18,10 +21,13 @@ import com.google.inject.Inject;
 public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
     private static final ILogger logger = LoggerUtils.logger(EclipseLanguageSpecService.class);
 
+    private final ISourceTextService sourceTextService;
     private final ISpoofaxLanguageSpecConfigService configService;
 
 
-    @Inject public EclipseLanguageSpecService(ISpoofaxLanguageSpecConfigService configService) {
+    @Inject public EclipseLanguageSpecService(ISourceTextService sourceTextService,
+        ISpoofaxLanguageSpecConfigService configService) {
+        this.sourceTextService = sourceTextService;
         this.configService = configService;
     }
 
@@ -55,17 +61,22 @@ public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
         final EclipseProject eclipseProject = (EclipseProject) project;
 
         final FileObject location = project.location();
-        final ISpoofaxLanguageSpecConfig config;
-        if(!configService.available(location)) {
+        final ConfigRequest<ISpoofaxLanguageSpecConfig> configRequest = configService.get(location);
+        if(!configRequest.valid()) {
+            logger.error("Errors occurred when retrieving language specification configuration from project {}",
+                project);
+            configRequest.reportErrors(new StreamMessagePrinter(sourceTextService, false, false, logger));
             return null;
         }
-        config = configService.get(location);
+
+        final ISpoofaxLanguageSpecConfig config = configRequest.config();
         if(config == null) {
             // Configuration should never be null if it is available, but sanity check anyway.
             return null;
         }
 
         final SpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
+
         return new EclipseLanguageSpec(config, paths, location, eclipseProject.eclipseProject);
     }
 }

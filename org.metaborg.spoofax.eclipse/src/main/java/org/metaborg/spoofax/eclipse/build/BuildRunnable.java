@@ -87,6 +87,9 @@ public class BuildRunnable<P, A, T> implements IWorkspaceRunnable {
 
             for(IMessage message : result.messages) {
                 final FileObject resource = message.source();
+                if(resource == null) {
+                    continue;
+                }
                 final IResource eclipseResource = resourceService.unresolve(resource);
                 if(eclipseResource == null) {
                     logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
