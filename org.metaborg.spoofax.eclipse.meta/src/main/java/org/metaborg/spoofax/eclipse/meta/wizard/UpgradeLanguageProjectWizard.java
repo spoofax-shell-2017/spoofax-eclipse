@@ -25,7 +25,6 @@ import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.core.esv.ESVReader;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
@@ -54,14 +53,12 @@ public class UpgradeLanguageProjectWizard extends Wizard {
     private final FileObject projectLocation;
     private final UpgradeLanguageProjectWizardPage page;
 
-    private final ILanguageSpecService languageSpecService;
     private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
 
 
     public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService, IProjectService projectService,
         ILanguageSpecService languageSpecService, ISpoofaxLanguageSpecConfigBuilder configBuilder,
         ITermFactoryService termFactoryService, IProject eclipseProject) {
-        this.languageSpecService = languageSpecService;
         this.configBuilder = configBuilder;
         this.eclipseProject = eclipseProject;
         this.projectLocation = resourceService.resolve(eclipseProject);
@@ -161,14 +158,13 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                 try {
                     final LanguageVersion version = LanguageVersion.parse(versionString);
                     final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
-
-                    final EclipseProject project = new EclipseProject(projectLocation, null, eclipseProject);
-                    final ILanguageSpec languageSpec = languageSpecService.get(project);
-                    final ISpoofaxLanguageSpecConfig config =
-                        configBuilder.withIdentifier(identifier).withName(name).build(languageSpec.location());
-
-                    final ISpoofaxLanguageSpecPaths paths =
-                        new SpoofaxLanguageSpecPaths(languageSpec.location(), config);
+                    // @formatter:off
+                    final ISpoofaxLanguageSpecConfig config = configBuilder
+                        .withIdentifier(identifier)
+                        .withName(name)
+                        .build(projectLocation);
+                    // @formatter:on
+                    final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(projectLocation, config);
                     final GeneratorSettings generatorSettings = new GeneratorSettings(config, paths);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
@@ -183,7 +179,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                 } catch(CoreException e) {
                     throw e;
                 } catch(Exception e) {
-                    throw new CoreException(StatusUtils.error(e));
+                    throw new CoreException(StatusUtils.error("Upgrading language project failed unexpectedly", e));
                 }
             }
         };
