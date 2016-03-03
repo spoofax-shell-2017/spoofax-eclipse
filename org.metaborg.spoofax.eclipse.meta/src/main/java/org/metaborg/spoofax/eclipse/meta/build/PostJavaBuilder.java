@@ -40,7 +40,7 @@ public class PostJavaBuilder extends Builder {
 
         @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
             try {
-                logger.info("Packaging language project {}", input.languageSpec);
+                logger.info("Packaging language project {}", input.languageSpec());
                 builder.compilePostJava(input);
                 success = true;
             } catch(Exception e) {
