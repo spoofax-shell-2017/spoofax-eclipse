@@ -26,7 +26,7 @@ import rx.schedulers.Schedulers;
 import com.google.common.collect.Iterables;
 
 public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor {
-    private final ICompletionService<P> completionService;
+    private final ICompletionService completionService;
 
     private final IParseResultRequester<P> parseResultRequester;
 
@@ -38,7 +38,7 @@ public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor
     private volatile ICompletionProposal[] cachedProposals;
 
 
-    public SpoofaxContentAssistProcessor(ICompletionService<P> completionService,
+    public SpoofaxContentAssistProcessor(ICompletionService completionService,
         IParseResultRequester<P> parseResultRequester, FileObject resource, IDocument document, ILanguageImpl language) {
         this.completionService = completionService;
 

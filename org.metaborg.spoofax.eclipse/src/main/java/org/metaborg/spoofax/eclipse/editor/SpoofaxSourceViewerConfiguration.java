@@ -45,7 +45,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
     private final IAnalysisResultRequester<P, A> analysisResultRequester;
     private final IResolverService<P, A> referenceResolver;
     private final IHoverService<P, A> hoverService;
-    private final ICompletionService<P> completionService;
+    private final ICompletionService completionService;
 
     private final SpoofaxEditor editor;
 
@@ -53,7 +53,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
     public SpoofaxSourceViewerConfiguration(IEclipseResourceService resourceService, ISyntaxService<P> syntaxService,
         IParseResultRequester<P> parseResultRequester, IAnalysisResultRequester<P, A> analysisResultRequester,
         IResolverService<P, A> referenceResolver, IHoverService<P, A> hoverService,
-        ICompletionService<P> completionService, IPreferenceStore preferenceStore, SpoofaxEditor editor) {
+        ICompletionService completionService, IPreferenceStore preferenceStore, SpoofaxEditor editor) {
         super(preferenceStore);
 
         this.resourceService = resourceService;

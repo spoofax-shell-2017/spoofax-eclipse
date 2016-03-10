@@ -19,9 +19,8 @@ import org.metaborg.core.completion.ICursorCompletionItem;
 import org.metaborg.core.completion.IPlaceholderCompletionItem;
 import org.metaborg.core.completion.ITextCompletionItem;
 import org.metaborg.spoofax.core.completion.PlaceholderCompletionItem;
-import org.metaborg.spoofax.core.completion.TextCompletionItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;

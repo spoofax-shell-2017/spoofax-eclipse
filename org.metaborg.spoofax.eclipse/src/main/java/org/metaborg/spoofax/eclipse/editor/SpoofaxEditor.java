@@ -79,7 +79,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
     private ICategorizerService<IStrategoTerm, IStrategoTerm> categorizerService;
     private IStylerService<IStrategoTerm, IStrategoTerm> stylerService;
     private IOutlineService<IStrategoTerm, IStrategoTerm> outlineService;
-    private ICompletionService<IStrategoTerm> completionService;
+    private ICompletionService completionService;
     private ISpoofaxResolverService referenceResolver;
     private ISpoofaxHoverService hoverService;
     private ISpoofaxParseResultProcessor parseResultProcessor;
@@ -296,7 +296,7 @@ public class SpoofaxEditor extends TextEditor implements IEclipseEditor<IStrateg
             injector.getInstance(Key.get(new TypeLiteral<IStylerService<IStrategoTerm, IStrategoTerm>>() {}));
         this.outlineService =
             injector.getInstance(Key.get(new TypeLiteral<IOutlineService<IStrategoTerm, IStrategoTerm>>() {}));
-        this.completionService = injector.getInstance(Key.get(new TypeLiteral<ICompletionService<IStrategoTerm>>() {}));
+        this.completionService = injector.getInstance(Key.get(new TypeLiteral<ICompletionService>() {}));
         this.referenceResolver = injector.getInstance(ISpoofaxResolverService.class);
         this.hoverService = injector.getInstance(ISpoofaxHoverService.class);
         this.parseResultProcessor = injector.getInstance(ISpoofaxParseResultProcessor.class);
