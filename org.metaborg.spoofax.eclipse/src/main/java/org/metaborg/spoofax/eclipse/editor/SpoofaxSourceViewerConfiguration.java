@@ -89,7 +89,7 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
 
         final ContentAssistant assistant = new ContentAssistant();
         final SpoofaxContentAssistProcessor<P> processor =
-            new SpoofaxContentAssistProcessor<P>(completionService, parseResultRequester, resource, document, language);
+            new SpoofaxContentAssistProcessor<P>(completionService, syntaxService, parseResultRequester, resource, document, language);
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
         return assistant;

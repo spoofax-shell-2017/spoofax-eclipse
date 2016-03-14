@@ -15,6 +15,7 @@ import org.metaborg.core.completion.ICompletion;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.parse.IParseResultRequester;
+import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.syntax.ParseResult;
 
 import rx.Observable;
@@ -27,6 +28,7 @@ import com.google.common.collect.Iterables;
 
 public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor {
     private final ICompletionService completionService;
+    private final ISyntaxService<?> syntaxService;
 
     private final IParseResultRequester<P> parseResultRequester;
 
@@ -38,10 +40,10 @@ public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor
     private volatile ICompletionProposal[] cachedProposals;
 
 
-    public SpoofaxContentAssistProcessor(ICompletionService completionService,
+    public SpoofaxContentAssistProcessor(ICompletionService completionService, ISyntaxService<?> syntaxService,
         IParseResultRequester<P> parseResultRequester, FileObject resource, IDocument document, ILanguageImpl language) {
         this.completionService = completionService;
-
+        this.syntaxService = syntaxService;
         this.parseResultRequester = parseResultRequester;
 
         this.resource = resource;
@@ -104,7 +106,7 @@ public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor
         final ICompletionProposal[] proposals = new ICompletionProposal[numCompletions];
         int i = 0;
         for(ICompletion completion : completions) {
-            proposals[i] = new SpoofaxCompletionProposal(viewer, offset, completion);
+            proposals[i] = new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source, parseResult.language, completionService, syntaxService);
             ++i;
         }
         return proposals;
