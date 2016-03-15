@@ -106,7 +106,9 @@ public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor
         final ICompletionProposal[] proposals = new ICompletionProposal[numCompletions];
         int i = 0;
         for(ICompletion completion : completions) {
-            proposals[i] = new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source, parseResult.language, completionService, syntaxService);
+            proposals[i] =
+                new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source, parseResult.language,
+                    completionService, syntaxService);
             ++i;
         }
         return proposals;
