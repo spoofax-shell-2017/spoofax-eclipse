@@ -16,7 +16,6 @@ import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.completion.Completion;
 import org.metaborg.core.completion.ICompletion;
 import org.metaborg.core.completion.ICompletionItem;
 import org.metaborg.core.completion.ICompletionService;
@@ -113,7 +112,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
             final ICompletionProposal[] proposals = new ICompletionProposal[numCompletions];
             int i = 0;
             for(ICompletion completion : completions) {
-                ((Completion) completion).setNested(true);
+                completion.setNested(true);
                 proposals[i] =
                     new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source, parseResult.language,
                         completionService, syntaxService);
@@ -208,7 +207,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
         int endOffset;
 
         // if completion is nested, replace the selected text
-        if(((Completion) completion).isNested()) {
+        if(completion.isNested()) {
             startOffset = textViewer.getSelectedRange().x;
             endOffset = startOffset + textViewer.getSelectedRange().y;
             offset = startOffset;
