@@ -11,7 +11,7 @@ import org.metaborg.core.outline.IOutline;
 import org.metaborg.core.style.IRegionStyle;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
-public interface IEclipseEditor<P> extends IEditor {
+public interface IEclipseEditor<F> extends IEditor {
     /**
      * @return Current input, or null if the editor has not been initialized yet, or if it has been disposed.
      */
@@ -42,7 +42,7 @@ public interface IEclipseEditor<P> extends IEditor {
     /**
      * Sets the text styling, using given text and monitor for cancellation. Can be called from any thread.
      */
-    void setStyle(Iterable<IRegionStyle<P>> style, String text, IProgressMonitor monitor);
+    void setStyle(Iterable<IRegionStyle<F>> style, String text, IProgressMonitor monitor);
 
     /**
      * Sets the outline information, using given monitor for cancellation. Can be called from any thread.
