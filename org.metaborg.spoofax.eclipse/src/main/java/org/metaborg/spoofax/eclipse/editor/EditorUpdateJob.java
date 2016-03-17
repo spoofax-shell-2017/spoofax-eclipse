@@ -1,5 +1,6 @@
 package org.metaborg.spoofax.eclipse.editor;
 
+import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -14,15 +15,15 @@ import org.eclipse.ui.IEditorInput;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.MetaborgRuntimeException;
 import org.metaborg.core.analysis.AnalysisException;
-import org.metaborg.core.analysis.AnalysisFileResult;
-import org.metaborg.core.analysis.AnalysisMessageResult;
-import org.metaborg.core.analysis.AnalysisResult;
 import org.metaborg.core.analysis.IAnalysisService;
+import org.metaborg.core.analysis.IAnalyzeResult;
+import org.metaborg.core.analysis.IAnalyzeUnit;
+import org.metaborg.core.analysis.IAnalyzeUnitUpdate;
 import org.metaborg.core.context.IContext;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
-import org.metaborg.core.language.dialect.IDialectService;
+import org.metaborg.core.language.IdentifiedResource;
 import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.messages.MessageFactory;
 import org.metaborg.core.messages.MessageType;
@@ -36,9 +37,11 @@ import org.metaborg.core.style.ICategorizerService;
 import org.metaborg.core.style.IRegionCategory;
 import org.metaborg.core.style.IRegionStyle;
 import org.metaborg.core.style.IStylerService;
+import org.metaborg.core.syntax.IInputUnit;
+import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.syntax.ParseException;
-import org.metaborg.core.syntax.ParseResult;
+import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.core.style.CategorizerValidator;
 import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -46,29 +49,31 @@ import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.concurrent.IClosableLock;
-import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class EditorUpdateJob<P, A> extends Job {
+import com.google.common.collect.Sets;
+
+public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit, AU extends IAnalyzeUnitUpdate, F>
+    extends Job {
     private static final ILogger logger = LoggerUtils.logger(EditorUpdateJob.class);
     private static final long interruptTimeMillis = 5000;
     private static final long killTimeMillis = 10000;
 
     private final IEclipseResourceService resourceService;
     private final ILanguageIdentifierService languageIdentifierService;
-    private final IDialectService dialectService;
     private final IContextService contextService;
     private final IProjectService projectService;
-    private final ISyntaxService<P> syntaxService;
-    private final IAnalysisService<P, A> analyzer;
-    private final ICategorizerService<P, A> categorizer;
-    private final IStylerService<P, A> styler;
+    private final IInputUnitService<I> unitService;
+    private final ISyntaxService<I, P> syntaxService;
+    private final IAnalysisService<P, A, AU> analyzer;
+    private final ICategorizerService<P, A, F> categorizer;
+    private final IStylerService<F> styler;
     private final IOutlineService<P, A> outlineService;
     private final IParseResultUpdater<P> parseResultProcessor;
     private final IAnalysisResultUpdater<P, A> analysisResultProcessor;
 
-    private final IEclipseEditor<P> editor;
+    private final IEclipseEditor<F> editor;
     private final IEditorInput input;
     private final @Nullable IResource eclipseResource;
     private final FileObject resource;
@@ -79,20 +84,20 @@ public class EditorUpdateJob<P, A> extends Job {
 
 
     public EditorUpdateJob(IEclipseResourceService resourceService,
-        ILanguageIdentifierService languageIdentifierService, IDialectService dialectService,
-        IContextService contextService, IProjectService projectService, ISyntaxService<P> syntaxService,
-        IAnalysisService<P, A> analyzer, ICategorizerService<P, A> categorizer, IStylerService<P, A> styler,
+        ILanguageIdentifierService languageIdentifierService, IContextService contextService,
+        IProjectService projectService, IInputUnitService<I> unitService, ISyntaxService<I, P> syntaxService,
+        IAnalysisService<P, A, AU> analyzer, ICategorizerService<P, A, F> categorizer, IStylerService<F> styler,
         IOutlineService<P, A> outlineService, IParseResultUpdater<P> parseResultProcessor,
-        IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<P> editor, IEditorInput input,
+        IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<F> editor, IEditorInput input,
         @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous) {
         super("Updating Spoofax editor");
         setPriority(Job.SHORT);
 
         this.resourceService = resourceService;
         this.languageIdentifierService = languageIdentifierService;
-        this.dialectService = dialectService;
         this.contextService = contextService;
         this.projectService = projectService;
+        this.unitService = unitService;
         this.syntaxService = syntaxService;
         this.analyzer = analyzer;
         this.categorizer = categorizer;
@@ -183,36 +188,31 @@ public class EditorUpdateJob<P, A> extends Job {
 
         monitor.subTask("Identifying language");
         final IProject project = projectService.get(resource);
-        final ILanguageImpl parserLanguage = languageIdentifierService.identify(resource, project);
-        if(parserLanguage == null) {
+        final IdentifiedResource identified = languageIdentifierService.identifyToResource(resource, project);
+        if(identified == null) {
             throw new MetaborgException("Language could not be identified");
         }
-        ILanguageImpl baseLanguage = dialectService.getBase(parserLanguage);
-        final ILanguageImpl language;
-        if(baseLanguage == null) {
-            language = parserLanguage;
-        } else {
-            language = baseLanguage;
-        }
+        final ILanguageImpl langImpl = identified.language;
         monitor.worked(1);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         monitor.subTask("Parsing");
-        final ParseResult<P> parseResult = parse(parserLanguage);
+        final I input = unitService.inputUnit(text, langImpl, identified.dialect);
+        final P parseResult = parse(input);
         monitor.worked(1);
 
-        if(parseResult.result != null) {
+        if(parseResult.valid()) {
             if(monitor.isCanceled())
                 return StatusUtils.cancel();
             monitor.subTask("Styling");
-            style(monitor, language, parseResult);
+            style(monitor, langImpl, parseResult);
             monitor.worked(1);
 
             if(monitor.isCanceled())
                 return StatusUtils.cancel();
             monitor.subTask("Creating outline");
-            outline(monitor, language, parseResult);
+            outline(monitor, langImpl, parseResult);
             monitor.worked(1);
         } else {
             monitor.worked(2);
@@ -241,9 +241,14 @@ public class EditorUpdateJob<P, A> extends Job {
         parseMessages(workspace, monitor.newChild(1), parseResult);
         monitor.worked(1);
 
-        // Stop if parsing produced no AST
-        if(parseResult.result == null) {
+        // Stop if parsing produced an invalid result.
+        if(!parseResult.valid()) {
             return StatusUtils.silentError();
+        }
+
+        // Stop if context or analysis is unavailable.
+        if(!contextService.available(langImpl) || !analyzer.available(langImpl)) {
+            return StatusUtils.success();
         }
 
         // Sleep before analyzing to prevent running many analyses when small edits are made in succession.
@@ -259,11 +264,9 @@ public class EditorUpdateJob<P, A> extends Job {
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
-        if(!contextService.available(language))
-            return StatusUtils.success();
         monitor.subTask("Analyzing");
-        final IContext context = contextService.get(resource, project, language);
-        final AnalysisResult<P, A> analysisResult = analyze(parseResult, context);
+        final IContext context = contextService.get(resource, project, langImpl);
+        final IAnalyzeResult<A, AU> analysisResult = analyze(parseResult, context);
         monitor.worked(1);
 
         if(monitor.isCanceled())
@@ -276,31 +279,30 @@ public class EditorUpdateJob<P, A> extends Job {
     }
 
 
-    private ParseResult<P> parse(ILanguageImpl parserLanguage) throws ParseException, ThreadDeath {
-        final ParseResult<P> parseResult;
+    private P parse(I input) throws ParseException, ThreadDeath {
+        final P parseResult;
         try {
             parseResultProcessor.invalidate(resource);
-            parseResult = syntaxService.parse(text, resource, parserLanguage, null);
+            parseResult = syntaxService.parse(input);
             parseResultProcessor.update(resource, parseResult);
         } catch(ParseException e) {
             parseResultProcessor.error(resource, e);
             throw e;
         } catch(ThreadDeath e) {
-            parseResultProcessor.error(resource,
-                new ParseException(resource, parserLanguage, "Editor update job killed", e));
+            parseResultProcessor.error(resource, new ParseException(input, "Editor update job killed", e));
             throw e;
         }
         return parseResult;
     }
 
-    private void style(final IProgressMonitor monitor, ILanguageImpl language, ParseResult<P> parseResult) {
-        final Iterable<IRegionCategory<P>> categories =
+    private void style(final IProgressMonitor monitor, ILanguageImpl language, P parseResult) {
+        final Iterable<IRegionCategory<F>> categories =
             CategorizerValidator.validate(categorizer.categorize(language, parseResult));
-        final Iterable<IRegionStyle<P>> styles = styler.styleParsed(language, categories);
+        final Iterable<IRegionStyle<F>> styles = styler.styleParsed(language, categories);
         editor.setStyle(styles, text, monitor);
     }
 
-    private void outline(final IProgressMonitor monitor, ILanguageImpl language, ParseResult<P> parseResult)
+    private void outline(final IProgressMonitor monitor, ILanguageImpl language, P parseResult)
         throws MetaborgException {
         if(!outlineService.available(language)) {
             return;
@@ -314,7 +316,7 @@ public class EditorUpdateJob<P, A> extends Job {
         editor.setOutline(outline, monitor);
     }
 
-    private void parseMessages(IWorkspace workspace, IProgressMonitor monitor, final ParseResult<P> parseResult)
+    private void parseMessages(IWorkspace workspace, IProgressMonitor monitor, final P parseResult)
         throws CoreException {
         // Update markers atomically using a workspace runnable, to prevent flashing/jumping markers.
         final IWorkspaceRunnable parseMarkerUpdater = new IWorkspaceRunnable() {
@@ -323,7 +325,7 @@ public class EditorUpdateJob<P, A> extends Job {
                     return;
                 MarkerUtils.clearInternal(eclipseResource);
                 MarkerUtils.clearParser(eclipseResource);
-                for(IMessage message : parseResult.messages) {
+                for(IMessage message : parseResult.messages()) {
                     MarkerUtils.createMarker(eclipseResource, message);
                 }
             }
@@ -331,13 +333,12 @@ public class EditorUpdateJob<P, A> extends Job {
         workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
     }
 
-    private AnalysisResult<P, A> analyze(ParseResult<P> parseResult, IContext context)
-        throws AnalysisException, ThreadDeath {
-        final AnalysisResult<P, A> analysisResult;
+    private IAnalyzeResult<A, AU> analyze(P parseResult, IContext context) throws AnalysisException, ThreadDeath {
+        final IAnalyzeResult<A, AU> analysisResult;
         try(IClosableLock lock = context.write()) {
-            analysisResultProcessor.invalidate(parseResult.source);
+            analysisResultProcessor.invalidate(parseResult.source());
             try {
-                analysisResult = analyzer.analyze(Iterables2.singleton(parseResult), context);
+                analysisResult = analyzer.analyze(parseResult, context);
             } catch(AnalysisException e) {
                 analysisResultProcessor.error(resource, e);
                 throw e;
@@ -345,13 +346,13 @@ public class EditorUpdateJob<P, A> extends Job {
                 analysisResultProcessor.error(resource, new AnalysisException(context, "Editor update job killed", e));
                 throw e;
             }
-            analysisResultProcessor.update(analysisResult);
+            analysisResultProcessor.update(analysisResult.result(), Sets.<FileName>newHashSet());
         }
         return analysisResult;
     }
 
     private void analysisMessages(IWorkspace workspace, IProgressMonitor monitor,
-        final AnalysisResult<P, A> analysisResult) throws CoreException {
+        final IAnalyzeResult<A, AU> analysisResult) throws CoreException {
         // Update markers atomically using a workspace runnable, to prevent flashing/jumping markers.
         final IWorkspaceRunnable analysisMarkerUpdater = new IWorkspaceRunnable() {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
@@ -359,22 +360,18 @@ public class EditorUpdateJob<P, A> extends Job {
                     return;
                 MarkerUtils.clearInternal(eclipseResource);
                 MarkerUtils.clearAnalysis(eclipseResource);
-                for(AnalysisFileResult<P, A> result : analysisResult.fileResults) {
+                for(IMessage message : analysisResult.result().messages()) {
                     if(workspaceMonitor.isCanceled())
                         return;
-                    for(IMessage message : result.messages) {
-                        if(workspaceMonitor.isCanceled())
-                            return;
-                        MarkerUtils.createMarker(eclipseResource, message);
-                    }
+                    MarkerUtils.createMarker(eclipseResource, message);
                 }
 
-                for(AnalysisMessageResult result : analysisResult.messageResults) {
+                for(AU result : analysisResult.updates()) {
                     if(workspaceMonitor.isCanceled())
                         return;
-                    final IResource messagesEclipseResource = resourceService.unresolve(result.source);
+                    final IResource messagesEclipseResource = resourceService.unresolve(result.source());
                     MarkerUtils.clearAnalysis(messagesEclipseResource);
-                    for(IMessage message : result.messages) {
+                    for(IMessage message : result.messages()) {
                         if(workspaceMonitor.isCanceled())
                             return;
                         MarkerUtils.createMarker(messagesEclipseResource, message);

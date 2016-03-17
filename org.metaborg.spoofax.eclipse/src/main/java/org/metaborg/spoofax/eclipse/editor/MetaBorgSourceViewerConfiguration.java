@@ -19,13 +19,17 @@ import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
+import org.metaborg.core.syntax.IInputUnit;
+import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.tracing.IHoverService;
 import org.metaborg.core.tracing.IResolverService;
+import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.eclipse.editor.completion.SpoofaxContentAssistProcessor;
 import org.metaborg.spoofax.eclipse.editor.tracing.SpoofaxHyperlinkDetector;
 import org.metaborg.spoofax.eclipse.editor.tracing.SpoofaxTextHover;
@@ -36,27 +40,31 @@ import org.metaborg.util.log.LoggerUtils;
 import com.google.common.collect.Iterables;
 
 @SuppressWarnings("restriction")
-public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConfiguration {
+public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit, F>
+    extends TextSourceViewerConfiguration {
     private static final ILogger logger = LoggerUtils.logger(SourceViewerConfiguration.class);
 
     private final IEclipseResourceService resourceService;
-    private final ISyntaxService<P> syntaxService;
-    private final IParseResultRequester<P> parseResultRequester;
-    private final IAnalysisResultRequester<P, A> analysisResultRequester;
+    private final IInputUnitService<I> unitService;
+    private final ISyntaxService<I, P> syntaxService;
+    private final IParseResultRequester<I, P> parseResultRequester;
+    private final IAnalysisResultRequester<I, A> analysisResultRequester;
     private final IResolverService<P, A> referenceResolver;
     private final IHoverService<P, A> hoverService;
-    private final ICompletionService completionService;
+    private final ICompletionService<P> completionService;
 
-    private final SpoofaxEditor editor;
+    private final IEclipseEditor<F> editor;
 
 
-    public SpoofaxSourceViewerConfiguration(IEclipseResourceService resourceService, ISyntaxService<P> syntaxService,
-        IParseResultRequester<P> parseResultRequester, IAnalysisResultRequester<P, A> analysisResultRequester,
-        IResolverService<P, A> referenceResolver, IHoverService<P, A> hoverService,
-        ICompletionService completionService, IPreferenceStore preferenceStore, SpoofaxEditor editor) {
+    public MetaBorgSourceViewerConfiguration(IEclipseResourceService resourceService, IInputUnitService<I> unitService,
+        ISyntaxService<I, P> syntaxService, IParseResultRequester<I, P> parseResultRequester,
+        IAnalysisResultRequester<I, A> analysisResultRequester, IResolverService<P, A> referenceResolver,
+        IHoverService<P, A> hoverService, ICompletionService<P> completionService, IPreferenceStore preferenceStore,
+        IEclipseEditor<F> editor) {
         super(preferenceStore);
 
         this.resourceService = resourceService;
+        this.unitService = unitService;
         this.syntaxService = syntaxService;
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
@@ -88,8 +96,8 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
         }
 
         final ContentAssistant assistant = new ContentAssistant();
-        final SpoofaxContentAssistProcessor<P> processor =
-            new SpoofaxContentAssistProcessor<P>(completionService, syntaxService, parseResultRequester, resource, document, language);
+        final SpoofaxContentAssistProcessor<I, P> processor = new SpoofaxContentAssistProcessor<>(unitService, completionService,
+            syntaxService, parseResultRequester, resource, document, language);
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
         return assistant;
@@ -106,9 +114,8 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
             return new IHyperlinkDetector[] { new URLHyperlinkDetector() };
         }
 
-        return new IHyperlinkDetector[] {
-                new SpoofaxHyperlinkDetector<>(resourceService, parseResultRequester, analysisResultRequester,
-                        referenceResolver, resource, language, editor), new URLHyperlinkDetector() };
+        return new IHyperlinkDetector[] { new SpoofaxHyperlinkDetector<I, P, A>(resourceService, parseResultRequester,
+            analysisResultRequester, referenceResolver, resource, language, editor), new URLHyperlinkDetector() };
     }
 
     @Override public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
@@ -121,8 +128,8 @@ public class SpoofaxSourceViewerConfiguration<P, A> extends TextSourceViewerConf
             return null;
         }
 
-        return new SpoofaxTextHover<>(parseResultRequester, analysisResultRequester, hoverService, resource,
-                language, (ISourceViewerExtension2) editor.sourceViewer());
+        return new SpoofaxTextHover<>(parseResultRequester, analysisResultRequester, hoverService, resource, language,
+            (ISourceViewerExtension2) editor.sourceViewer());
     }
 
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {

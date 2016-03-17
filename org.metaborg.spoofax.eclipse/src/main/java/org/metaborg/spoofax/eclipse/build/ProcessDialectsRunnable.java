@@ -8,7 +8,7 @@ import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.resource.ResourceChange;
-import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
+import org.metaborg.spoofax.eclipse.processing.ProgressReporter;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 public class ProcessDialectsRunnable implements IWorkspaceRunnable {
@@ -33,7 +33,7 @@ public class ProcessDialectsRunnable implements IWorkspaceRunnable {
 
     @Override public void run(IProgressMonitor monitor) throws CoreException {
         if(progressReporter == null) {
-            this.progressReporter = new EclipseProgressReporter(monitor);
+            this.progressReporter = new ProgressReporter(monitor);
         }
 
         // GTODO: do something with cancellation token.

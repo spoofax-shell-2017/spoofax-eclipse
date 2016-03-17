@@ -3,15 +3,18 @@ package org.metaborg.spoofax.eclipse.editor;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.metaborg.core.editor.IEditor;
 import org.metaborg.core.outline.IOutline;
 import org.metaborg.core.style.IRegionStyle;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
-public interface IEclipseEditor<F> extends IEditor {
+public interface IEclipseEditor<F> extends IEditor, ITextEditor {
     /**
      * @return Current input, or null if the editor has not been initialized yet, or if it has been disposed.
      */
@@ -37,6 +40,17 @@ public interface IEclipseEditor<F> extends IEditor {
      *         disposed.
      */
     @Nullable SourceViewerConfiguration configuration();
+
+
+    /**
+     * @return Selection provider.
+     */
+    ISelectionProvider selectionProvider();
+
+    /**
+     * @return Text operation target.
+     */
+    ITextOperationTarget textOperationTarget();
 
 
     /**

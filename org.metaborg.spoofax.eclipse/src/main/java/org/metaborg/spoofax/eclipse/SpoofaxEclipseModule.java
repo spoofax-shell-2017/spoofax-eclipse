@@ -9,13 +9,17 @@ import org.metaborg.core.project.IProjectService;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.core.SpoofaxModule;
 import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
+import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
+import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnitUpdate;
+import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
+import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.editor.SpoofaxEditorRegistry;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.EclipseLanguageChangeProcessor;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
-import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
+import org.metaborg.spoofax.eclipse.processing.SpoofaxProcessor;
 import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
 import org.metaborg.spoofax.eclipse.resource.EclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.EclipseResourceService;
@@ -67,11 +71,13 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
      * Overrides {@link SpoofaxModule#bindProcessor()} with an Eclipse-specific processor.
      */
     @Override protected void bindProcessor() {
-        bind(EclipseProcessor.class).in(Singleton.class);
-        bind(ISpoofaxProcessor.class).to(EclipseProcessor.class);
-        bind(IProcessor.class).to(EclipseProcessor.class);
-        bind(new TypeLiteral<IProcessor<IStrategoTerm, IStrategoTerm, IStrategoTerm>>() {}).to(EclipseProcessor.class);
-        bind(new TypeLiteral<IProcessor<?, ?, ?>>() {}).to(EclipseProcessor.class);
+        bind(SpoofaxProcessor.class).in(Singleton.class);
+        bind(ISpoofaxProcessor.class).to(SpoofaxProcessor.class);
+        bind(IProcessor.class).to(SpoofaxProcessor.class);
+        bind(
+            new TypeLiteral<IProcessor<ISpoofaxParseUnit, ISpoofaxAnalyzeUnit, ISpoofaxAnalyzeUnitUpdate, ISpoofaxTransformUnit<?>>>() {})
+                .to(SpoofaxProcessor.class);
+        bind(new TypeLiteral<IProcessor<?, ?, ?, ?>>() {}).to(SpoofaxProcessor.class);
     }
 
     /**
