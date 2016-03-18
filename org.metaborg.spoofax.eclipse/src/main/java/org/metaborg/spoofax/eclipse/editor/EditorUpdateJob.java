@@ -1,5 +1,7 @@
 package org.metaborg.spoofax.eclipse.editor;
 
+import java.util.concurrent.CancellationException;
+
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
@@ -90,7 +92,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         IOutlineService<P, A> outlineService, IParseResultUpdater<P> parseResultProcessor,
         IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<F> editor, IEditorInput input,
         @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous) {
-        super("Updating Spoofax editor");
+        super("Updating Spoofax editor for " + eclipseResource.toString());
         setPriority(Job.SHORT);
 
         this.resourceService = resourceService;
@@ -162,8 +164,14 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
             final String message = logger.format("Failed to update editor for {}", resource);
             logger.error(message, e);
             return StatusUtils.silentError(message, e);
-        } catch(Throwable e) {
+        } catch(CancellationException e) {
             return StatusUtils.cancel();
+        } catch(ThreadDeath e) {
+            throw e;
+        } catch(Throwable e) {
+            final String message = logger.format("Failed to update editor for {}", resource);
+            logger.error(message, e);
+            return StatusUtils.silentError(message, e);
         } finally {
             monitor.done();
         }
@@ -198,7 +206,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         if(monitor.isCanceled())
             return StatusUtils.cancel();
         monitor.subTask("Parsing");
-        final I input = unitService.inputUnit(text, langImpl, identified.dialect);
+        final I input = unitService.inputUnit(resource, text, langImpl, identified.dialect);
         final P parseResult = parse(input);
         monitor.worked(1);
 

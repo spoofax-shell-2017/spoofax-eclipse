@@ -17,9 +17,10 @@ public class SpoofaxEditor extends
     MetaBorgEditor<ISpoofaxInputUnit, ISpoofaxParseUnit, ISpoofaxAnalyzeUnit, ISpoofaxAnalyzeUnitUpdate, IStrategoTerm> {
     public static final String id = SpoofaxPlugin.id + ".editor";
 
-    
+
     @Override protected void injectGenericServices(Injector injectors) {
         final Spoofax spoofax = SpoofaxPlugin.spoofax();
+        this.unitService = spoofax.unitService;
         this.syntaxService = spoofax.syntaxService;
         this.analysisService = spoofax.analysisService;
         this.categorizerService = spoofax.categorizerService;
