@@ -30,7 +30,8 @@ import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.LanguageComponentChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageImplChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
+import org.metaborg.spoofax.eclipse.project.IEclipseProject;
+import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
@@ -43,6 +44,7 @@ import com.google.inject.Inject;
  */
 public class EclipseProcessor implements ISpoofaxProcessor {
     private final IEclipseResourceService resourceService;
+    private final IEclipseProjectService projectService;
     private final IDialectProcessor dialectProcessor;
     private final ISpoofaxBuilder builder;
     private final ILanguageChangeProcessor processor;
@@ -54,10 +56,11 @@ public class EclipseProcessor implements ISpoofaxProcessor {
 
 
 
-    @Inject public EclipseProcessor(IEclipseResourceService resourceService, IDialectProcessor dialectProcessor,
-        ISpoofaxBuilder builder, ILanguageChangeProcessor processor, GlobalSchedulingRules globalRules,
-        LanguageLoader languageLoader) {
+    @Inject public EclipseProcessor(IEclipseResourceService resourceService, IEclipseProjectService projectService,
+        IDialectProcessor dialectProcessor, ISpoofaxBuilder builder, ILanguageChangeProcessor processor,
+        GlobalSchedulingRules globalRules, LanguageLoader languageLoader) {
         this.resourceService = resourceService;
+        this.projectService = projectService;
         this.dialectProcessor = dialectProcessor;
         this.builder = builder;
         this.processor = processor;
@@ -77,8 +80,9 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         final Ref<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> outputRef = new Ref<>();
         final IWorkspaceRunnable runnable =
             new BuildRunnable<>(resourceService, builder, input, progressReporter, cancellationToken, outputRef);
-        final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, outputRef);
+        final IResource projectResource = getResource(input.project);
+        final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task = new RunnableTask<>(workspace,
+            runnable, projectResource, null, cancellationToken, outputRef, projectResource);
         return task;
     }
 
@@ -88,8 +92,9 @@ public class EclipseProcessor implements ISpoofaxProcessor {
             cancellationToken = new CancellationToken();
         }
         final IWorkspaceRunnable runnable = new CleanRunnable<>(builder, input, progressReporter, cancellationToken);
+        final IResource projectResource = getResource(input.project);
         final ITask<?> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, null);
+            new RunnableTask<>(workspace, runnable, projectResource, null, cancellationToken, null, projectResource);
         return task;
     }
 
@@ -98,8 +103,9 @@ public class EclipseProcessor implements ISpoofaxProcessor {
         final CancellationToken cancellationToken = new CancellationToken();
         final IWorkspaceRunnable runnable =
             new ProcessDialectsRunnable(dialectProcessor, location, changes, null, cancellationToken);
+        final IResource projectResource = getResource(location);
         final ITask<?> task =
-            new RunnableTask<>(workspace, runnable, getResource(location), null, cancellationToken, null);
+            new RunnableTask<>(workspace, runnable, projectResource, null, cancellationToken, null, null);
         return task;
     }
 
@@ -128,9 +134,12 @@ public class EclipseProcessor implements ISpoofaxProcessor {
     }
 
 
-    private IResource getResource(IProject project) {
-        final EclipseProject eclipseProject = (EclipseProject) project;
-        return eclipseProject.eclipseProject;
+    private @Nullable IResource getResource(IProject project) {
+        final IEclipseProject eclipseProject = projectService.get(project);
+        if(eclipseProject != null) {
+            return eclipseProject.eclipseProject();
+        }
+        return null;
     }
 
     private @Nullable IResource getResource(FileObject resource) {

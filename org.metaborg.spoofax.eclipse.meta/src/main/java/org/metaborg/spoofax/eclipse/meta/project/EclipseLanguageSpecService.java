@@ -6,7 +6,7 @@ import org.metaborg.core.config.ConfigRequest;
 import org.metaborg.core.messages.StreamMessagePrinter;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.source.ISourceTextService;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigService;

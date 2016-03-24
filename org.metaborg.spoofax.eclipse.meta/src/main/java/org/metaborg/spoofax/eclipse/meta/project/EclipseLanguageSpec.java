@@ -2,7 +2,7 @@ package org.metaborg.spoofax.eclipse.meta.project;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IProject;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;

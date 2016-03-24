@@ -17,7 +17,7 @@ import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.syntax.ParseResult;
 import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
