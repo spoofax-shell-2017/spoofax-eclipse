@@ -40,6 +40,10 @@
       <groupId>com.cedarsoftware</groupId>
       <artifactId>java-util-pluto-fixes</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.objenesis</groupId>
+      <artifactId>objenesis</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -68,17 +72,20 @@
               pluto,
               build-java,
               common,
-              java-util-pluto-fixes
+              java-util-pluto-fixes,
+              objenesis
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
               com.github.mustachejava;provider=metaborg;mandatory:=provider,
               com.github.mustachejava*;provider=metaborg;mandatory:=provider,
-              build.pluto*;provider=metaborg;mandatory:=provider,
-              org.sugarj.common*;provider=metaborg;mandatory:=provider,
-              org.sugarj.common;provider=metaborg;mandatory:=provider,
               build.pluto;provider=metaborg;mandatory:=provider,
-              com.cedarsoftware.util;provider=metaborg;mandatory:=provider
+              build.pluto*;provider=metaborg;mandatory:=provider,
+              org.sugarj.common;provider=metaborg;mandatory:=provider,
+              org.sugarj.common*;provider=metaborg;mandatory:=provider,
+              com.cedarsoftware.util;provider=metaborg;mandatory:=provider,
+              org.objenesis;provider=metaborg;mandatory:=provider,
+              org.objenesis*;provider=metaborg;mandatory:=provider
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
             <Import-Package>

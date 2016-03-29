@@ -21,7 +21,6 @@ import org.metaborg.spoofax.eclipse.language.EclipseLanguageChangeProcessor;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.processing.SpoofaxProcessor;
 import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
-import org.metaborg.spoofax.eclipse.resource.EclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.EclipseResourceService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -64,7 +63,9 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
      * Overrides {@link MetaborgModule#bindProject()} for non-dummy implementation of project service.
      */
     @Override protected void bindProject() {
-        bind(IProjectService.class).to(EclipseProjectService.class).in(Singleton.class);
+        bind(EclipseProjectService.class).in(Singleton.class);
+        bind(IProjectService.class).to(EclipseProjectService.class);
+        bind(IEclipseProjectService.class).to(EclipseProjectService.class);
     }
 
     /**

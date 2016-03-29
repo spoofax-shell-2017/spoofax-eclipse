@@ -34,7 +34,8 @@ import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.LanguageComponentChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageImplChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
+import org.metaborg.spoofax.eclipse.project.IEclipseProject;
+import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
@@ -47,6 +48,7 @@ import com.google.inject.Inject;
 public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends IAnalyzeUnitUpdate, T extends ITransformUnit<?>>
     implements IProcessor<P, A, AU, T> {
     private final IEclipseResourceService resourceService;
+    private final IEclipseProjectService projectService;
     private final IDialectProcessor dialectProcessor;
     private final IBuilder<P, A, AU, T> builder;
     private final ILanguageChangeProcessor processor;
@@ -61,6 +63,7 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
         IBuilder<P, A, AU, T> builder, ILanguageChangeProcessor processor, GlobalSchedulingRules globalRules,
         LanguageLoader languageLoader) {
         this.resourceService = resourceService;
+        this.projectService = projectService;
         this.dialectProcessor = dialectProcessor;
         this.builder = builder;
         this.processor = processor;
@@ -91,8 +94,9 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
             cancellationToken = new CancellationToken();
         }
         final IWorkspaceRunnable runnable = new CleanRunnable<>(builder, input, progressReporter, cancellationToken);
+        final IResource projectResource = getResource(input.project);
         final ITask<?> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, null);
+            new RunnableTask<>(workspace, runnable, projectResource, null, cancellationToken, null, projectResource);
         return task;
     }
 
@@ -101,8 +105,9 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
         final CancellationToken cancellationToken = new CancellationToken();
         final IWorkspaceRunnable runnable =
             new ProcessDialectsRunnable(dialectProcessor, location, changes, null, cancellationToken);
+        final IResource projectResource = getResource(location);
         final ITask<?> task =
-            new RunnableTask<>(workspace, runnable, getResource(location), null, cancellationToken, null);
+            new RunnableTask<>(workspace, runnable, projectResource, null, cancellationToken, null, null);
         return task;
     }
 
@@ -131,9 +136,12 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
     }
 
 
-    private IResource getResource(IProject project) {
-        final EclipseProject eclipseProject = (EclipseProject) project;
-        return eclipseProject.eclipseProject;
+    private @Nullable IResource getResource(IProject project) {
+        final IEclipseProject eclipseProject = projectService.get(project);
+        if(eclipseProject != null) {
+            return eclipseProject.eclipseProject();
+        }
+        return null;
     }
 
     private @Nullable IResource getResource(FileObject resource) {

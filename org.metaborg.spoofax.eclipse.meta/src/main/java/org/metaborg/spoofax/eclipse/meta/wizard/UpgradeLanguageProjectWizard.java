@@ -36,8 +36,6 @@ import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator
 import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
 import org.metaborg.spoofax.meta.core.generator.language.ContinuousLanguageSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGenerator;
-import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.metaborg.util.resource.ContainsFileSelector;
@@ -164,8 +162,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                         .withName(name)
                         .build(projectLocation);
                     // @formatter:on
-                    final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(projectLocation, config);
-                    final GeneratorSettings generatorSettings = new GeneratorSettings(config, paths);
+                    final GeneratorSettings generatorSettings = new GeneratorSettings(projectLocation, config);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);

@@ -31,6 +31,7 @@ Export-Package: org.metaborg.spoofax.eclipse,
  org.metaborg.spoofax.eclipse.language,
  org.metaborg.spoofax.eclipse.nature,
  org.metaborg.spoofax.eclipse.processing,
+ org.metaborg.spoofax.eclipse.project,
  org.metaborg.spoofax.eclipse.resource
 Bundle-ActivationPolicy: lazy
 Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.util

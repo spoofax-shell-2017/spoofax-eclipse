@@ -30,8 +30,6 @@ import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator
 import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
 import org.metaborg.spoofax.meta.core.generator.language.ContinuousLanguageSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGenerator;
-import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecPaths;
-import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -108,7 +106,7 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
 
     private void createProject(IProgressMonitor monitor, String groupId, String id, String versionString, String name,
         String[] extensions, IProject eclipseProject, URI projectLocation)
-            throws ProjectException, IOException, CoreException {
+        throws ProjectException, IOException, CoreException {
         if(projectLocation != null) {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
             final IProjectDescription description = workspace.newProjectDescription(eclipseProject.getName());
@@ -126,8 +124,7 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
         final ISpoofaxLanguageSpecConfig config =
             configBuilder.withIdentifier(identifier).withName(name).build(location);
-        final ISpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
-        final GeneratorSettings generatorSettings = new GeneratorSettings(config, paths);
+        final GeneratorSettings generatorSettings = new GeneratorSettings(location, config);
 
         final LanguageSpecGenerator newGenerator =
             new LanguageSpecGenerator(generatorSettings, extensions, AnalysisType.NaBL_TS);
