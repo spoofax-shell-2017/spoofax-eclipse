@@ -15,6 +15,7 @@ import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
+import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
@@ -26,10 +27,10 @@ import com.google.inject.Inject;
 public class SpoofaxProcessor
     extends Processor<ISpoofaxParseUnit, ISpoofaxAnalyzeUnit, ISpoofaxAnalyzeUnitUpdate, ISpoofaxTransformUnit<?>>
     implements ISpoofaxProcessor {
-    @Inject public SpoofaxProcessor(IEclipseResourceService resourceService, IDialectProcessor dialectProcessor,
-        ISpoofaxBuilder builder, ILanguageChangeProcessor processor, GlobalSchedulingRules globalRules,
-        LanguageLoader languageLoader) {
-        super(resourceService, dialectProcessor, builder, processor, globalRules, languageLoader);
+    @Inject public SpoofaxProcessor(IEclipseResourceService resourceService, IEclipseProjectService projectService,
+        IDialectProcessor dialectProcessor, ISpoofaxBuilder builder, ILanguageChangeProcessor processor,
+        GlobalSchedulingRules globalRules, LanguageLoader languageLoader) {
+        super(resourceService, projectService, dialectProcessor, builder, processor, globalRules, languageLoader);
     }
 
     /**

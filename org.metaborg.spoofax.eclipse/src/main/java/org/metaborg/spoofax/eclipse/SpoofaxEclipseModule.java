@@ -20,6 +20,8 @@ import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.EclipseLanguageChangeProcessor;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.processing.SpoofaxProcessor;
+import org.metaborg.spoofax.eclipse.project.EclipseProjectService;
+import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.EclipseFileSystemManagerProvider;
 import org.metaborg.spoofax.eclipse.resource.EclipseResourceService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;

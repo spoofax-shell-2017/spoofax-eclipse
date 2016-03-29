@@ -59,9 +59,9 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
     private final IWorkspace workspace;
 
 
-    @Inject public Processor(IEclipseResourceService resourceService, IDialectProcessor dialectProcessor,
-        IBuilder<P, A, AU, T> builder, ILanguageChangeProcessor processor, GlobalSchedulingRules globalRules,
-        LanguageLoader languageLoader) {
+    @Inject public Processor(IEclipseResourceService resourceService, IEclipseProjectService projectService,
+        IDialectProcessor dialectProcessor, IBuilder<P, A, AU, T> builder, ILanguageChangeProcessor processor,
+        GlobalSchedulingRules globalRules, LanguageLoader languageLoader) {
         this.resourceService = resourceService;
         this.projectService = projectService;
         this.dialectProcessor = dialectProcessor;
@@ -83,8 +83,9 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
         final Ref<IBuildOutput<P, A, AU, T>> outputRef = new Ref<>();
         final IWorkspaceRunnable runnable =
             new BuildRunnable<>(resourceService, builder, input, progressReporter, cancellationToken, outputRef);
-        final ITask<IBuildOutput<P, A, AU, T>> task =
-            new RunnableTask<>(workspace, runnable, getResource(input.project), null, cancellationToken, outputRef);
+        final IResource projectResource = getResource(input.project);
+        final ITask<IBuildOutput<P, A, AU, T>> task = new RunnableTask<>(workspace, runnable, projectResource, null,
+            cancellationToken, outputRef, projectResource);
         return task;
     }
 
