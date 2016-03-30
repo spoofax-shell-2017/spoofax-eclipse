@@ -12,9 +12,11 @@ import ch.qos.logback.core.util.StatusPrinter;
 
 public class LoggingConfiguration {
     public static void configure(Class<?> clazz, String location) {
+        System.err.println("Configuring logging framework for Spoofax");
         final ILoggerFactory loggerFactory = StaticLoggerBinder.getSingleton().getLoggerFactory();
         final ContextBase context = (ContextBase) loggerFactory;
         try {
+            System.err.println("Reading logging configuration from resource " + location + " in " + clazz);
             final JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(context);
             context.reset();
