@@ -8,21 +8,25 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.metaborg.core.analysis.IAnalyzeUnit;
+import org.metaborg.core.analysis.IAnalyzeUnitUpdate;
 import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.CleanInput;
 import org.metaborg.core.build.IBuildOutput;
+import org.metaborg.core.build.IBuilder;
 import org.metaborg.core.language.LanguageComponentChange;
 import org.metaborg.core.language.LanguageImplChange;
 import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.CancellationToken;
 import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
+import org.metaborg.core.processing.IProcessor;
 import org.metaborg.core.processing.IProgressReporter;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.ResourceChange;
-import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
-import org.metaborg.spoofax.core.processing.ISpoofaxProcessor;
+import org.metaborg.core.syntax.IParseUnit;
+import org.metaborg.core.transform.ITransformUnit;
 import org.metaborg.spoofax.eclipse.build.BuildRunnable;
 import org.metaborg.spoofax.eclipse.build.CleanRunnable;
 import org.metaborg.spoofax.eclipse.build.ProcessDialectsRunnable;
@@ -35,18 +39,18 @@ import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
-import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.inject.Inject;
 
 /**
  * Processor implementation that schedules Eclipse workspace runnables and jobs.
  */
-public class EclipseProcessor implements ISpoofaxProcessor {
+public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends IAnalyzeUnitUpdate, T extends ITransformUnit<?>>
+    implements IProcessor<P, A, AU, T> {
     private final IEclipseResourceService resourceService;
     private final IEclipseProjectService projectService;
     private final IDialectProcessor dialectProcessor;
-    private final ISpoofaxBuilder builder;
+    private final IBuilder<P, A, AU, T> builder;
     private final ILanguageChangeProcessor processor;
 
     private final GlobalSchedulingRules globalRules;
@@ -55,9 +59,8 @@ public class EclipseProcessor implements ISpoofaxProcessor {
     private final IWorkspace workspace;
 
 
-
-    @Inject public EclipseProcessor(IEclipseResourceService resourceService, IEclipseProjectService projectService,
-        IDialectProcessor dialectProcessor, ISpoofaxBuilder builder, ILanguageChangeProcessor processor,
+    @Inject public Processor(IEclipseResourceService resourceService, IEclipseProjectService projectService,
+        IDialectProcessor dialectProcessor, IBuilder<P, A, AU, T> builder, ILanguageChangeProcessor processor,
         GlobalSchedulingRules globalRules, LanguageLoader languageLoader) {
         this.resourceService = resourceService;
         this.projectService = projectService;
@@ -72,17 +75,17 @@ public class EclipseProcessor implements ISpoofaxProcessor {
     }
 
 
-    @Override public ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> build(BuildInput input,
+    @Override public ITask<? extends IBuildOutput<P, A, AU, T>> build(BuildInput input,
         @Nullable IProgressReporter progressReporter, @Nullable ICancellationToken cancellationToken) {
         if(cancellationToken == null) {
             cancellationToken = new CancellationToken();
         }
-        final Ref<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> outputRef = new Ref<>();
+        final Ref<IBuildOutput<P, A, AU, T>> outputRef = new Ref<>();
         final IWorkspaceRunnable runnable =
             new BuildRunnable<>(resourceService, builder, input, progressReporter, cancellationToken, outputRef);
         final IResource projectResource = getResource(input.project);
-        final ITask<IBuildOutput<IStrategoTerm, IStrategoTerm, IStrategoTerm>> task = new RunnableTask<>(workspace,
-            runnable, projectResource, null, cancellationToken, outputRef, projectResource);
+        final ITask<IBuildOutput<P, A, AU, T>> task = new RunnableTask<>(workspace, runnable, projectResource, null,
+            cancellationToken, outputRef, projectResource);
         return task;
     }
 

@@ -3,11 +3,11 @@ package org.metaborg.spoofax.eclipse.processing;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.core.processing.ICancellationToken;
 
-public class EclipseCancellationToken implements ICancellationToken {
+public class CancellationToken implements ICancellationToken {
     public final IProgressMonitor monitor;
 
 
-    public EclipseCancellationToken(IProgressMonitor monitor) {
+    public CancellationToken(IProgressMonitor monitor) {
         this.monitor = monitor;
     }
 

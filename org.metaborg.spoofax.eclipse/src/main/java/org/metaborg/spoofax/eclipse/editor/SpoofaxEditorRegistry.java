@@ -6,7 +6,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import com.google.inject.Inject;
 
 /**
- * Typedef class for {@link EditorRegistry} with {@link IStrategoTerm}.
+ * Typedef class for {@link EditorRegistry} with Spoofax interfaces.
  */
 public class SpoofaxEditorRegistry extends EditorRegistry<IStrategoTerm> {
     @Inject public SpoofaxEditorRegistry(IEclipseResourceService resourceService) {

@@ -1,7 +1,7 @@
 <configuration>
   <appender
     name="stdout"
-    class="org.metaborg.spoofax.eclipse.logging.StaticConsoleAppender"
+    class="ch.qos.logback.core.ConsoleAppender"
   >
     <target>System.out</target>
     <encoder>
@@ -33,15 +33,11 @@
     </encoder>
     <consoleName>Spoofax console</consoleName>
   </appender>
-  <!-- <appender name="eclipse-dev-console" class="org.metaborg.spoofax.eclipse.logging.EclipseConsoleAppender" 
-    > <encoder> <pattern>%date{HH:mm:ss.SSS} | %-12.12thread | %-5level | %-40.40logger{30} - %message%n</pattern> 
-    </encoder> <consoleName>Spoofax developers console</consoleName> </appender> -->
 
   <root level="debug">
     <appender-ref ref="eclipse-log" />
     <appender-ref ref="eclipse-console" />
     <appender-ref ref="stdout" />
-    <!-- appender-ref ref="eclipse-dev-console" / -->
   </root>
 
   <logger

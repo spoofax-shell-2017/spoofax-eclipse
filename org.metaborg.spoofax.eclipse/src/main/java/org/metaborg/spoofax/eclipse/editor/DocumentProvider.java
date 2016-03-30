@@ -13,13 +13,13 @@ import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class SpoofaxDocumentProvider extends FileDocumentProvider {
-    private static final ILogger logger = LoggerUtils.logger(SpoofaxDocumentProvider.class);
+public class DocumentProvider extends FileDocumentProvider {
+    private static final ILogger logger = LoggerUtils.logger(DocumentProvider.class);
 
     private final IEclipseResourceService resourceService;
 
 
-    public SpoofaxDocumentProvider(IEclipseResourceService resourceService) {
+    public DocumentProvider(IEclipseResourceService resourceService) {
         this.resourceService = resourceService;
     }
 

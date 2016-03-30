@@ -32,10 +32,10 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 /**
- * Keeps track of all Spoofax editors, which one is currently active, and which one was active previously.
+ * Keeps track of all editors, which one is currently active, and which one was active previously.
  */
-public class EditorRegistry<P>
-    implements IWindowListener, IPartListener2, IEclipseEditorRegistry<P>, IEclipseEditorRegistryInternal {
+public class EditorRegistry<F>
+    implements IWindowListener, IPartListener2, IEclipseEditorRegistry<F>, IEclipseEditorRegistryInternal {
     private static final ILogger logger = LoggerUtils.logger(EditorRegistry.class);
 
     public static final String contextId = SpoofaxEditor.id + ".context";
@@ -45,9 +45,9 @@ public class EditorRegistry<P>
     private IContextService contextService;
     private IContextActivation contextActivation;
 
-    private volatile Set<IEclipseEditor<P>> editors = Sets.newConcurrentHashSet();
-    private volatile IEclipseEditor<P> currentActive;
-    private volatile IEclipseEditor<P> previousActive;
+    private volatile Set<IEclipseEditor<F>> editors = Sets.newConcurrentHashSet();
+    private volatile IEclipseEditor<F> currentActive;
+    private volatile IEclipseEditor<F> previousActive;
 
 
     @Inject public EditorRegistry(IEclipseResourceService resourceService) {
@@ -66,7 +66,7 @@ public class EditorRegistry<P>
                     windowOpened(window);
                     for(IWorkbenchPage page : window.getPages()) {
                         for(IEditorReference editorRef : page.getEditorReferences()) {
-                            final IEclipseEditor<P> editor = get(editorRef);
+                            final IEclipseEditor<F> editor = get(editorRef);
                             if(editor != null) {
                                 add(editor);
                             }
@@ -79,7 +79,7 @@ public class EditorRegistry<P>
                     if(activePage != null) {
                         final IEditorPart activeEditorPart = activePage.getActiveEditor();
                         if(activeEditorPart != null) {
-                            final IEclipseEditor<P> editor = get(activeEditorPart);
+                            final IEclipseEditor<F> editor = get(activeEditorPart);
                             if(editor != null) {
                                 activate(editor);
                             }
@@ -94,7 +94,7 @@ public class EditorRegistry<P>
 
     @Override public Iterable<IEditor> openEditors() {
         final Collection<IEditor> openEditors = Lists.newArrayListWithCapacity(editors.size());
-        for(IEclipseEditor<P> editor : editors) {
+        for(IEclipseEditor<F> editor : editors) {
             openEditors.add(editor);
         }
         return openEditors;
@@ -109,27 +109,27 @@ public class EditorRegistry<P>
     }
 
 
-    @Override public Iterable<IEclipseEditor<P>> openEclipseEditors() {
+    @Override public Iterable<IEclipseEditor<F>> openEclipseEditors() {
         return editors;
     }
 
 
-    @Override public @Nullable IEclipseEditor<P> currentEditor() {
+    @Override public @Nullable IEclipseEditor<F> currentEditor() {
         return currentActive;
     }
 
-    @Override public @Nullable IEclipseEditor<P> previousEditor() {
+    @Override public @Nullable IEclipseEditor<F> previousEditor() {
         return previousActive;
     }
 
 
-    private IEclipseEditor<P> get(IWorkbenchPartReference part) {
+    private IEclipseEditor<F> get(IWorkbenchPartReference part) {
         return get(part.getPart(false));
     }
 
-    @SuppressWarnings("unchecked") private IEclipseEditor<P> get(IWorkbenchPart part) {
+    @SuppressWarnings("unchecked") private IEclipseEditor<F> get(IWorkbenchPart part) {
         if(part instanceof IEclipseEditor) {
-            return (IEclipseEditor<P>) part;
+            return (IEclipseEditor<F>) part;
         }
         return null;
     }
@@ -138,7 +138,7 @@ public class EditorRegistry<P>
         return part instanceof IEditorReference;
     }
 
-    private void setCurrent(IEclipseEditor<P> editor) {
+    private void setCurrent(IEclipseEditor<F> editor) {
         currentActive = editor;
         if(contextActivation == null) {
             contextActivation = contextService.activateContext(contextId);
@@ -153,12 +153,12 @@ public class EditorRegistry<P>
         }
     }
 
-    private void add(IEclipseEditor<P> editor) {
+    private void add(IEclipseEditor<F> editor) {
         logger.trace("Adding {}", editor);
         editors.add(editor);
     }
 
-    private void remove(IEclipseEditor<P> editor) {
+    private void remove(IEclipseEditor<F> editor) {
         logger.trace("Removing {}", editor);
         editors.remove(editor);
         if(currentActive == editor) {
@@ -171,7 +171,7 @@ public class EditorRegistry<P>
         }
     }
 
-    private void activate(IEclipseEditor<P> editor) {
+    private void activate(IEclipseEditor<F> editor) {
         logger.trace("Setting active {}", editor);
         setCurrent(editor);
         logger.trace("Setting latest {}", editor);
@@ -185,7 +185,7 @@ public class EditorRegistry<P>
         previousActive = null;
     }
 
-    private void deactivate(IEclipseEditor<P> editor) {
+    private void deactivate(IEclipseEditor<F> editor) {
         if(currentActive == editor) {
             logger.trace("Unsetting active (by deactivate) {}", currentActive);
             unsetCurrent();
@@ -194,7 +194,7 @@ public class EditorRegistry<P>
 
 
     @Override public void windowActivated(IWorkbenchWindow window) {
-        final IEclipseEditor<P> editor = get(window.getPartService().getActivePart());
+        final IEclipseEditor<F> editor = get(window.getPartService().getActivePart());
         if(editor == null) {
             return;
         }
@@ -202,7 +202,7 @@ public class EditorRegistry<P>
     }
 
     @Override public void windowDeactivated(IWorkbenchWindow window) {
-        final IEclipseEditor<P> editor = get(window.getPartService().getActivePart());
+        final IEclipseEditor<F> editor = get(window.getPartService().getActivePart());
         if(editor == null) {
             return;
         }
@@ -219,7 +219,7 @@ public class EditorRegistry<P>
 
 
     @Override public void partActivated(IWorkbenchPartReference partRef) {
-        final IEclipseEditor<P> editor = get(partRef);
+        final IEclipseEditor<F> editor = get(partRef);
         if(editor != null) {
             activate(editor);
         } else if(isEditor(partRef)) {
@@ -232,21 +232,21 @@ public class EditorRegistry<P>
     }
 
     @Override public void partClosed(IWorkbenchPartReference partRef) {
-        final IEclipseEditor<P> editor = get(partRef);
+        final IEclipseEditor<F> editor = get(partRef);
         if(editor != null) {
             remove(editor);
         }
     }
 
     @Override public void partDeactivated(IWorkbenchPartReference partRef) {
-        final IEclipseEditor<P> editor = get(partRef);
+        final IEclipseEditor<F> editor = get(partRef);
         if(editor != null) {
             deactivate(editor);
         }
     }
 
     @Override public void partOpened(IWorkbenchPartReference partRef) {
-        final IEclipseEditor<P> editor = get(partRef);
+        final IEclipseEditor<F> editor = get(partRef);
         if(editor != null) {
             add(editor);
         }
