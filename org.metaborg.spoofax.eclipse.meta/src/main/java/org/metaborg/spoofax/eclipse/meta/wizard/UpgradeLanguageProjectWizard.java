@@ -44,6 +44,8 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.ParseError;
 import org.spoofax.terms.io.binary.TermReader;
 
+import com.google.common.base.Strings;
+
 public class UpgradeLanguageProjectWizard extends Wizard {
     private static final ILogger logger = LoggerUtils.logger(UpgradeLanguageProjectWizard.class);
 
@@ -66,10 +68,10 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         String version = "";
         String name = "";
 
-        // Try to get identifiers from packed.esv file.
+        // Try to get identifiers from old packed.esv file.
         try {
             final FileObject[] files = projectLocation.findFiles(new ContainsFileSelector("packed.esv"));
-            if(files.length > 0) {
+            if(files != null && files.length > 0) {
                 final FileObject esvFile = files[0];
                 final TermReader reader =
                     new TermReader(termFactoryService.getGeneric().getFactoryWithStorageType(IStrategoTerm.MUTABLE));
@@ -96,20 +98,15 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                 final ILanguageSpecConfig config = languageSpec.config();
                 if(config != null) {
                     final LanguageIdentifier identifier = config.identifier();
-                    groupId = groupId == null ? identifier.groupId : groupId;
-                    id = id == null ? identifier.id : id;
-                    version = version == null ? identifier.version.toString() : version;
-                    name = name == null ? config.name() : name;
+                    groupId = Strings.isNullOrEmpty(groupId) ? identifier.groupId : groupId;
+                    id = Strings.isNullOrEmpty(id) ? identifier.id : id;
+                    version = Strings.isNullOrEmpty(version) ? identifier.version.toString() : version;
+                    name = Strings.isNullOrEmpty(name) ? config.name() : name;
                 }
             }
         } catch(ConfigException e) {
             // Ignore
         }
-
-        groupId = groupId == null ? "" : groupId;
-        id = id == null ? "" : id;
-        version = version == null ? "" : version;
-        name = name == null ? "" : name;
 
         this.page = new UpgradeLanguageProjectWizardPage(groupId, id, version, name);
 
