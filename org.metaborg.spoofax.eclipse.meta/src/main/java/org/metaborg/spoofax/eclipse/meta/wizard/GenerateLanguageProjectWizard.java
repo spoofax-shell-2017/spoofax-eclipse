@@ -8,10 +8,13 @@ import java.util.Collection;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -107,19 +110,24 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         return true;
     }
 
-    private void createProject(IProgressMonitor monitor, LanguageIdentifier languageId, String languageName,
+    private void createProject(IProgressMonitor rootMonitor, LanguageIdentifier languageId, String languageName,
         Collection<String> extensions, SyntaxType syntaxType, AnalysisType analysisType, IProject eclipseProject,
         @Nullable URI projectLocation) throws ProjectException, IOException, CoreException {
+        final SubMonitor monitor = SubMonitor.convert(rootMonitor, "Creating language specification project", 20);
+
+        monitor.subTask("Creating project");
         if(projectLocation != null) {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
             final IProjectDescription description = workspace.newProjectDescription(eclipseProject.getName());
             description.setLocationURI(projectLocation);
-            eclipseProject.create(description, monitor);
+            eclipseProject.create(description, monitor.newChild(1));
         } else {
-            eclipseProject.create(monitor);
+            eclipseProject.create(monitor.newChild(1));
         }
         lastProject = eclipseProject;
-        eclipseProject.open(monitor);
+
+        monitor.subTask("Opening project");
+        eclipseProject.open(monitor.newChild(1));
 
         final FileObject location = resourceService.resolve(eclipseProject);
 
@@ -144,7 +152,16 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         final EclipseLangSpecGenerator eclipseGenerator = new EclipseLangSpecGenerator(settings.generatorSettings);
         eclipseGenerator.generateAll();
 
-        SpoofaxMetaNature.add(eclipseProject, monitor);
+        monitor.subTask("Refreshing project");
+        eclipseProject.refreshLocal(IResource.DEPTH_INFINITE, monitor.newChild(2));
+
+        monitor.subTask("Adding Spoofax nature");
+        SpoofaxMetaNature.add(eclipseProject, monitor.newChild(1));
+
+        monitor.subTask("Building project");
+        eclipseProject.build(IncrementalProjectBuilder.FULL_BUILD, monitor.newChild(15));
+
+        rootMonitor.done();
     }
 
     private void rollback() {
