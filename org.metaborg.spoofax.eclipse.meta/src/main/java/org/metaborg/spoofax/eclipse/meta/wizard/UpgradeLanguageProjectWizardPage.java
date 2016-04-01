@@ -8,6 +8,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.metaborg.meta.core.wizard.CreateLanguageSpecWizard;
+import org.metaborg.meta.core.wizard.UpgradeLanguageSpecWizard;
 
 public class UpgradeLanguageProjectWizardPage extends WizardPage {
     private final String initialGroupId;
@@ -16,7 +17,7 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
     private final String initialName;
 
     private LanguageIdentifierControls languageIdentifierControls;
-    private CreateLanguageSpecWizard createLanguageSpecWizard;
+    private UpgradeLanguageSpecWizard upgradeLanguageSpecWizard;
 
     private boolean ignoreEvents = false;
 
@@ -76,17 +77,7 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
             });
 
         // Instantiate and implement 'create language specification' wizard helper.
-        createLanguageSpecWizard = new CreateLanguageSpecWizard(false) {
-            @Override protected boolean inputProjectNameModified() {
-                // Always return false, no project name.
-                return false;
-            }
-
-            @Override protected String inputProjectName() {
-                // Always return empty, no project name.
-                return "";
-            }
-
+        upgradeLanguageSpecWizard = new UpgradeLanguageSpecWizard() {
             @Override protected boolean inputNameModified() {
                 return languageIdentifierControls.nameModified();
             }
@@ -119,28 +110,6 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
                 return languageIdentifierControls.version();
             }
 
-            @Override protected boolean inputExtensionsModified() {
-                // Always return false, no extensions.
-                return false;
-            }
-
-            @Override protected String inputExtensions() {
-                // Always return empty, no extensions.
-                return "";
-            }
-
-
-            @Override protected void setName(String name) {
-                setIgnoreEvents(true);
-                languageIdentifierControls.inputName.setText(name);
-                setIgnoreEvents(false);
-            }
-
-            @Override protected void setId(String id) {
-                setIgnoreEvents(true);
-                languageIdentifierControls.inputId.setText(id);
-                setIgnoreEvents(false);
-            }
 
             @Override protected void setGroupId(String groupId) {
                 setIgnoreEvents(true);
@@ -153,12 +122,8 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
                 languageIdentifierControls.inputVersion.setText(version);
                 setIgnoreEvents(false);
             }
-
-            @Override protected void setExtensions(String extensions) {
-                // Do nothing, no extensions
-            }
         };
-        createLanguageSpecWizard.setDefaults();
+        upgradeLanguageSpecWizard.setDefaults();
 
         // Revalidate to prevent form from being completed when not completely filled in.
         final boolean valid = validatePage();
@@ -170,11 +135,11 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
 
     private boolean validatePage() {
         // Validation can be executed before control has been made, check for null to confirm.
-        if(createLanguageSpecWizard == null) {
+        if(upgradeLanguageSpecWizard == null) {
             return true;
         }
 
-        final CreateLanguageSpecWizard.ValidationResult result = createLanguageSpecWizard.validate();
+        final CreateLanguageSpecWizard.ValidationResult result = upgradeLanguageSpecWizard.validate();
         if(result.complete) {
             return true;
         }

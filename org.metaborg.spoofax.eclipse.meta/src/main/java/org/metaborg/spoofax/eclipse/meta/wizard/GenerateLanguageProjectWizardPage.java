@@ -8,12 +8,17 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.meta.core.wizard.CreateLanguageSpecWizard;
+import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
+import org.metaborg.spoofax.meta.core.generator.language.SyntaxType;
+import org.metaborg.spoofax.meta.core.wizard.CreateSpoofaxLanguageSpecWizard;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -21,10 +26,14 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
     private static final ILogger logger = LoggerUtils.logger(GenerateLanguageProjectWizardPage.class);
 
     private LanguageIdentifierControls languageIdentifierControls;
-    private CreateLanguageSpecWizard createLanguageSpecWizard;
+    private CreateSpoofaxLanguageSpecWizard createLanguageSpecWizard;
 
     private boolean extensionsModified = false;
     private Text extensionsInput;
+    private boolean syntaxTypeModified = false;
+    private Combo syntaxTypeInput;
+    private boolean analysisTypeModified = false;
+    private Combo analysisTypeInput;
 
     private boolean ignoreEvents = false;
 
@@ -39,13 +48,21 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
     public String languageName() {
         return createLanguageSpecWizard.languageName();
     }
-    
+
     public LanguageIdentifier languageIdentifier() {
         return createLanguageSpecWizard.languageIdentifier();
     }
 
     public Collection<String> extensions() {
         return createLanguageSpecWizard.extensions();
+    }
+
+    public SyntaxType syntaxType() {
+        return createLanguageSpecWizard.syntaxType();
+    }
+
+    public AnalysisType analysisType() {
+        return createLanguageSpecWizard.analysisType();
     }
 
 
@@ -85,8 +102,49 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
             }
         });
 
+        // Add language options in a new container
+        final Group optionsContainer = new Group(container, SWT.NONE);
+        final GridLayout optionsLayout = new GridLayout();
+        optionsLayout.numColumns = 2;
+        optionsContainer.setLayout(optionsLayout);
+        optionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        optionsContainer.setText("Language options");
+
+        // Syntax type
+        new Label(optionsContainer, SWT.NONE).setText("&Syntax type:");
+        syntaxTypeInput = new Combo(optionsContainer, SWT.DROP_DOWN | SWT.BORDER | SWT.SINGLE);
+        syntaxTypeInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for(String syntaxType : SyntaxType.mapping().keySet()) {
+            syntaxTypeInput.add(syntaxType);
+        }
+        syntaxTypeInput.addModifyListener(new ModifyListener() {
+            @Override public void modifyText(ModifyEvent e) {
+                if(ignoreEvents) {
+                    return;
+                }
+                syntaxTypeModified = true;
+            }
+        });
+
+        // Analysis type
+        new Label(optionsContainer, SWT.NONE).setText("&Analysis type:");
+        analysisTypeInput = new Combo(optionsContainer, SWT.DROP_DOWN | SWT.BORDER | SWT.SINGLE);
+        analysisTypeInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for(String analysisType : AnalysisType.mapping().keySet()) {
+            analysisTypeInput.add(analysisType);
+        }
+        analysisTypeInput.addModifyListener(new ModifyListener() {
+            @Override public void modifyText(ModifyEvent e) {
+                if(ignoreEvents) {
+                    return;
+                }
+                analysisTypeModified = true;
+            }
+        });
+
+
         // Instantiate and implement 'create language specification' wizard helper.
-        createLanguageSpecWizard = new CreateLanguageSpecWizard(true) {
+        createLanguageSpecWizard = new CreateSpoofaxLanguageSpecWizard() {
             @Override protected boolean inputProjectNameModified() {
                 // HACK: always return false, let parent control handle validation of project name.
                 return false;
@@ -165,6 +223,31 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
                 setIgnoreEvents(true);
                 extensionsInput.setText(extensions);
                 setIgnoreEvents(false);
+            }
+
+
+            @Override protected boolean inputSyntaxTypeModified() {
+                return syntaxTypeModified;
+            }
+
+            @Override protected String inputSyntaxTypeString() {
+                return syntaxTypeInput.getText();
+            }
+
+            @Override protected void setSyntaxType(String syntaxTypeString) {
+                syntaxTypeInput.setText(syntaxTypeString);
+            }
+
+            @Override protected boolean inputAnalysisTypeModified() {
+                return analysisTypeModified;
+            }
+
+            @Override protected String inputAnalysisTypeString() {
+                return analysisTypeInput.getText();
+            }
+
+            @Override protected void setAnalysisType(String analysisTypeString) {
+                analysisTypeInput.setText(analysisTypeString);
             }
         };
         createLanguageSpecWizard.setDefaults();

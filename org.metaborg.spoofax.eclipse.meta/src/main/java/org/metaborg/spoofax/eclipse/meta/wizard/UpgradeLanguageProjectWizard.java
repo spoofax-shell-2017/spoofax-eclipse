@@ -29,13 +29,13 @@ import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
-import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
 import org.metaborg.spoofax.meta.core.generator.GeneratorSettings;
 import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator;
-import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
 import org.metaborg.spoofax.meta.core.generator.language.ContinuousLanguageSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGeneratorSettingsBuilder;
 import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGeneratorSettings;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.metaborg.util.resource.ContainsFileSelector;
@@ -45,6 +45,7 @@ import org.spoofax.terms.ParseError;
 import org.spoofax.terms.io.binary.TermReader;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class UpgradeLanguageProjectWizard extends Wizard {
     private static final ILogger logger = LoggerUtils.logger(UpgradeLanguageProjectWizard.class);
@@ -152,23 +153,30 @@ public class UpgradeLanguageProjectWizard extends Wizard {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
                     final LanguageVersion version = LanguageVersion.parse(versionString);
-                    final LanguageIdentifier identifier = new LanguageIdentifier(groupId, id, version);
+
                     // @formatter:off
-                    final ISpoofaxLanguageSpecConfig config = configBuilder
-                        .withIdentifier(identifier)
+                    final LanguageSpecGeneratorSettingsBuilder settingsBuilder = new LanguageSpecGeneratorSettingsBuilder()
+                        .withGroupId(groupId)
+                        .withId(id)
+                        .withVersion(version)
                         .withName(name)
-                        .build(projectLocation);
+                        .withExtensions(Lists.<String>newArrayList())
+                        //.withSyntaxType(syntaxType)
+                        //.withAnalysisType(analysisType)
+                        ;
                     // @formatter:on
-                    final GeneratorSettings generatorSettings = new GeneratorSettings(projectLocation, config);
+
+                    final LanguageSpecGeneratorSettings settings =
+                        settingsBuilder.build(projectLocation, configBuilder);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
                     workspaceMonitor.worked(1);
                     upgradeProject(workspaceMonitor);
                     workspaceMonitor.worked(1);
-                    upgradeClasspath(generatorSettings);
+                    upgradeClasspath(settings.generatorSettings);
                     workspaceMonitor.worked(1);
-                    generateFiles(generatorSettings);
+                    generateFiles(settings);
                     workspaceMonitor.worked(1);
                 } catch(CoreException e) {
                     throw e;
@@ -254,11 +262,12 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         generator.generateClasspath();
     }
 
-    private void generateFiles(GeneratorSettings settings) throws Exception {
-        final LanguageSpecGenerator newGenerator = new LanguageSpecGenerator(settings, AnalysisType.NaBL_TS);
+    private void generateFiles(LanguageSpecGeneratorSettings settings) throws Exception {
+        final LanguageSpecGenerator newGenerator = new LanguageSpecGenerator(settings);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
-        final ContinuousLanguageSpecGenerator generator = new ContinuousLanguageSpecGenerator(settings);
+        final ContinuousLanguageSpecGenerator generator =
+            new ContinuousLanguageSpecGenerator(settings.generatorSettings);
         generator.generateAll();
     }
 }

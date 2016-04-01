@@ -24,13 +24,14 @@ import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.nature.SpoofaxMetaNature;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
-import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
-import org.metaborg.spoofax.meta.core.generator.GeneratorSettings;
 import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
 import org.metaborg.spoofax.meta.core.generator.language.ContinuousLanguageSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGeneratorSettings;
+import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGeneratorSettingsBuilder;
+import org.metaborg.spoofax.meta.core.generator.language.SyntaxType;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -75,11 +76,14 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         final String languageName = page.languageName();
         final LanguageIdentifier languageId = page.languageIdentifier();
         final Collection<String> extensions = page.extensions();
+        final SyntaxType syntaxType = page.syntaxType();
+        final AnalysisType analysisType = page.analysisType();
 
         final IRunnableWithProgress runnable = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException {
                 try {
-                    createProject(monitor, languageId, languageName, extensions, project, projectLocation);
+                    createProject(monitor, languageId, languageName, extensions, syntaxType, analysisType, project,
+                        projectLocation);
                 } catch(Throwable e) {
                     throw new InvocationTargetException(e);
                 } finally {
@@ -104,8 +108,8 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
     }
 
     private void createProject(IProgressMonitor monitor, LanguageIdentifier languageId, String languageName,
-        Collection<String> extensions, IProject eclipseProject, @Nullable URI projectLocation)
-        throws ProjectException, IOException, CoreException {
+        Collection<String> extensions, SyntaxType syntaxType, AnalysisType analysisType, IProject eclipseProject,
+        @Nullable URI projectLocation) throws ProjectException, IOException, CoreException {
         if(projectLocation != null) {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
             final IProjectDescription description = workspace.newProjectDescription(eclipseProject.getName());
@@ -119,16 +123,25 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
 
         final FileObject location = resourceService.resolve(eclipseProject);
 
-        final ISpoofaxLanguageSpecConfig config =
-            configBuilder.withIdentifier(languageId).withName(languageName).build(location);
-        final GeneratorSettings generatorSettings = new GeneratorSettings(location, config);
+        // @formatter:off
+        final LanguageSpecGeneratorSettingsBuilder settingsBuilder = new LanguageSpecGeneratorSettingsBuilder()
+            .withGroupId(languageId.groupId)
+            .withId(languageId.id)
+            .withVersion(languageId.version)
+            .withName(languageName)
+            .withExtensions(extensions)
+            .withSyntaxType(syntaxType)
+            .withAnalysisType(analysisType)
+            ;
+        // @formatter:on
 
-        final LanguageSpecGenerator newGenerator =
-            new LanguageSpecGenerator(generatorSettings, extensions.toArray(new String[0]), AnalysisType.NaBL_TS);
+        final LanguageSpecGeneratorSettings settings = settingsBuilder.build(location, configBuilder);
+        final LanguageSpecGenerator newGenerator = new LanguageSpecGenerator(settings);
         newGenerator.generateAll();
-        final ContinuousLanguageSpecGenerator generator = new ContinuousLanguageSpecGenerator(generatorSettings);
+        final ContinuousLanguageSpecGenerator generator =
+            new ContinuousLanguageSpecGenerator(settings.generatorSettings);
         generator.generateAll();
-        final EclipseLangSpecGenerator eclipseGenerator = new EclipseLangSpecGenerator(generatorSettings);
+        final EclipseLangSpecGenerator eclipseGenerator = new EclipseLangSpecGenerator(settings.generatorSettings);
         eclipseGenerator.generateAll();
 
         SpoofaxMetaNature.add(eclipseProject, monitor);
