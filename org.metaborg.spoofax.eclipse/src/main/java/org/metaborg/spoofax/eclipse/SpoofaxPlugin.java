@@ -32,7 +32,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxPlugin.class);
         logger.debug("Starting Spoofax plugin");
 
-        spoofax = new Spoofax(new SpoofaxEclipseModule(), new EclipseModulePluginLoader(id + ".module"));
+        spoofax = new Spoofax(new EclipseModulePluginLoader(id + ".module"), new SpoofaxEclipseModule());
         injector = spoofax.injector;
 
         // Eagerly initialize processor runner so that language changes are processed.
