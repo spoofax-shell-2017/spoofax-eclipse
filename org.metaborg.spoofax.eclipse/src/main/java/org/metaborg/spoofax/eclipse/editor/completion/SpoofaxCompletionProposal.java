@@ -43,7 +43,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
         public final Multimap<String, ProposalPosition> placeholders;
         public final int cursorPosition;
         public final int cursorSequence;
-        public static int sequence = 0;
+        public int sequence = 0;
 
 
         public CompletionData(IDocument document, ITextViewer viewer, int offset, ICompletion completion,
@@ -71,7 +71,12 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                     textOffset += itemText.length();
                 } else if(item instanceof IPlaceholderCompletionItem) {
                     final IPlaceholderCompletionItem placeholderItem = (IPlaceholderCompletionItem) item;
-                    final String itemText = "[[" + placeholderItem.placeholderText() + "]]";
+                    final String itemText;
+                    if (placeholderItem.optional()) {
+                        itemText = ""; 
+                    } else {
+                        itemText = "[[" + placeholderItem.placeholderText() + "]]";
+                    }
                     final int textLength = itemText.length();
                     final String name = placeholderItem.name();
                     stringBuilder.append(itemText);
@@ -103,7 +108,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
             // call the completion proposer to calculate the proposals
             final Iterable<ICompletion> completions;
             try {
-                completions = completionService.get(parseResult, offset + 1);
+                completions = completionService.get(parseResult, offset + 1, true);
             } catch(MetaborgException e) {
                 return null;
             }
@@ -309,7 +314,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                     while(i < input.length() && input.charAt(i) != ']') {
                         String charAti = String.valueOf(input.charAt(i));
 
-                        if(!charAti.matches("[a-zA-Z_]")) { // not placeholder: abort
+                        if(!charAti.matches("[a-zA-Z_?]")) { // not placeholder: abort
                             break;
                         }
 
@@ -327,10 +332,16 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
 
                     final TextCompletionItem item = new TextCompletionItem(sb.toString());
                     result.add(item);
+                    
+                    boolean optional = false;
 
-                    // TODO: calculate the list of completions for each placeholder
+                    if (placeholderName.toString().endsWith("?")) {
+                        optional = true;
+                    }
+                    
+                        
                     final PlaceholderCompletionItem placeholder =
-                        new PlaceholderCompletionItem(placeholderName.toString(), placeholderName.toString());
+                        new PlaceholderCompletionItem(placeholderName.toString(), placeholderName.toString(), optional);
 
                     result.add(placeholder);
 

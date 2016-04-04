@@ -97,7 +97,7 @@ public class SpoofaxContentAssistProcessor<P> implements IContentAssistProcessor
     private ICompletionProposal[] proposals(ParseResult<P> parseResult, ITextViewer viewer, int offset) {
         final Iterable<ICompletion> completions;
         try {
-            completions = completionService.get(parseResult, offset);
+            completions = completionService.get(parseResult, offset, false);
         } catch(MetaborgException e) {
             return null;
         }
