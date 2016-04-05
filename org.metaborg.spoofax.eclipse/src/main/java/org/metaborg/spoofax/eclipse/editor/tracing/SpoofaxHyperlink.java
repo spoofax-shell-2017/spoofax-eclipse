@@ -7,7 +7,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.metaborg.core.source.ISourceLocation;
 import org.metaborg.core.tracing.Resolution;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -21,11 +21,11 @@ final class SpoofaxHyperlink implements IHyperlink {
 
     private final Resolution resolution;
     private final FileObject editorResource;
-    private final AbstractTextEditor editor;
+    private final ITextEditor editor;
 
 
     public SpoofaxHyperlink(IEclipseResourceService resourceService, Resolution resolution, FileObject editorResource,
-        AbstractTextEditor editor) {
+        ITextEditor editor) {
         this.resourceService = resourceService;
 
         this.resolution = resolution;

@@ -5,7 +5,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.language.LanguageImplChange;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
-import org.metaborg.spoofax.eclipse.processing.EclipseProgressReporter;
+import org.metaborg.spoofax.eclipse.processing.ProgressReporter;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 
 /**
@@ -25,7 +25,7 @@ public class LanguageImplChangeJob extends Job {
 
 
     @Override protected IStatus run(IProgressMonitor monitor) {
-        processor.processImplChange(change, new EclipseProgressReporter(monitor));
+        processor.processImplChange(change, new ProgressReporter(monitor));
         return StatusUtils.success();
     }
 }

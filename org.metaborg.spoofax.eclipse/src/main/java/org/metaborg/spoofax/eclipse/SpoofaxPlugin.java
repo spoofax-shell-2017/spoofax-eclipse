@@ -6,7 +6,7 @@ import org.metaborg.core.processing.IProcessorRunner;
 import org.metaborg.spoofax.core.Spoofax;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
 import org.metaborg.spoofax.eclipse.logging.LoggingConfiguration;
-import org.metaborg.spoofax.eclipse.processing.EclipseProcessor;
+import org.metaborg.spoofax.eclipse.processing.SpoofaxProcessor;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxPlugin.class);
         logger.debug("Starting Spoofax plugin");
 
-        spoofax = new Spoofax(new SpoofaxEclipseModule(), new EclipseModulePluginLoader(id + ".module"));
+        spoofax = new Spoofax(new EclipseModulePluginLoader(id + ".module"), new SpoofaxEclipseModule());
         injector = spoofax.injector;
 
         // Eagerly initialize processor runner so that language changes are processed.
@@ -40,7 +40,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         // Eagerly register editor registry so that editor changes are processed.
         injector.getInstance(IEclipseEditorRegistryInternal.class).register();
         // Discover language components and dialects from plugins at startup.
-        injector.getInstance(EclipseProcessor.class).discoverLanguages();
+        injector.getInstance(SpoofaxProcessor.class).discoverLanguages();
 
         doneLoading = true;
     }

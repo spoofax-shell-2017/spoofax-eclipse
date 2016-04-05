@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.metaborg.core.source.ISourceRegion;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -35,8 +35,8 @@ public class EditorUtils {
                 try {
                     final IEditorPart editorPart = IDE.openEditor(page, file);
                     if(offset >= 0) {
-                        if(editorPart instanceof AbstractTextEditor) {
-                            final AbstractTextEditor editor = (AbstractTextEditor) editorPart;
+                        if(editorPart instanceof ITextEditor) {
+                            final ITextEditor editor = (ITextEditor) editorPart;
                             selectAndFocus(editor, offset);
                         }
                     }
@@ -62,8 +62,8 @@ public class EditorUtils {
                     final IFileStore fileStore = EFS.getStore(uri);
                     final IEditorPart editorPart = IDE.openEditorOnFileStore(page, fileStore);
                     if(offset >= 0) {
-                        if(editorPart instanceof AbstractTextEditor) {
-                            final AbstractTextEditor editor = (AbstractTextEditor) editorPart;
+                        if(editorPart instanceof ITextEditor) {
+                            final ITextEditor editor = (ITextEditor) editorPart;
                             selectAndFocus(editor, offset);
                         }
                     }
@@ -75,36 +75,36 @@ public class EditorUtils {
     }
 
 
-    public static void select(AbstractTextEditor editor, int offset) {
+    public static void select(ITextEditor editor, int offset) {
         select(editor, offset, 0);
     }
 
-    public static void select(AbstractTextEditor editor, int offset, int length) {
+    public static void select(ITextEditor editor, int offset, int length) {
         editor.selectAndReveal(offset, length);
     }
 
-    public static void select(AbstractTextEditor editor, ISourceRegion region) {
+    public static void select(ITextEditor editor, ISourceRegion region) {
         final IRegion eclipseRegion = RegionUtils.fromCore(region);
         select(editor, eclipseRegion.getOffset(), eclipseRegion.getLength());
     }
 
 
-    public static void focus(AbstractTextEditor editor) {
+    public static void focus(ITextEditor editor) {
         editor.setFocus();
     }
 
 
-    public static void selectAndFocus(AbstractTextEditor editor, int offset) {
+    public static void selectAndFocus(ITextEditor editor, int offset) {
         select(editor, offset);
         focus(editor);
     }
 
-    public static void selectAndFocus(AbstractTextEditor editor, int offset, int length) {
+    public static void selectAndFocus(ITextEditor editor, int offset, int length) {
         select(editor, offset, length);
         focus(editor);
     }
 
-    public static void selectAndFocus(AbstractTextEditor editor, ISourceRegion region) {
+    public static void selectAndFocus(ITextEditor editor, ISourceRegion region) {
         select(editor, region);
         focus(editor);
     }

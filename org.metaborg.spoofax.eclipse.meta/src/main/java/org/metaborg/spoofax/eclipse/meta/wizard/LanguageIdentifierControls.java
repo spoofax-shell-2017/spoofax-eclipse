@@ -1,6 +1,5 @@
 package org.metaborg.spoofax.eclipse.meta.wizard;
 
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -10,21 +9,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.metaborg.core.language.LanguageIdentifier;
-import org.metaborg.core.language.LanguageVersion;
+
+import com.google.common.base.Strings;
 
 public class LanguageIdentifierControls {
     public final Group container;
 
-    private final Text inputGroupId;
-    private final Text inputId;
-    private final Text inputVersion;
-    private final Text inputName;
+    public final Text inputGroupId;
+    public final Text inputId;
+    public final Text inputVersion;
+    public final Text inputName;
 
-    private boolean groupIdModified = false;
     private boolean idModified = false;
-    private boolean versionModified = false;
     private boolean nameModified = false;
+    private boolean versionModified = false;
+    private boolean groupIdModified = false;
+
+    private boolean ignoreEvents = false;
 
 
     public LanguageIdentifierControls(Composite parent, ModifyListener parentListener) {
@@ -40,35 +41,19 @@ public class LanguageIdentifierControls {
         container.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         container.setText("Language identification");
 
-        new Label(container, SWT.NONE).setText("&Group ID:");
-        inputGroupId = new Text(container, SWT.BORDER | SWT.SINGLE);
-        inputGroupId.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputGroupId.setText(initialGroupId);
-        inputGroupId.addModifyListener(new ModifyListener() {
-            @Override public void modifyText(ModifyEvent e) {
-                groupIdModified = true;
-                parentListener.modifyText(e);
-            }
-        });
-
-        new Label(container, SWT.NONE).setText("&ID:");
+        new Label(container, SWT.NONE).setText("&Identifier:");
         inputId = new Text(container, SWT.BORDER | SWT.SINGLE);
         inputId.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputId.setText(initialId);
+        if(!Strings.isNullOrEmpty(initialId)) {
+            inputId.setText(initialId);
+            idModified = true;
+        }
         inputId.addModifyListener(new ModifyListener() {
             @Override public void modifyText(ModifyEvent e) {
+                if(ignoreEvents) {
+                    return;
+                }
                 idModified = true;
-                parentListener.modifyText(e);
-            }
-        });
-
-        new Label(container, SWT.NONE).setText("&Version:");
-        inputVersion = new Text(container, SWT.BORDER | SWT.SINGLE);
-        inputVersion.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputVersion.setText(initialVersion);
-        inputVersion.addModifyListener(new ModifyListener() {
-            @Override public void modifyText(ModifyEvent e) {
-                versionModified = true;
                 parentListener.modifyText(e);
             }
         });
@@ -76,78 +61,90 @@ public class LanguageIdentifierControls {
         new Label(container, SWT.NONE).setText("&Name:");
         inputName = new Text(container, SWT.BORDER | SWT.SINGLE);
         inputName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputName.setText(initialName);
+        if(!Strings.isNullOrEmpty(initialName)) {
+            inputName.setText(initialName);
+            nameModified = true;
+        }
         inputName.addModifyListener(new ModifyListener() {
             @Override public void modifyText(ModifyEvent e) {
+                if(ignoreEvents) {
+                    return;
+                }
                 nameModified = true;
+                parentListener.modifyText(e);
+            }
+        });
+
+        new Label(container, SWT.NONE).setText("&Version:");
+        inputVersion = new Text(container, SWT.BORDER | SWT.SINGLE);
+        inputVersion.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if(!Strings.isNullOrEmpty(initialVersion)) {
+            inputVersion.setText(initialVersion);
+            versionModified = true;
+        }
+        inputVersion.addModifyListener(new ModifyListener() {
+            @Override public void modifyText(ModifyEvent e) {
+                if(ignoreEvents) {
+                    return;
+                }
+                versionModified = true;
+                parentListener.modifyText(e);
+            }
+        });
+
+        new Label(container, SWT.NONE).setText("&Group identifier:");
+        inputGroupId = new Text(container, SWT.BORDER | SWT.SINGLE);
+        inputGroupId.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if(!Strings.isNullOrEmpty(initialGroupId)) {
+            inputGroupId.setText(initialGroupId);
+            groupIdModified = true;
+        }
+        inputGroupId.addModifyListener(new ModifyListener() {
+            @Override public void modifyText(ModifyEvent e) {
+                if(ignoreEvents) {
+                    return;
+                }
+                groupIdModified = true;
                 parentListener.modifyText(e);
             }
         });
     }
 
 
+    public void setIgnoreEvents(boolean ignoreEvents) {
+        this.ignoreEvents = ignoreEvents;
+    }
+
+
+    public boolean groupIdModified() {
+        return groupIdModified;
+    }
+
     public String groupId() {
         return inputGroupId.getText();
+    }
+
+    public boolean idModified() {
+        return idModified;
     }
 
     public String id() {
         return inputId.getText();
     }
 
+    public boolean versionModified() {
+        return versionModified;
+    }
+
     public String version() {
         return inputVersion.getText();
     }
 
-    public String name() {
-        return inputName.getText();
+    public boolean nameModified() {
+        return nameModified;
     }
 
-
-    public boolean validate(WizardPage page) {
-        final String groupId = groupId();
-        if(groupIdModified) {
-            if(groupId.isEmpty()) {
-                page.setErrorMessage("Group ID must be filled in");
-                return false;
-            } else if(!LanguageIdentifier.validId(groupId)) {
-                page.setErrorMessage("Group ID is invalid; " + LanguageIdentifier.errorDescription);
-                return false;
-            }
-        }
-
-        final String id = id();
-        if(idModified) {
-            if(id.isEmpty()) {
-                page.setErrorMessage("ID must be filled in");
-                return false;
-            } else if(!LanguageIdentifier.validId(id)) {
-                page.setErrorMessage("ID is invalid; " + LanguageIdentifier.errorDescription);
-                return false;
-            }
-        }
-
-        final String version = version();
-        if(versionModified) {
-            if(version.isEmpty()) {
-                page.setErrorMessage("Version must be filled in");
-                return false;
-            } else if(!LanguageVersion.valid(version)) {
-                page.setErrorMessage("Version is invalid; " + LanguageVersion.errorDescription);
-                return false;
-            }
-        }
-
-        final String name = name();
-        if(nameModified) {
-            if(name.isEmpty()) {
-                page.setErrorMessage("Name must be filled in");
-                return false;
-            } else if(!LanguageIdentifier.validId(name)) {
-                page.setErrorMessage("Name is invalid; " + LanguageIdentifier.errorDescription);
-                return false;
-            }
-        }
-
-        return true;
+    public String name() {
+        return inputName.getText();
     }
 }

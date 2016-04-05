@@ -21,6 +21,7 @@ import org.metaborg.core.source.ISourceTextService;
 import org.metaborg.spoofax.core.processing.analyze.ISpoofaxAnalysisResultRequester;
 import org.metaborg.spoofax.core.processing.parse.ISpoofaxParseResultRequester;
 import org.metaborg.spoofax.core.transform.ISpoofaxTransformService;
+import org.metaborg.spoofax.core.unit.ISpoofaxUnitService;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistry;
@@ -45,6 +46,7 @@ public class TransformHandler extends AbstractHandler {
     private final ISourceTextService sourceTextService;
     private final IContextService contextService;
     private final IProjectService projectService;
+    private final ISpoofaxUnitService unitService;
     private final ISpoofaxTransformService transformService;
     private final ISpoofaxParseResultRequester parseResultRequester;
     private final ISpoofaxAnalysisResultRequester analysisResultRequester;
@@ -60,6 +62,7 @@ public class TransformHandler extends AbstractHandler {
         this.sourceTextService = injector.getInstance(ISourceTextService.class);
         this.contextService = injector.getInstance(IContextService.class);
         this.projectService = injector.getInstance(IProjectService.class);
+        this.unitService = injector.getInstance(ISpoofaxUnitService.class);
         this.transformService = injector.getInstance(ISpoofaxTransformService.class);
         this.parseResultRequester = injector.getInstance(ISpoofaxParseResultRequester.class);
         this.analysisResultRequester = injector.getInstance(ISpoofaxAnalysisResultRequester.class);
@@ -119,7 +122,7 @@ public class TransformHandler extends AbstractHandler {
             resources = transformResources;
         }
 
-        final Job transformJob = new TransformJob<>(contextService, transformService, parseResultRequester,
+        final Job transformJob = new TransformJob(contextService, unitService, transformService, parseResultRequester,
             analysisResultRequester, language, resources, goal);
         transformJob.schedule();
 

@@ -6,13 +6,12 @@ import org.metaborg.core.config.ConfigRequest;
 import org.metaborg.core.messages.StreamMessagePrinter;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.source.ISourceTextService;
-import org.metaborg.spoofax.eclipse.resource.EclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigService;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
-import org.metaborg.spoofax.meta.core.project.SpoofaxLanguageSpecPaths;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -75,8 +74,6 @@ public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
             return null;
         }
 
-        final SpoofaxLanguageSpecPaths paths = new SpoofaxLanguageSpecPaths(location, config);
-
-        return new EclipseLanguageSpec(config, paths, location, eclipseProject.eclipseProject);
+        return new EclipseLanguageSpec(config, location, eclipseProject.eclipseProject);
     }
 }

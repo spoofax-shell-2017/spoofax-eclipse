@@ -23,10 +23,11 @@ import org.metaborg.core.completion.ICursorCompletionItem;
 import org.metaborg.core.completion.IPlaceholderCompletionItem;
 import org.metaborg.core.completion.ITextCompletionItem;
 import org.metaborg.core.language.ILanguageImpl;
-import org.metaborg.core.syntax.IParserConfiguration;
+import org.metaborg.core.syntax.IInputUnit;
+import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.syntax.ParseException;
-import org.metaborg.core.syntax.ParseResult;
+import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.core.completion.PlaceholderCompletionItem;
 import org.metaborg.spoofax.core.completion.TextCompletionItem;
 import org.metaborg.spoofax.core.syntax.JSGLRParserConfiguration;
@@ -37,8 +38,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
-public class SpoofaxCompletionProposal implements ICompletionProposal {
-    private static class CompletionData {
+public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUnit> implements ICompletionProposal {
+    private static class CompletionData<I extends IInputUnit, P extends IParseUnit> {
         public final String text;
         public final Multimap<String, ProposalPosition> placeholders;
         public final int cursorPosition;
@@ -47,7 +48,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
 
 
         public CompletionData(IDocument document, ITextViewer viewer, int offset, ICompletion completion,
-            ICompletionService completionService, ISyntaxService<?> syntaxService, ParseResult<?> parseResult) {
+            ICompletionService<P> completionService, IInputUnitService<I> unitService,
+            ISyntaxService<I, P> syntaxService, P parseResult) {
             placeholders = ArrayListMultimap.create();
 
             final StringBuilder stringBuilder = new StringBuilder();
@@ -72,8 +74,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                 } else if(item instanceof IPlaceholderCompletionItem) {
                     final IPlaceholderCompletionItem placeholderItem = (IPlaceholderCompletionItem) item;
                     final String itemText;
-                    if (placeholderItem.optional()) {
-                        itemText = ""; 
+                    if(placeholderItem.optional()) {
+                        itemText = "";
                     } else {
                         itemText = "[[" + placeholderItem.placeholderText() + "]]";
                     }
@@ -82,8 +84,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                     stringBuilder.append(itemText);
                     final ProposalPosition position =
                         new ProposalPosition(document, textOffset, textLength, getNextSequence(placeholdersCompletion),
-                            getProposals(completionService, syntaxService, parseResult, viewer, textOffset,
-                                placeholderItem));
+                            getProposals(completionService, unitService, syntaxService, parseResult, viewer,
+                                textOffset, placeholderItem));
                     placeholders.put(name, position);
                     textOffset += itemText.length();
                 } else if(item instanceof ICursorCompletionItem) {
@@ -102,13 +104,13 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
             cursorSequence = curCursorSequence;
         }
 
-        private ICompletionProposal[] getProposals(ICompletionService completionService,
-            ISyntaxService<?> syntaxService, ParseResult<?> parseResult, ITextViewer viewer, int offset,
-            IPlaceholderCompletionItem placeholderItem) {
+        private ICompletionProposal[] getProposals(ICompletionService<P> completionService,
+            IInputUnitService<I> unitService, ISyntaxService<I, P> syntaxService, P parseResult, ITextViewer viewer,
+            int offset, IPlaceholderCompletionItem placeholderItem) {
             // call the completion proposer to calculate the proposals
             final Iterable<ICompletion> completions;
             try {
-                completions = completionService.get(parseResult, offset + 1, true);
+                completions = completionService.get(offset + 1, parseResult, true);
             } catch(MetaborgException e) {
                 return null;
             }
@@ -119,8 +121,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
             for(ICompletion completion : completions) {
                 completion.setNested(true);
                 proposals[i] =
-                    new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source, parseResult.language,
-                        completionService, syntaxService);
+                    new SpoofaxCompletionProposal<>(viewer, offset, completion, parseResult.source(), parseResult
+                        .input().langImpl(), completionService, unitService, syntaxService);
                 ++i;
             }
             return proposals;
@@ -188,19 +190,22 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
     private final ITextViewer textViewer;
     private int offset;
     private ICompletion completion;
-    private final ICompletionService completionService;
-    private final ISyntaxService<?> syntaxService;
+    private final ICompletionService<P> completionService;
+    private final IInputUnitService<I> unitService;
+    private final ISyntaxService<I, P> syntaxService;
     private final FileObject source;
     private final ILanguageImpl language;
 
-    private CompletionData data;
+    private CompletionData<I, P> data;
 
     public SpoofaxCompletionProposal(ITextViewer textViewer, int offset, ICompletion completion, FileObject source,
-        ILanguageImpl language, ICompletionService completionService, ISyntaxService<?> syntaxService) {
+        ILanguageImpl language, ICompletionService<P> completionService, IInputUnitService<I> unitService,
+        ISyntaxService<I, P> syntaxService) {
         this.textViewer = textViewer;
         this.offset = offset;
         this.completion = completion;
         this.completionService = completionService;
+        this.unitService = unitService;
         this.syntaxService = syntaxService;
         this.source = source;
         this.language = language;
@@ -230,18 +235,18 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
         completion.setItems(completionItems);
 
         // re-parse to get the new AST to calculate nested completions
-        ParseResult<?> completedParseResult = null;
-        final IParserConfiguration config = new JSGLRParserConfiguration(true, true, false, 3000, Integer.MAX_VALUE);
+        P completedParseResult = null;
 
         try {
-            completedParseResult = syntaxService.parse(finalText, source, language, config);
+            final I input = unitService.inputUnit(source, finalText, language, null);
+            completedParseResult = syntaxService.parse(input);
         } catch(ParseException e1) {
             e1.printStackTrace();
         }
 
         this.data =
-            new CompletionData(document, textViewer, offset, completion, completionService, syntaxService,
-                completedParseResult);
+            new CompletionData<>(document, textViewer, offset, completion, completionService, unitService,
+                syntaxService, completedParseResult);
 
         try {
             document.replace(0, document.getLength(), finalText);
@@ -332,14 +337,14 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
 
                     final TextCompletionItem item = new TextCompletionItem(sb.toString());
                     result.add(item);
-                    
+
                     boolean optional = false;
 
-                    if (placeholderName.toString().endsWith("?")) {
+                    if(placeholderName.toString().endsWith("?")) {
                         optional = true;
                     }
-                    
-                        
+
+
                     final PlaceholderCompletionItem placeholder =
                         new PlaceholderCompletionItem(placeholderName.toString(), placeholderName.toString(), optional);
 

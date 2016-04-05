@@ -31,8 +31,8 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxMetaPlugin.class);
         logger.debug("Starting Spoofax meta plugin");
 
-        spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax(), new SpoofaxEclipseMetaModule(),
-            new EclipseModulePluginLoader(id + ".module"));
+        spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax(), new EclipseModulePluginLoader(id + ".module"),
+            new SpoofaxEclipseMetaModule());
         injector = spoofaxMeta.injector;
 
         // Discover language components and dialects from language specifications of workspace projects at startup.

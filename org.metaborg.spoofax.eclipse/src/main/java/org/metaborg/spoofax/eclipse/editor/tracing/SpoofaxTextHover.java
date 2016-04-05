@@ -9,11 +9,12 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModelExtension2;
 import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.analysis.AnalysisFileResult;
+import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
-import org.metaborg.core.syntax.ParseResult;
+import org.metaborg.core.syntax.IInputUnit;
+import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.tracing.Hover;
 import org.metaborg.core.tracing.IHoverService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -21,11 +22,12 @@ import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class SpoofaxTextHover<P, A> implements ITextHover {
+public class SpoofaxTextHover<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit>
+    implements ITextHover {
     private static final ILogger logger = LoggerUtils.logger(SpoofaxTextHover.class);
 
-    private final IParseResultRequester<P> parseResultRequester;
-    private final IAnalysisResultRequester<P, A> analysisResultRequester;
+    private final IParseResultRequester<I, P> parseResultRequester;
+    private final IAnalysisResultRequester<I, A> analysisResultRequester;
     private final IHoverService<P, A> hoverService;
 
     private final FileObject resource;
@@ -33,8 +35,8 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
     private final ISourceViewerExtension2 sourceViewer;
 
 
-    public SpoofaxTextHover(IParseResultRequester<P> parseResultRequester,
-        IAnalysisResultRequester<P, A> analysisResultRequester, IHoverService<P, A> hoverService, FileObject resource,
+    public SpoofaxTextHover(IParseResultRequester<I, P> parseResultRequester,
+        IAnalysisResultRequester<I, A> analysisResultRequester, IHoverService<P, A> hoverService, FileObject resource,
         ILanguageImpl language, ISourceViewerExtension2 sourceViewer) {
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
@@ -52,12 +54,12 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
             final int offset = region.getOffset();
 
             Hover hover = null;
-            final AnalysisFileResult<P, A> analysisResult = analysisResultRequester.get(resource);
+            final A analysisResult = analysisResultRequester.get(resource);
             if(analysisResult != null) {
                 hover = fromAnalyzed(offset, analysisResult);
             }
             if(hover == null) {
-                final ParseResult<P> parseResult = parseResultRequester.get(resource);
+                final P parseResult = parseResultRequester.get(resource);
                 if(parseResult != null) {
                     hover = fromParsed(offset, parseResult);
                 }
@@ -76,7 +78,7 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
     }
 
 
-    private @Nullable Hover fromParsed(int offset, @Nullable ParseResult<P> result) {
+    private @Nullable Hover fromParsed(int offset, @Nullable P result) {
         try {
             final Hover hover = hoverService.hover(offset, result);
             return hover;
@@ -87,7 +89,7 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
         return null;
     }
 
-    private @Nullable Hover fromAnalyzed(int offset, @Nullable AnalysisFileResult<P, A> result) {
+    private @Nullable Hover fromAnalyzed(int offset, @Nullable A result) {
         try {
             final Hover hover = hoverService.hover(offset, result);
             return hover;
@@ -106,8 +108,8 @@ public class SpoofaxTextHover<P, A> implements ITextHover {
         if(annotationModel == null) {
             return stringBuilder;
         }
-        final Iterable<Annotation> annotations = Iterables2.<Annotation>fromOnce(annotationModel.getAnnotationIterator(
-                region.getOffset(), region.getLength(), true, true));
+        final Iterable<Annotation> annotations = Iterables2.<Annotation>fromOnce(
+            annotationModel.getAnnotationIterator(region.getOffset(), region.getLength(), true, true));
         for(Annotation annotation : annotations) {
             // Ignore certain annotations types.
             switch(annotation.getType()) {

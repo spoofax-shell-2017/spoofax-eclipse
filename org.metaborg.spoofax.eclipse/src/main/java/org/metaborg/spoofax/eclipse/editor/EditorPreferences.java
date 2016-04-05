@@ -3,7 +3,7 @@ package org.metaborg.spoofax.eclipse.editor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 
-public class SpoofaxEditorPreferences {
+public class EditorPreferences {
     public static final String id = SpoofaxEditor.id + ".prefs";
 
     private static final String bracketMatching = id + ".bracketmatching";

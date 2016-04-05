@@ -7,11 +7,11 @@ import org.metaborg.core.processing.IProgressReporter;
 /**
  * Progress reporter implementation from {@link IProgressMonitor}s in Eclipse.
  */
-public class EclipseProgressReporter implements IProgressReporter {
+public class ProgressReporter implements IProgressReporter {
     public final SubMonitor monitor;
 
 
-    public EclipseProgressReporter(IProgressMonitor monitor) {
+    public ProgressReporter(IProgressMonitor monitor) {
         this.monitor = SubMonitor.convert(monitor);
     }
 
@@ -25,6 +25,6 @@ public class EclipseProgressReporter implements IProgressReporter {
     }
 
     @Override public IProgressReporter subProgress(int ticks) {
-        return new EclipseProgressReporter(monitor.newChild(ticks));
+        return new ProgressReporter(monitor.newChild(ticks));
     }
 }

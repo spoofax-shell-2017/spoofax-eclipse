@@ -5,13 +5,14 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.analysis.AnalysisFileResult;
+import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
-import org.metaborg.core.syntax.ParseResult;
+import org.metaborg.core.syntax.IInputUnit;
+import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.tracing.IResolverService;
 import org.metaborg.core.tracing.Resolution;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -19,26 +20,27 @@ import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
+public class SpoofaxHyperlinkDetector<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit>
+    extends AbstractHyperlinkDetector {
     private static final ILogger logger = LoggerUtils.logger(SpoofaxHyperlinkDetector.class);
 
     private final IEclipseResourceService resourceService;
-    private final IParseResultRequester<P> parseResultRequester;
-    private final IAnalysisResultRequester<P, A> analysisResultRequester;
-    private final IResolverService<P, A> referenceResolver;
+    private final IParseResultRequester<I, P> parseResultRequester;
+    private final IAnalysisResultRequester<I, A> analysisResultRequester;
+    private final IResolverService<P, A> resolverService;
 
     private final FileObject resource;
     private final ILanguageImpl language;
-    private final AbstractTextEditor editor;
+    private final ITextEditor editor;
 
 
     public SpoofaxHyperlinkDetector(IEclipseResourceService resourceService,
-        IParseResultRequester<P> parseResultRequester, IAnalysisResultRequester<P, A> analysisResultRequester,
-        IResolverService<P, A> referenceResolver, FileObject resource, ILanguageImpl language, AbstractTextEditor editor) {
+        IParseResultRequester<I, P> parseResultRequester, IAnalysisResultRequester<I, A> analysisResultRequester,
+        IResolverService<P, A> resolverService, FileObject resource, ILanguageImpl language, ITextEditor editor) {
         this.resourceService = resourceService;
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
-        this.referenceResolver = referenceResolver;
+        this.resolverService = resolverService;
 
         this.resource = resource;
         this.language = language;
@@ -47,16 +49,16 @@ public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
 
 
     @Override public @Nullable IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean multiple) {
-        if(!referenceResolver.available(language)) {
+        if(!resolverService.available(language)) {
             return null;
         }
-        
+
         final int offset = region.getOffset();
-        final AnalysisFileResult<P, A> analysisResult = analysisResultRequester.get(resource);
+        final A analysisResult = analysisResultRequester.get(resource);
         if(analysisResult != null) {
             return fromAnalyzed(offset, analysisResult);
         }
-        final ParseResult<P> parseResult = parseResultRequester.get(resource);
+        final P parseResult = parseResultRequester.get(resource);
         if(parseResult != null) {
             return fromParsed(offset, parseResult);
         }
@@ -64,9 +66,9 @@ public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
     }
 
 
-    private @Nullable IHyperlink[] fromParsed(int offset, ParseResult<P> result) {
+    private @Nullable IHyperlink[] fromParsed(int offset, P result) {
         try {
-            final Resolution resolution = referenceResolver.resolve(offset, result);
+            final Resolution resolution = resolverService.resolve(offset, result);
             return createHyperlink(resolution);
         } catch(MetaborgException e) {
             logger.error("Reference resolution for {} failed unexpectedly", e, resource);
@@ -75,9 +77,9 @@ public class SpoofaxHyperlinkDetector<P, A> extends AbstractHyperlinkDetector {
         return null;
     }
 
-    private @Nullable IHyperlink[] fromAnalyzed(int offset, AnalysisFileResult<P, A> result) {
+    private @Nullable IHyperlink[] fromAnalyzed(int offset, A result) {
         try {
-            final Resolution resolution = referenceResolver.resolve(offset, result);
+            final Resolution resolution = resolverService.resolve(offset, result);
             return createHyperlink(resolution);
         } catch(MetaborgException e) {
             logger.error("Reference resolution for {} failed unexpectedly", e, resource);

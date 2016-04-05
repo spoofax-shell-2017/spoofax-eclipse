@@ -35,9 +35,9 @@ public class ToggleCommentHandler extends AbstractHandler {
         if(!(part instanceof IEditor)) {
             throw new MetaborgRuntimeException("Editor is not a Spoofax editor");
         }
-        final SpoofaxEditor editor = (SpoofaxEditor) part;
+        final IEclipseEditor<?> editor = (IEclipseEditor<?>) part;
         final IDocument document = editor.document();
-        final ISelection selection = editor.getSelectionProvider().getSelection();
+        final ISelection selection = editor.selectionProvider().getSelection();
 
         final SourceViewerConfiguration configuration = editor.configuration();
         final ISourceViewer sourceViewer = editor.sourceViewer();
@@ -77,8 +77,7 @@ public class ToggleCommentHandler extends AbstractHandler {
         else
             operationCode = ITextOperationTarget.PREFIX;
 
-        final ITextOperationTarget textOperationTarget =
-            (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+        final ITextOperationTarget textOperationTarget = editor.textOperationTarget();
         textOperationTarget.doOperation(operationCode);
 
         return null;
@@ -148,9 +147,8 @@ public class ToggleCommentHandler extends AbstractHandler {
     private IRegion getTextBlockFromSelection(ITextSelection selection, IDocument document) {
         try {
             IRegion line = document.getLineInformationOfOffset(selection.getOffset());
-            int length =
-                selection.getLength() == 0 ? line.getLength() : selection.getLength()
-                    + (selection.getOffset() - line.getOffset());
+            int length = selection.getLength() == 0 ? line.getLength()
+                : selection.getLength() + (selection.getOffset() - line.getOffset());
             return new Region(line.getOffset(), length);
 
         } catch(BadLocationException e) {
