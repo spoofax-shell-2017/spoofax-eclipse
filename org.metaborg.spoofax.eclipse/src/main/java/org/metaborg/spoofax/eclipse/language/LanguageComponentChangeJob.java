@@ -18,6 +18,7 @@ public class LanguageComponentChangeJob extends Job {
 
     public LanguageComponentChangeJob(ILanguageChangeProcessor processor, LanguageComponentChange change) {
         super("Processing language component " + change.kind.toString());
+        setSystem(true);
 
         this.processor = processor;
         this.change = change;

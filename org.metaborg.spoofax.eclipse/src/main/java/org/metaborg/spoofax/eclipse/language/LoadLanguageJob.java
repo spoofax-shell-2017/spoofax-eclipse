@@ -16,6 +16,7 @@ public class LoadLanguageJob extends Job {
     public LoadLanguageJob(LanguageLoader discoverer, FileObject location, boolean skipUnavailable) {
         super("Loading Spoofax language");
         setPriority(Job.SHORT);
+        setSystem(true);
 
         this.discoverer = discoverer;
 

@@ -14,6 +14,7 @@ public class UnloadLanguageJob extends Job {
     public UnloadLanguageJob(LanguageLoader loader, FileObject location) {
         super("Unloading Spoofax language");
         setPriority(Job.SHORT);
+        setSystem(true);
 
         this.loader = loader;
         this.location = location;
