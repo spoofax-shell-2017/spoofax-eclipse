@@ -77,15 +77,11 @@
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
-              com.github.mustachejava;provider=metaborg;mandatory:=provider,
-              com.github.mustachejava*;provider=metaborg;mandatory:=provider,
-              build.pluto;provider=metaborg;mandatory:=provider,
-              build.pluto*;provider=metaborg;mandatory:=provider,
-              org.sugarj.common;provider=metaborg;mandatory:=provider,
-              org.sugarj.common*;provider=metaborg;mandatory:=provider,
+              com.github.mustachejava.*;provider=metaborg;mandatory:=provider,
+              build.pluto.*;provider=metaborg;mandatory:=provider,
+              org.sugarj.common.*;provider=metaborg;mandatory:=provider,
               com.cedarsoftware.util;provider=metaborg;mandatory:=provider,
-              org.objenesis;provider=metaborg;mandatory:=provider,
-              org.objenesis*;provider=metaborg;mandatory:=provider
+              org.objenesis.*;provider=metaborg;mandatory:=provider
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
             <Import-Package>
@@ -100,6 +96,8 @@
             </Import-Package>
             <!-- Don't generate uses declarations in exported packages. -->
             <_nouses>true</_nouses>
+            <!-- Don't use version of this package if no version can be determined. -->
+            <_nodefaultversion>true</_nodefaultversion>
             <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
               some libraries require. -->
             <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
