@@ -29,11 +29,23 @@
       <artifactId>make-permissive</artifactId>
       <version>${metaborg-version}</version>
     </dependency>
-    <!-- Requirements for org.metaborg.meta.interpreter.framework -->
+    <!-- Requirements for DynSem meta-interpreter -->
     <dependency>
       <groupId>com.github.krukow</groupId>
       <artifactId>clj-ds</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.oracle.truffle</groupId>
+      <artifactId>truffle-api</artifactId>
+      <version>0.11</version>
+    </dependency>
+    <dependency>
+      <groupId>com.oracle.truffle</groupId>
+      <artifactId>truffle-dsl-processor</artifactId>
+      <version>0.11</version>
+    </dependency>
+    
+    
     <!-- General requirements for several libraries -->
     <!-- Logging -->
     <dependency>
