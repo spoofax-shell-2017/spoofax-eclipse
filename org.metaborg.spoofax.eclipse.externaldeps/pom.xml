@@ -44,8 +44,16 @@
       <artifactId>truffle-dsl-processor</artifactId>
       <version>0.11</version>
     </dependency>
-    
-    
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>dynsem.lib.stratego.jar</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>dynsem.lib.stratego.javastrat</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
     <!-- General requirements for several libraries -->
     <!-- Logging -->
     <dependency>
@@ -182,6 +190,8 @@
               commons-lang3,
               commons-logging,
               commons-vfs2,
+              dynsem.lib.stratego.jar,
+              dynsem.lib.stratego.javastrat,
               functionaljava,
               guava,
               guice,
@@ -198,7 +208,9 @@
               make-permissive,
               rxjava-core,
               slf4j-api,
-              strategoxt-min-jar
+              strategoxt-min-jar,
+              truffle-api,
+              truffle-dsl-processor
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
@@ -213,6 +225,8 @@
               com.github.krukow.clj_lang;provider=metaborg;mandatory:=provider,
               com.google.common.*;provider=metaborg;mandatory:=provider,
               com.google.inject.*;provider=metaborg;mandatory:=provider,
+              com.oracle.truffle.*;provider=metaborg;mandatory:=provider,
+              dynsem.strategies.*;provider=metaborg;mandatory:=provider,
               fj.*;provider=metaborg;mandatory:=provider,
               org.aopalliance*;provider=metaborg;mandatory:=provider,
               org.apache.commons.configuration2.*;provider=metaborg;mandatory:=provider,
@@ -224,7 +238,8 @@
               org.jgrapht.*;provider=metaborg;mandatory:=provider,
               org.slf4j.*;provider=metaborg;mandatory:=provider,
               org.strategoxt.*,
-              rx.*;provider=metaborg;mandatory:=provider
+              rx.*;provider=metaborg;mandatory:=provider,
+              trans.*;provider=metaborg;mandatory:=provider
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
             <Import-Package>
