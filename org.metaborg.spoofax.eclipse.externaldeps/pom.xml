@@ -212,13 +212,9 @@
               com.github.krukow.clj_lang;provider=metaborg;mandatory:=provider,
               com.google.common.*;provider=metaborg;mandatory:=provider,
               com.google.inject.*;provider=metaborg;mandatory:=provider,
-<<<<<<< HEAD
               com.oracle.truffle.*;provider=metaborg;mandatory:=provider,
               dynsem.strategies.*;provider=metaborg;mandatory:=provider,
-              fj.*;provider=metaborg;mandatory:=provider,
-=======
               it.unimi.dsi.fastutil.*;provider=metaborg;mandatory:=provider,
->>>>>>> master
               org.aopalliance*;provider=metaborg;mandatory:=provider,
               org.apache.commons.configuration2.*;provider=metaborg;mandatory:=provider,
               org.apache.commons.io.*;provider=metaborg;mandatory:=provider,
