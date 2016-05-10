@@ -18,6 +18,7 @@ public class LanguageImplChangeJob extends Job {
 
     public LanguageImplChangeJob(ILanguageChangeProcessor processor, LanguageImplChange change) {
         super("Processing language implementation " + change.kind.toString());
+        setSystem(true);
 
         this.processor = processor;
         this.change = change;

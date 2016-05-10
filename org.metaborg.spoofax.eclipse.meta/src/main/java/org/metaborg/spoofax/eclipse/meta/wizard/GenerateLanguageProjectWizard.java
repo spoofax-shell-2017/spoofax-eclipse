@@ -48,8 +48,6 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
 
     private final GenerateLanguageProjectWizardPage page;
 
-    private volatile IProject lastProject;
-
 
     public GenerateLanguageProjectWizard() {
         final Injector injector = SpoofaxMetaPlugin.injector();
@@ -98,13 +96,11 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         try {
             getContainer().run(true, true, runnable);
         } catch(InterruptedException e) {
-            rollback();
             return false;
         } catch(InvocationTargetException e) {
             final Throwable t = e.getTargetException();
             logger.error("Generating project failed", t);
             MessageDialog.openError(getShell(), "Error: " + t.getClass().getName(), t.getMessage());
-            rollback();
             return false;
         }
         return true;
@@ -124,7 +120,6 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         } else {
             eclipseProject.create(monitor.newChild(1));
         }
-        lastProject = eclipseProject;
 
         monitor.subTask("Opening project");
         eclipseProject.open(monitor.newChild(1));
@@ -162,16 +157,5 @@ public class GenerateLanguageProjectWizard extends Wizard implements INewWizard 
         eclipseProject.build(IncrementalProjectBuilder.FULL_BUILD, monitor.newChild(15));
 
         rootMonitor.done();
-    }
-
-    private void rollback() {
-        if(lastProject != null) {
-            try {
-                lastProject.delete(true, null);
-            } catch(CoreException e) {
-                logger.error("Cannot rollback project creation, {} cannot be deleted", e, lastProject);
-            }
-        }
-        lastProject = null;
     }
 }

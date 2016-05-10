@@ -19,6 +19,7 @@ public class DiscoverLanguagesFromPluginsJob extends Job {
     public DiscoverLanguagesFromPluginsJob(LanguageLoader languageLoader) {
         super("Loading all Spoofax languages from plugins");
         setPriority(Job.LONG);
+        setSystem(true);
 
         this.languageLoader = languageLoader;
     }
