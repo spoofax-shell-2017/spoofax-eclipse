@@ -11,6 +11,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
+import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.graphics.Image;
@@ -19,98 +20,91 @@ import org.metaborg.core.MetaborgException;
 import org.metaborg.core.completion.ICompletion;
 import org.metaborg.core.completion.ICompletionItem;
 import org.metaborg.core.completion.ICompletionService;
-import org.metaborg.core.completion.ICursorCompletionItem;
 import org.metaborg.core.completion.IPlaceholderCompletionItem;
-import org.metaborg.core.completion.ITextCompletionItem;
 import org.metaborg.core.language.ILanguageImpl;
-import org.metaborg.core.syntax.IInputUnit;
-import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.syntax.ParseException;
+import org.metaborg.core.tracing.ITracingService;
 import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.core.completion.PlaceholderCompletionItem;
-import org.metaborg.spoofax.core.completion.TextCompletionItem;
-import org.metaborg.spoofax.core.syntax.JSGLRParserConfiguration;
+import org.metaborg.spoofax.core.unit.ISpoofaxAnalyzeUnit;
+import org.metaborg.spoofax.core.unit.ISpoofaxInputUnit;
+import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
+import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
+import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
+import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
+import org.spoofax.interpreter.terms.IStrategoAppl;
+import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.terms.visitor.AStrategoTermVisitor;
+import org.spoofax.terms.visitor.IStrategoTermVisitor;
+import org.spoofax.terms.visitor.StrategoTermVisitee;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
-public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUnit> implements ICompletionProposal {
-    private static class CompletionData<I extends IInputUnit, P extends IParseUnit> {
+public class SpoofaxCompletionProposal implements ICompletionProposal {
+    private static class CompletionData {
         public final String text;
         public final Multimap<String, ProposalPosition> placeholders;
-        public final int cursorPosition;
         public final int cursorSequence;
-        public int sequence = 0;
+        public final int cursorPosition;
+        public int finalSequence = 0;
 
 
-        public CompletionData(IDocument document, ITextViewer viewer, int offset, ICompletion completion,
-            ICompletionService<P> completionService, IInputUnitService<I> unitService,
-            ISyntaxService<I, P> syntaxService, P parseResult) {
+        public CompletionData(IDocument document, String text, ITextViewer viewer, int offset, ICompletion completion,
+            ICompletionService<ISpoofaxParseUnit> completionService, ISpoofaxParseUnit parseResult) {
             placeholders = ArrayListMultimap.create();
+            this.text = text;
 
-            final StringBuilder stringBuilder = new StringBuilder();
-            String prefix = document.get();
-            prefix = prefix.substring(0, offset);
+            int sequenceNumber = 0;
+            int sequenceSize = Iterables.size(completion.items());
 
-            int placeholdersPrefix = countPlaceholders(prefix);
-            int placeholdersCompletion = countPlaceholders(completion);
-
-
-            sequence = placeholdersCompletion - placeholdersPrefix;
-
-            int textOffset = 0;
-            int curCursorOffset = -1;
-            int curCursorSequence = -1;
             for(ICompletionItem item : completion.items()) {
-                if(item instanceof ITextCompletionItem) {
-                    final ITextCompletionItem textItem = (ITextCompletionItem) item;
-                    final String itemText = textItem.text();
-                    stringBuilder.append(itemText);
-                    textOffset += itemText.length();
-                } else if(item instanceof IPlaceholderCompletionItem) {
+                if(item instanceof IPlaceholderCompletionItem) {
                     final IPlaceholderCompletionItem placeholderItem = (IPlaceholderCompletionItem) item;
-                    final String itemText;
-                    if(placeholderItem.optional()) {
-                        itemText = "";
-                    } else {
-                        itemText = "[[" + placeholderItem.placeholderText() + "]]";
+                    if(placeholderItem.startOffset() < offset) {
+                        sequenceNumber++;
                     }
-                    final int textLength = itemText.length();
-                    final String name = placeholderItem.name();
-                    stringBuilder.append(itemText);
-                    final ProposalPosition position =
-                        new ProposalPosition(document, textOffset, textLength, getNextSequence(placeholdersCompletion),
-                            getProposals(completionService, unitService, syntaxService, parseResult, viewer,
-                                textOffset, placeholderItem));
-                    placeholders.put(name, position);
-                    textOffset += itemText.length();
-                } else if(item instanceof ICursorCompletionItem) {
-                    curCursorOffset = textOffset;
-                    curCursorSequence = sequence++;
                 }
             }
 
-            if(curCursorOffset == -1) {
-                curCursorOffset = textOffset;
-                curCursorSequence = sequence++;
+            sequenceNumber = sequenceSize - sequenceNumber;
+
+
+            for(ICompletionItem item : completion.items()) {
+                if(item instanceof IPlaceholderCompletionItem) {
+                    final IPlaceholderCompletionItem placeholderItem = (IPlaceholderCompletionItem) item;
+                    final String name = placeholderItem.name();
+
+                    final int placeholderLenght =
+                        (placeholderItem.endOffset() != placeholderItem.startOffset()) ? placeholderItem.endOffset()
+                            - placeholderItem.startOffset() + 1 : 0;
+                    final int cursorPosition =
+                        (placeholderItem.endOffset() != placeholderItem.startOffset())
+                            ? placeholderItem.startOffset() + 1 : placeholderItem.startOffset();
+
+                    final ProposalPosition position =
+                        new ProposalPosition(document, placeholderItem.startOffset(), placeholderLenght,
+                            (sequenceNumber < sequenceSize) ? sequenceNumber++ : 0, getProposals(completionService,
+                                parseResult, viewer, cursorPosition, placeholderItem));
+                    placeholders.put(name, position);
+                }
             }
 
-            text = stringBuilder.toString();
-            cursorPosition = curCursorOffset;
-            cursorSequence = curCursorSequence;
+            cursorSequence = finalSequence;
+            cursorPosition = 0;
+
         }
 
-        private ICompletionProposal[] getProposals(ICompletionService<P> completionService,
-            IInputUnitService<I> unitService, ISyntaxService<I, P> syntaxService, P parseResult, ITextViewer viewer,
-            int offset, IPlaceholderCompletionItem placeholderItem) {
+        private ICompletionProposal[] getProposals(ICompletionService<ISpoofaxParseUnit> completionService,
+            ISpoofaxParseUnit parseResult, ITextViewer viewer, int offset, IPlaceholderCompletionItem placeholderItem) {
             // call the completion proposer to calculate the proposals
             final Iterable<ICompletion> completions;
             try {
-                completions = completionService.get(offset + 1, parseResult, true);
+                completions = completionService.get(offset, parseResult, true);
             } catch(MetaborgException e) {
                 return null;
             }
@@ -119,94 +113,39 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
             final ICompletionProposal[] proposals = new ICompletionProposal[numCompletions];
             int i = 0;
             for(ICompletion completion : completions) {
-                completion.setNested(true);
+                completion.setNested(true && !placeholderItem.optional());
                 proposals[i] =
-                    new SpoofaxCompletionProposal<>(viewer, offset, completion, parseResult.source(), parseResult
-                        .input().langImpl(), completionService, unitService, syntaxService);
+                    new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input()
+                        .langImpl());
                 ++i;
             }
             return proposals;
         }
 
-        public int getNextSequence(int max) {
-
-            if(sequence < max - 1) {
-                return sequence++;
-            }
-
-            int result = max - 1;
-            sequence = 0;
-
-            return result;
-
-        }
-
-        public int countPlaceholders(String input) {
-            int numberOfPlaceholders = 0;
-            for(int i = 0; i < input.length(); i++) {
-                if(input.charAt(i) == '[') {
-                    i++;
-                    if(input.charAt(i) == '[') {
-                        i++;
-
-                        while(i < input.length() && input.charAt(i) == '[')
-                            // nested brackets
-                            i++;
-
-                        while(i < input.length() && input.charAt(i) != ']') {
-                            String charAti = String.valueOf(input.charAt(i));
-
-                            if(!charAti.matches("[a-zA-Z_]")) { // not placeholder: abort
-                                break;
-                            }
-
-                            i++;
-                        }
-
-                        if(i >= input.length() || input.charAt(i) != ']')
-                            continue;
-                        i++;
-
-                        numberOfPlaceholders++;
-                        continue;
-                    }
-                }
-            }
-            return numberOfPlaceholders;
-        }
-
-        public int countPlaceholders(ICompletion completion) {
-            int numberOfPlaceholders = 0;
-            for(ICompletionItem i : completion.items()) {
-                if(i instanceof PlaceholderCompletionItem)
-                    numberOfPlaceholders++;
-            }
-            return numberOfPlaceholders;
-
-        }
     }
 
     private static final ILogger logger = LoggerUtils.logger(SpoofaxCompletionProposal.class);
     private final ITextViewer textViewer;
     private int offset;
     private ICompletion completion;
-    private final ICompletionService<P> completionService;
-    private final IInputUnitService<I> unitService;
-    private final ISyntaxService<I, P> syntaxService;
+    private final ICompletionService<ISpoofaxParseUnit> completionService;
+    private final IInputUnitService<ISpoofaxInputUnit> unitService;
+    private final ISyntaxService<ISpoofaxInputUnit, ISpoofaxParseUnit> syntaxService;
+    private final ITracingService<ISpoofaxParseUnit, ISpoofaxAnalyzeUnit, ISpoofaxTransformUnit<?>, IStrategoTerm> tracingService;
     private final FileObject source;
     private final ILanguageImpl language;
 
-    private CompletionData<I, P> data;
+    private CompletionData data;
 
     public SpoofaxCompletionProposal(ITextViewer textViewer, int offset, ICompletion completion, FileObject source,
-        ILanguageImpl language, ICompletionService<P> completionService, IInputUnitService<I> unitService,
-        ISyntaxService<I, P> syntaxService) {
+        ILanguageImpl language) {
         this.textViewer = textViewer;
         this.offset = offset;
         this.completion = completion;
-        this.completionService = completionService;
-        this.unitService = unitService;
-        this.syntaxService = syntaxService;
+        this.completionService = SpoofaxPlugin.spoofax().completionService;
+        this.unitService = SpoofaxPlugin.spoofax().unitService;
+        this.syntaxService = SpoofaxPlugin.spoofax().syntaxService;
+        this.tracingService = SpoofaxPlugin.spoofax().tracingService;
         this.source = source;
         this.language = language;
     }
@@ -215,6 +154,7 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
 
         int startOffset;
         int endOffset;
+        int endingCursorOffset;
 
         // if completion is nested, replace the selected text
         if(completion.isNested()) {
@@ -231,22 +171,26 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
         finalText += completion.text();
         finalText += document.get().substring(endOffset);
 
-        final Collection<ICompletionItem> completionItems = createItemsFromString(finalText);
-        completion.setItems(completionItems);
+
+        endingCursorOffset = finalText.length();
 
         // re-parse to get the new AST to calculate nested completions
-        P completedParseResult = null;
+        ISpoofaxParseUnit completedParseResult = null;
 
         try {
-            final I input = unitService.inputUnit(source, finalText, language, null);
+            final ISpoofaxInputUnit input =
+                (ISpoofaxInputUnit) unitService.inputUnit(source, finalText, language, null);
             completedParseResult = syntaxService.parse(input);
         } catch(ParseException e1) {
             e1.printStackTrace();
         }
 
+        final Collection<ICompletionItem> completionItems = createItemsFromAST(completedParseResult);
+        completion.setItems(completionItems);
+
         this.data =
-            new CompletionData<>(document, textViewer, offset, completion, completionService, unitService,
-                syntaxService, completedParseResult);
+            new CompletionData(document, finalText, textViewer, startOffset, completion, completionService,
+                completedParseResult);
 
         try {
             document.replace(0, document.getLength(), finalText);
@@ -262,7 +206,7 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
                 }
                 model.forceInstall();
                 final LinkedModeUI ui = new LinkedModeUI(model, textViewer);
-                ui.setExitPosition(textViewer, data.cursorPosition, 0, data.cursorSequence);
+                ui.setExitPosition(textViewer, endingCursorOffset, 0, data.cursorSequence);
                 ui.enter();
             }
         } catch(BadLocationException e) {
@@ -270,6 +214,45 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
                 String.format("Cannot apply completion at offset %s, length %s", offset, data.text.length());
             logger.error(message, e);
         }
+    }
+
+    private Collection<ICompletionItem> createItemsFromAST(ISpoofaxParseUnit completedParseResult) {
+
+
+        final Collection<ICompletionItem> result = new LinkedList<ICompletionItem>();
+
+        final IStrategoTermVisitor visitor = new AStrategoTermVisitor() {
+
+            @Override public boolean visit(IStrategoTerm term) {
+                int startOffset = tracingService.location(term).region().startOffset();
+                int endOffset = tracingService.location(term).region().endOffset();
+
+                // if it is a placeholder (check constructor)
+                if(term instanceof IStrategoAppl) {
+                    String constructor = ((IStrategoAppl) term).getConstructor().getName();
+
+                    if(constructor.contains("-Plhdr")) {
+                        String placeholderName = constructor.substring(0, constructor.length() - 6);
+                        result.add(new PlaceholderCompletionItem(placeholderName, startOffset, endOffset, false));
+                    }
+                    // else if(startOffset > endOffset){ // optional
+                    // result.add(new PlaceholderCompletionItem("", startOffset, startOffset, true));
+                    // }
+
+
+                }
+                // else if(startOffset > endOffset){ // empty list
+                // result.add(new PlaceholderCompletionItem("", startOffset, startOffset, true));
+                // }
+
+
+
+                return true;
+            }
+        };
+        StrategoTermVisitee.topdown(visitor, completedParseResult.ast());
+
+        return result;
     }
 
     @Override public Point getSelection(IDocument document) {
@@ -283,7 +266,8 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
     }
 
     @Override public String getAdditionalProposalInfo() {
-        return null;
+        System.out.println(completion.text());
+        return "<code>" + completion.text() + "</code>";
     }
 
     @Override public String getDisplayString() {
@@ -298,73 +282,5 @@ public class SpoofaxCompletionProposal<I extends IInputUnit, P extends IParseUni
         return null;
     }
 
-    public Collection<ICompletionItem> createItemsFromString(String input) {
 
-        StringBuffer sb = new StringBuffer();
-        Collection<ICompletionItem> result = new LinkedList<ICompletionItem>();
-
-        for(int i = 0; i < input.length(); i++) {
-
-            if(input.charAt(i) == '[') {
-                i++;
-                if(input.charAt(i) == '[') { // might have found placeholder
-                    i++;
-
-                    while(i < input.length() && input.charAt(i) == '[') { // nested brackets
-                        sb.append(input.charAt(i));
-                        i++;
-                    }
-
-                    StringBuffer placeholderName = new StringBuffer();
-                    while(i < input.length() && input.charAt(i) != ']') {
-                        String charAti = String.valueOf(input.charAt(i));
-
-                        if(!charAti.matches("[a-zA-Z_?]")) { // not placeholder: abort
-                            break;
-                        }
-
-                        placeholderName.append(charAti);
-                        i++;
-                    }
-
-                    if(i >= input.length() || input.charAt(i) != ']') { // add two [[ and placeholder name to buffer
-                        sb.append("[[" + placeholderName);
-                        placeholderName.setLength(0);
-                        continue;
-                    }
-
-                    i++;
-
-                    final TextCompletionItem item = new TextCompletionItem(sb.toString());
-                    result.add(item);
-
-                    boolean optional = false;
-
-                    if(placeholderName.toString().endsWith("?")) {
-                        optional = true;
-                    }
-
-
-                    final PlaceholderCompletionItem placeholder =
-                        new PlaceholderCompletionItem(placeholderName.toString(), placeholderName.toString(), optional);
-
-                    result.add(placeholder);
-
-                    sb.setLength(0);
-                    continue;
-                }
-                sb.append(input.charAt(i - 1));
-                sb.append(input.charAt(i));
-            } else {
-                sb.append(input.charAt(i));
-            }
-        }
-
-        if(sb.length() != 0) {
-            final TextCompletionItem item = new TextCompletionItem(sb.toString());
-            result.add(item);
-        }
-
-        return result;
-    }
 }

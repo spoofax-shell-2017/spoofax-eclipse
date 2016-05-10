@@ -25,8 +25,7 @@ public class SpoofaxEditor extends
         this.analysisService = spoofax.analysisService;
         this.categorizerService = spoofax.categorizerService;
         this.stylerService = spoofax.stylerService;
-        this.outlineService = spoofax.outlineService;
-        this.completionService = spoofax.completionService;
+        this.outlineService = spoofax.outlineService;        
         this.resolverService = spoofax.resolverService;
         this.hoverService = spoofax.hoverService;
         this.parseResultProcessor = spoofax.parseResultProcessor;

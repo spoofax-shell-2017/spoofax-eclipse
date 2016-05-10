@@ -17,8 +17,9 @@ import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.parse.IParseResultRequester;
 import org.metaborg.core.syntax.IInputUnit;
 import org.metaborg.core.syntax.IParseUnit;
-import org.metaborg.core.syntax.ISyntaxService;
 import org.metaborg.core.unit.IInputUnitService;
+import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
+import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 
 import rx.Observable;
 import rx.Observable.OnSubscribe;
@@ -28,13 +29,11 @@ import rx.schedulers.Schedulers;
 
 import com.google.common.collect.Iterables;
 
-public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IParseUnit> implements IContentAssistProcessor {
+public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IParseUnit>
+    implements IContentAssistProcessor {
     private final IInputUnitService<I> unitService;
-    private final ICompletionService<P> completionService;
-    private final ISyntaxService<I, P> syntaxService;
-
+    private final ICompletionService<ISpoofaxParseUnit> completionService;
     private final IParseResultRequester<I, P> parseResultRequester;
-
     private final FileObject resource;
     private final IDocument document;
     private final ILanguageImpl language;
@@ -43,11 +42,12 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
     private volatile ICompletionProposal[] cachedProposals;
 
 
-    public SpoofaxContentAssistProcessor(IInputUnitService<I> unitService, ICompletionService<P> completionService, ISyntaxService<I, P> syntaxService,
-        IParseResultRequester<I, P> parseResultRequester, FileObject resource, IDocument document, ILanguageImpl language) {
+    public SpoofaxContentAssistProcessor(IInputUnitService<I> unitService, 
+        IParseResultRequester<I, P> parseResultRequester, FileObject resource, IDocument document,
+        ILanguageImpl language) {
         this.unitService = unitService;
-        this.completionService = completionService;
-        this.syntaxService = syntaxService;
+        this.completionService = SpoofaxPlugin.spoofax().completionService;
+       
         this.parseResultRequester = parseResultRequester;
 
         this.resource = resource;
@@ -66,20 +66,24 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         if(parseResultSubscription != null) {
             parseResultSubscription.unsubscribe();
         }
+
+        final I input = unitService.inputUnit(resource, document.get(), language, null);
+
+
         parseResultSubscription = Observable.create(new OnSubscribe<Void>() {
             @Override public void call(final Subscriber<? super Void> subscriber) {
                 if(subscriber.isUnsubscribed()) {
                     return;
                 }
                 // TODO: support dialects
-                final I input = unitService.inputUnit(resource, document.get(), language, null);
-                final P parseResult =
-                    parseResultRequester.request(input).toBlocking().first();
+
+                final ISpoofaxParseUnit parseResult = (ISpoofaxParseUnit) parseResultRequester.request(input).toBlocking().first();
 
                 if(subscriber.isUnsubscribed()) {
                     return;
                 }
                 cachedProposals = proposals(parseResult, viewer, offset);
+
 
                 if(cachedProposals == null) {
                     return;
@@ -100,7 +104,7 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         return null;
     }
 
-    private ICompletionProposal[] proposals(P parseResult, ITextViewer viewer, int offset) {
+    private ICompletionProposal[] proposals(ISpoofaxParseUnit parseResult, ITextViewer viewer, int offset) {
         final Iterable<ICompletion> completions;
         try {
             completions = completionService.get(offset, parseResult, false);
@@ -113,8 +117,10 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         int i = 0;
         for(ICompletion completion : completions) {
             proposals[i] =
-                new SpoofaxCompletionProposal<>(viewer, offset, completion, parseResult.source(), parseResult.input().langImpl(),
-                    completionService, unitService, syntaxService);
+                new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input().langImpl());
+            
+            //(viewer, offset, completion, parseResult.source(), parseResult.input()
+            //        .langImpl(), unitService, tracingService);
             ++i;
         }
         return proposals;
