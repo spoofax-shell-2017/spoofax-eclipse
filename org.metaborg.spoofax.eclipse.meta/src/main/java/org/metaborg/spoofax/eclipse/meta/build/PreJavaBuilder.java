@@ -46,7 +46,7 @@ public class PreJavaBuilder extends Builder {
             @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
                 try {
                     logger.info("Building language project {}", languageSpec);
-                    builder.compilePreJava(input);
+                    builder.compile(input);
                 } catch(MetaborgException e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
