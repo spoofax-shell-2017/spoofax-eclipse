@@ -6,6 +6,7 @@ import java.util.Collection;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -454,10 +455,11 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
                 analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
-            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock() });
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),
+                ResourcesPlugin.getWorkspace().getRoot() });
         } else {
-            rule = new MultiRule(
-                new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(), eclipseResource });
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),
+                eclipseResource.getProject() });
         }
         job.setRule(rule);
         job.schedule(instantaneous ? 0 : 100);
