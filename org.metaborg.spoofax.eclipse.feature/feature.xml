@@ -55,6 +55,11 @@
     unpack="false"
   />
   <plugin
+    id="org.spoofax.terms.typesmart"
+    version="2.0.0.qualifier"
+    unpack="false"
+  />
+  <plugin
     id="org.metaborg.scopegraph"
     version="2.0.0.qualifier"
     unpack="false"
