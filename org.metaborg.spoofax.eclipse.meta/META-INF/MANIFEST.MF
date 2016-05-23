@@ -27,9 +27,11 @@ Require-Bundle: org.eclipse.ui,
  org.strategoxt.strj,
  org.spoofax.interpreter.core,
  org.metaborg.core,
+ org.metaborg.mbt.core,
+ org.metaborg.spt.core,
  org.eclipse.ui.ide
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org
-Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.spoofax.eclipse.meta.externaldeps, org.metaborg.spoofax.meta.core
+Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.spoofax.eclipse.meta.externaldeps, org.metaborg.spoofax.meta.core, org.metaborg.mbt.core, org.metaborg.spt.core
 Export-Package: org.metaborg.spoofax.eclipse.meta.nature

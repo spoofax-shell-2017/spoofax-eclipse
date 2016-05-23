@@ -87,7 +87,7 @@
     unpack="true"
   />
   <plugin
-    id="org.metaborg.meta.lang.spt.eclipse"
+    id="org.metaborg.meta.lang.spt.interactive.eclipse"
     version="2.0.0.qualifier"
     unpack="true"
   />
@@ -98,6 +98,23 @@
   />
   <plugin
     id="org.metaborg.meta.lib.analysis2.eclipse"
+    version="2.0.0.qualifier"
+    unpack="true"
+  />
+  
+  <!-- SPT -->
+  <plugin
+    id="org.metaborg.mbt.core"
+    version="2.0.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.spt.core"
+    version="2.0.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.meta.lang.spt.eclipse"
     version="2.0.0.qualifier"
     unpack="true"
   />
