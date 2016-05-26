@@ -73,7 +73,7 @@
       isConfigurable="true"
       supportsConfigurations="false"
     >
-      <run class="org.metaborg.spoofax.eclipse.meta.build.PreJavaBuilder"/>
+      <run class="org.metaborg.spoofax.eclipse.meta.build.CompileBuilder"/>
     </builder>
   </extension>
   <extension
@@ -87,7 +87,7 @@
       isConfigurable="true"
       supportsConfigurations="false"
     >
-      <run class="org.metaborg.spoofax.eclipse.meta.build.PostJavaBuilder"/>
+      <run class="org.metaborg.spoofax.eclipse.meta.build.PackageBuilder"/>
     </builder>
   </extension>
   <extension point="org.eclipse.ui.commands">
