@@ -21,15 +21,15 @@ import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Injector;
 
-public class PreJavaBuilder extends Builder {
+public class CompileBuilder extends Builder {
     public static final String id = SpoofaxMetaPlugin.id + ".builder.prejava";
 
-    private static final ILogger logger = LoggerUtils.logger(PreJavaBuilder.class);
+    private static final ILogger logger = LoggerUtils.logger(CompileBuilder.class);
 
     private final LanguageSpecBuilder builder;
 
 
-    public PreJavaBuilder() {
+    public CompileBuilder() {
         super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
             SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
             SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecService.class));

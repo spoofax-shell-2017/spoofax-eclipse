@@ -21,8 +21,8 @@ import org.metaborg.util.log.LoggerUtils;
 
 import com.google.inject.Injector;
 
-public class PostJavaBuilder extends Builder {
-    private static final class BuildRunnable implements IWorkspaceRunnable {
+public class PackageBuilder extends Builder {
+    private static final class PackageRunnable implements IWorkspaceRunnable {
         private final LanguageSpecBuildInput input;
         private final LanguageSpecBuilder builder;
         private final IProgressMonitor monitor;
@@ -30,8 +30,7 @@ public class PostJavaBuilder extends Builder {
         private boolean success = false;
 
 
-        private BuildRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder,
-            IProgressMonitor monitor) {
+        private PackageRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder, IProgressMonitor monitor) {
             this.input = input;
             this.builder = builder;
             this.monitor = monitor;
@@ -58,22 +57,55 @@ public class PostJavaBuilder extends Builder {
                 }
             }
         }
+    }
 
-        public boolean succeeded() {
-            return success;
+    private static final class ArchiveRunnable implements IWorkspaceRunnable {
+        private final LanguageSpecBuildInput input;
+        private final LanguageSpecBuilder builder;
+        private final IProgressMonitor monitor;
+
+        private boolean success = false;
+
+
+        private ArchiveRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder, IProgressMonitor monitor) {
+            this.input = input;
+            this.builder = builder;
+            this.monitor = monitor;
+        }
+
+
+        @Override public void run(IProgressMonitor workspaceMonitor) throws CoreException {
+            try {
+                logger.info("Archiving language project {}", input.languageSpec());
+                builder.archive(input);
+                success = true;
+            } catch(Exception e) {
+                workspaceMonitor.setCanceled(true);
+                monitor.setCanceled(true);
+                if(e.getCause() != null) {
+                    logger.error("Exception thrown during build", e);
+                    logger.error("BUILD FAILED");
+                } else {
+                    final String message = e.getMessage();
+                    if(message != null && !message.isEmpty()) {
+                        logger.error(message);
+                    }
+                    logger.error("BUILD FAILED");
+                }
+            }
         }
     }
 
 
     public static final String id = SpoofaxMetaPlugin.id + ".builder.postjava";
 
-    private static final ILogger logger = LoggerUtils.logger(PostJavaBuilder.class);
+    private static final ILogger logger = LoggerUtils.logger(PackageBuilder.class);
 
     private final LanguageLoader discoverer;
     private final LanguageSpecBuilder builder;
 
 
-    public PostJavaBuilder() {
+    public PackageBuilder() {
         super(SpoofaxMetaPlugin.injector().getInstance(IEclipseResourceService.class),
             SpoofaxMetaPlugin.injector().getInstance(IProjectService.class),
             SpoofaxMetaPlugin.injector().getInstance(ISpoofaxLanguageSpecService.class));
@@ -87,17 +119,29 @@ public class PostJavaBuilder extends Builder {
         throws CoreException, IOException {
         final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
-        final BuildRunnable runnable = new BuildRunnable(input, builder, monitor);
-        ResourcesPlugin.getWorkspace().run(runnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
+        final PackageRunnable packageRunnable = new PackageRunnable(input, builder, monitor);
+        ResourcesPlugin.getWorkspace().run(packageRunnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
 
-        if(runnable.succeeded()) {
-            logger.info("Refreshing language project {}", languageSpec);
-            getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-            logger.info("Reloading language project {}", languageSpec);
-            discoverer.loadJob(languageSpec.location(), false).schedule();
-        } else {
+        if(!packageRunnable.success) {
             monitor.setCanceled(true);
+            return;
         }
+
+        // Refresh in between to sync Eclipse file system with the local file system.
+        getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        final ArchiveRunnable archiveRunnable = new ArchiveRunnable(input, builder, monitor);
+        ResourcesPlugin.getWorkspace().run(archiveRunnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
+
+        if(!archiveRunnable.success) {
+            monitor.setCanceled(true);
+            return;
+        }
+
+        // Refresh again to sync file systems.
+        getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+
+        logger.info("Reloading language project {}", languageSpec);
+        discoverer.loadJob(languageSpec.location(), false).schedule();
     }
 
     @Override protected void clean(ISpoofaxLanguageSpec languageSpec, IProgressMonitor monitor) {
