@@ -19,23 +19,22 @@ import com.google.common.collect.Sets;
 
 public class ResourceComparer {
     private final IResourceService resourceService;
-    private final @Nullable FileName root;
 
 
-    public ResourceComparer(IResourceService resourceService, @Nullable FileName root) {
+    public ResourceComparer(IResourceService resourceService) {
         this.resourceService = resourceService;
-        this.root = root;
     }
 
 
     public Collection<ResourceDiff> compare(FileObject left, FileObject right) throws IOException {
         final Collection<ResourceDiff> diffs = Lists.newArrayList();
-        compare(left, right, diffs);
+        compare(left, left, right, right, diffs);
         return diffs;
     }
 
 
-    private void compare(FileObject left, FileObject right, Collection<ResourceDiff> diffs) throws IOException {
+    private void compare(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
+        Collection<ResourceDiff> diffs) throws IOException {
         if(!left.exists()) {
             throw new IOException("Left resource " + left + " does not exist");
         }
@@ -46,7 +45,7 @@ public class ResourceComparer {
         final FileType leftType = left.getType();
         final FileType rightType = right.getType();
         if(!leftType.equals(rightType)) {
-            diffs.add(diff(left, right, "different types", leftType, rightType));
+            diffs.add(diff(leftRoot, left, rightRoot, right, "different types", leftType, rightType));
             return;
         }
 
@@ -55,21 +54,21 @@ public class ResourceComparer {
                 final boolean leftIsArchive = isArchive(left);
                 final boolean rightIsArchive = isArchive(right);
                 if(leftIsArchive ^ rightIsArchive) {
-                    diffs.add(diff(left, right, "different types", leftIsArchive ? "archive" : "non-archive",
-                        rightIsArchive ? "archive" : "non-archive"));
+                    diffs.add(diff(leftRoot, left, rightRoot, right, "different types",
+                        leftIsArchive ? "archive" : "non-archive", rightIsArchive ? "archive" : "non-archive"));
                     return;
                 }
 
                 if(leftIsArchive) {
                     final FileObject leftArchive = toArchiveResource(left);
                     final FileObject rightArchive = toArchiveResource(right);
-                    compareDirectories(leftArchive, rightArchive, diffs);
+                    compareDirectories(leftRoot, leftArchive, rightRoot, rightArchive, diffs);
                 } else {
-                    compareFiles(left, right, diffs);
+                    compareFiles(leftRoot, left, rightRoot, right, diffs);
                 }
                 break;
             case FOLDER:
-                compareDirectories(left, right, diffs);
+                compareDirectories(leftRoot, left, rightRoot, right, diffs);
                 break;
             default:
                 throw new IOException("Unhandled resource type: " + leftType.toString());
@@ -112,26 +111,26 @@ public class ResourceComparer {
     }
 
 
-    private void compareDirectories(FileObject left, FileObject right, Collection<ResourceDiff> diffs)
-        throws IOException {
+    private void compareDirectories(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
+        Collection<ResourceDiff> diffs) throws IOException {
         final Set<String> leftChildren = children(left);
         final Set<String> rightChildren = children(right);
 
         final Set<String> onlyInLeft = Sets.difference(leftChildren, rightChildren);
         for(String name : onlyInLeft) {
-            diffs.add(diff(left, right, "only in left: " + name));
+            diffs.add(diff(leftRoot, left, rightRoot, right, "only in left: " + name));
         }
 
         final Set<String> onlyInRight = Sets.difference(rightChildren, leftChildren);
         for(String name : onlyInRight) {
-            diffs.add(diff(left, right, "only in right: " + name));
+            diffs.add(diff(leftRoot, left, rightRoot, right, "only in right: " + name));
         }
 
         final Set<String> both = Sets.intersection(leftChildren, rightChildren);
         for(String name : both) {
             final FileObject nextLeft = left.resolveFile(name);
             final FileObject nextRight = right.resolveFile(name);
-            compare(nextLeft, nextRight, diffs);
+            compare(leftRoot, nextLeft, rightRoot, nextRight, diffs);
         }
     }
 
@@ -146,40 +145,46 @@ public class ResourceComparer {
     }
 
 
-    private void compareFiles(FileObject left, FileObject right, Collection<ResourceDiff> diffs) throws IOException {
+    private void compareFiles(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
+        Collection<ResourceDiff> diffs) throws IOException {
         final FileContent leftContent = left.getContent();
         final FileContent rightContent = right.getContent();
 
         final long leftSize = leftContent.getSize();
         final long rightSize = rightContent.getSize();
         if(leftSize != rightSize) {
-            diffs.add(diff(left, right, "different sizes", leftSize, rightSize));
+            diffs.add(diff(leftRoot, left, rightRoot, right, "different sizes", leftSize, rightSize));
             return;
         }
 
         final InputStream leftStream = leftContent.getInputStream();
         final InputStream rightStream = rightContent.getInputStream();
         if(!IOUtils.contentEquals(leftStream, rightStream)) {
-            diffs.add(diff(left, right, "different content"));
+            diffs.add(diff(leftRoot, left, rightRoot, right, "different content"));
         }
     }
 
 
-    private ResourceDiff diff(FileObject left, FileObject right, String message) throws FileSystemException {
-        return diff(left.getName(), right.getName(), message);
+    private ResourceDiff diff(@Nullable FileObject leftRoot, FileObject left, @Nullable FileObject rightRoot,
+        FileObject right, String message) throws FileSystemException {
+        return diff(leftRoot, left, rightRoot, right, message, null, null);
     }
 
-    private ResourceDiff diff(FileName left, FileName right, String message) throws FileSystemException {
-        return new ResourceDiff(root, left, right, message);
-    }
-
-    private ResourceDiff diff(FileObject left, FileObject right, String message, Object leftObj, Object rightObj)
+    private ResourceDiff diff(@Nullable FileObject leftRoot, FileObject left, @Nullable FileObject rightRoot,
+        FileObject right, String message, @Nullable Object leftObj, @Nullable Object rightObj)
         throws FileSystemException {
-        return diff(left.getName(), right.getName(), message, leftObj, rightObj);
-    }
-
-    private ResourceDiff diff(FileName left, FileName right, String message, Object leftObj, Object rightObj)
-        throws FileSystemException {
-        return new ResourceDiff(root, left, right, message, leftObj, rightObj);
+        final String leftStr;
+        if(leftRoot != null) {
+            leftStr = leftRoot.getName().getRelativeName(left.getName());
+        } else {
+            leftStr = left.getName().toString();
+        }
+        final String rightStr;
+        if(rightRoot != null) {
+            rightStr = rightRoot.getName().getRelativeName(right.getName());
+        } else {
+            rightStr = right.getName().toString();
+        }
+        return new ResourceDiff(leftStr, rightStr, message, leftObj, rightObj);
     }
 }

@@ -21,7 +21,6 @@ import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.language.ILanguageComponent;
 import org.metaborg.core.language.ILanguageDiscoveryRequest;
 import org.metaborg.core.language.ILanguageDiscoveryService;
-import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
 import org.metaborg.core.project.IProject;
@@ -50,7 +49,6 @@ public class BootstrapJob extends Job {
 
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
-    private final ILanguageService languageService;
     private final ILanguageDiscoveryService languageDiscoveryService;
 
     private final Provider<ISpoofaxLanguageSpecConfigBuilder> languageSpecConfigBuilderProvider;
@@ -62,14 +60,13 @@ public class BootstrapJob extends Job {
 
 
     @Inject public BootstrapJob(IEclipseResourceService resourceService, IProjectService projectService,
-        ILanguageService languageService, ILanguageDiscoveryService languageDiscoveryService,
+        ILanguageDiscoveryService languageDiscoveryService,
         Provider<ISpoofaxLanguageSpecConfigBuilder> languageSpecConfigBuilderProvider,
         ISpoofaxLanguageSpecConfigWriter languageSpecConfigWriter, ISpoofaxLanguageSpecService languageSpecService,
         @Assisted IWorkspaceRoot workspaceRoot, @Assisted org.eclipse.core.resources.IProject targetEclipseProject) {
         super("Bootstrapping " + targetEclipseProject);
         this.resourceService = resourceService;
         this.projectService = projectService;
-        this.languageService = languageService;
         this.languageDiscoveryService = languageDiscoveryService;
 
         this.languageSpecConfigBuilderProvider = languageSpecConfigBuilderProvider;
@@ -171,6 +168,9 @@ public class BootstrapJob extends Job {
                 dependencies.put(project, depProject);
             }
         }
+        // TODO: calculate transitive dependencies.
+        final BiSetMultimap<BootstrapProject, BootstrapProject> transDependencies = dependencies;
+        final Set<BootstrapProject> targetDependents = transDependencies.getInverse(targetProject);
         monitor.worked(1);
 
 
@@ -188,7 +188,7 @@ public class BootstrapJob extends Job {
         }
         monitor.worked(1);
 
-        
+
         // Clean, build, reload
         if(monitor.isCanceled()) {
             return StatusUtils.cancel();
@@ -228,18 +228,16 @@ public class BootstrapJob extends Job {
         logger.info("Starting bootstrapping fixpoint");
         try {
             final SubMonitor fixpointMonitor = monitor.newChild(1);
-            fixpointMonitor.setWorkRemaining(1000);
-            final Set<BootstrapProject> dependents = dependencies.getInverse(targetProject);
-            boolean fixpoint = false;
+            fixpointMonitor.setWorkRemaining(200);
             int iteration = 1;
-            while(!fixpoint) {
+            while(iteration <= 100) {
                 logger.info("Fixpoint iteration {}", iteration);
                 if(fixpointMonitor.isCanceled()) {
                     return StatusUtils.cancel();
                 }
 
-                boolean localFixpoint = true;
-                for(BootstrapProject project : dependents) {
+                boolean fixpoint = true;
+                for(BootstrapProject project : targetDependents) {
                     final SubMonitor projectMonitor = fixpointMonitor.newChild(2);
                     if(projectMonitor.isCanceled()) {
                         return StatusUtils.cancel();
@@ -251,28 +249,28 @@ public class BootstrapJob extends Job {
                     if(prevBinary == null) {
                         // Always redo fixpoint if there is no binary for a project yet.
                         logger.warn("No previous binary to compare with, another fixpoint iteration required");
-                        localFixpoint = false;
+                        fixpoint = false;
                     } else {
-                        localFixpoint = localFixpoint && compare(prevBinary, binary);
+                        fixpoint = fixpoint && compare(prevBinary, binary);
                     }
-                    
+
                     // Story binary and reload after comparison, to avoid overwriting existing stored binary.
                     final FileObject storedBinary = storeBinary(project, binary);
                     reloadLanguage(storedBinary);
                     project.updateBinary(storedBinary);
-                    
+
                     projectMonitor.worked(1);
                     projectMonitor.done();
                 }
-                if(localFixpoint) {
+                if(fixpoint) {
                     logger.info("Fixpoint was reached");
+                    break;
                 }
-                fixpoint = localFixpoint;
                 ++iteration;
             }
             fixpointMonitor.done();
         } catch(CoreException | IOException | MetaborgException e) {
-            return error("Cleaning, building, reloading {} failed ", e, targetProject);
+            return error("Cleaning, building, reloading a project failed ", e);
         }
 
 
@@ -385,12 +383,13 @@ public class BootstrapJob extends Job {
 
     private boolean compare(FileObject leftBinary, FileObject rightBinary) throws IOException {
         logger.info("Comparing {} to {}", leftBinary, rightBinary);
-        final ResourceComparer comparer = new ResourceComparer(resourceService, null);
+        final ResourceComparer comparer = new ResourceComparer(resourceService);
         final Collection<ResourceDiff> diffs = comparer.compare(leftBinary, rightBinary);
         if(diffs.isEmpty()) {
             logger.info("Binaries {} and {} are identical", leftBinary, rightBinary);
             return true;
         }
+        logger.warn("Binaries {} and {} are different", leftBinary, rightBinary);
         for(ResourceDiff diff : diffs) {
             logger.warn(diff.toString());
         }
