@@ -3,6 +3,7 @@ package org.metaborg.spoofax.eclipse.meta.bootstrap;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.vfs2.AllFileSelector;
 import org.apache.commons.vfs2.FileObject;
@@ -187,15 +188,7 @@ public class BootstrapJob extends Job {
         }
         monitor.worked(1);
 
-
-        // Get previous binary
-        // final ILanguageComponent previousComponent = languageService.getComponent(targetProject.identifier());
-        // if(previousComponent == null) {
-        // return error("Unable to get previous language component for target project {}", targetProject);
-        // }
-        // final FileObject
-
-
+        
         // Clean, build, reload
         if(monitor.isCanceled()) {
             return StatusUtils.cancel();
@@ -205,11 +198,11 @@ public class BootstrapJob extends Job {
             final SubMonitor subMonitor = monitor.newChild(1);
             final FileObject binary = build(targetProject, subMonitor);
             final FileObject storedBinary = storeBinary(targetProject, binary);
-            compare(binary, storedBinary);
             reloadLanguage(storedBinary);
+            targetProject.updateBinary(storedBinary);
             subMonitor.done();
         } catch(CoreException | IOException | MetaborgException e) {
-            return error("Cleaning and building project {} failed ", e, targetProject);
+            return error("Cleaning, building, reloading {} failed ", e, targetProject);
         }
 
 
@@ -227,13 +220,61 @@ public class BootstrapJob extends Job {
         monitor.worked(1);
 
 
-        // Build everything against new version.
-        
-        
-        
         // Fixpoint
-        
-        
+        if(monitor.isCanceled()) {
+            return StatusUtils.cancel();
+        }
+        monitor.setTaskName("Bootstrapping fixpoint");
+        logger.info("Starting bootstrapping fixpoint");
+        try {
+            final SubMonitor fixpointMonitor = monitor.newChild(1);
+            fixpointMonitor.setWorkRemaining(1000);
+            final Set<BootstrapProject> dependents = dependencies.getInverse(targetProject);
+            boolean fixpoint = false;
+            int iteration = 1;
+            while(!fixpoint) {
+                logger.info("Fixpoint iteration {}", iteration);
+                if(fixpointMonitor.isCanceled()) {
+                    return StatusUtils.cancel();
+                }
+
+                boolean localFixpoint = true;
+                for(BootstrapProject project : dependents) {
+                    final SubMonitor projectMonitor = fixpointMonitor.newChild(2);
+                    if(projectMonitor.isCanceled()) {
+                        return StatusUtils.cancel();
+                    }
+
+                    final FileObject prevBinary = project.binary();
+                    final FileObject binary = build(project, projectMonitor.newChild(1));
+
+                    if(prevBinary == null) {
+                        // Always redo fixpoint if there is no binary for a project yet.
+                        logger.warn("No previous binary to compare with, another fixpoint iteration required");
+                        localFixpoint = false;
+                    } else {
+                        localFixpoint = localFixpoint && compare(prevBinary, binary);
+                    }
+                    
+                    // Story binary and reload after comparison, to avoid overwriting existing stored binary.
+                    final FileObject storedBinary = storeBinary(project, binary);
+                    reloadLanguage(storedBinary);
+                    project.updateBinary(storedBinary);
+                    
+                    projectMonitor.worked(1);
+                    projectMonitor.done();
+                }
+                if(localFixpoint) {
+                    logger.info("Fixpoint was reached");
+                }
+                fixpoint = localFixpoint;
+                ++iteration;
+            }
+            fixpointMonitor.done();
+        } catch(CoreException | IOException | MetaborgException e) {
+            return error("Cleaning, building, reloading {} failed ", e, targetProject);
+        }
+
 
         monitor.done();
         return StatusUtils.success();
