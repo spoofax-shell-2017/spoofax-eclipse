@@ -82,6 +82,10 @@
       <artifactId>guice-multibindings</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-assistedinject</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
     </dependency>
@@ -185,6 +189,7 @@
               fastutil,
               guava,
               guice,
+              guice-assistedinject,
               guice-multibindings,
               jackson-annotations,
               jackson-databind,
@@ -242,7 +247,7 @@
             <_nouses>true</_nouses>
             <!-- Don't use version of this package if no version can be determined. -->
             <_nodefaultversion>true</_nodefaultversion>
-            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which
+            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
               some libraries require. -->
             <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
           </instructions>
