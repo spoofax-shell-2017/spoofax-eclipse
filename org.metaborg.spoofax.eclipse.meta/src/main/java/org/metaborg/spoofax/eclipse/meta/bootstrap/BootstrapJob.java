@@ -407,10 +407,10 @@ public class BootstrapJob extends Job {
         final ResourceComparer comparer = new ResourceComparer(resourceService);
         final Collection<ResourceDiff> diffs = comparer.compare(leftBinary, rightBinary);
         if(diffs.isEmpty()) {
-            logger.info("Binaries {} and {} are identical", leftBinary, rightBinary);
+            logger.info("Binaries are identical", leftBinary, rightBinary);
             return true;
         }
-        logger.warn("Binaries {} and {} are different", leftBinary, rightBinary);
+        logger.warn("Binaries are different", leftBinary, rightBinary);
         for(ResourceDiff diff : diffs) {
             logger.warn(diff.toString());
         }
@@ -419,7 +419,7 @@ public class BootstrapJob extends Job {
 
     private Iterable<ILanguageComponent> reloadLanguage(FileObject binary) throws MetaborgException {
         final FileObject zipBinary = resourceService.resolve("zip:" + binary.getName().getURI() + "!/");
-        logger.info("Reloading language implementation at {}", binary);
+        logger.info("Reloading language implementation at {}", zipBinary);
         final Iterable<ILanguageDiscoveryRequest> requests = languageDiscoveryService.request(zipBinary);
         final Iterable<ILanguageComponent> components = languageDiscoveryService.discover(requests);
         return components;

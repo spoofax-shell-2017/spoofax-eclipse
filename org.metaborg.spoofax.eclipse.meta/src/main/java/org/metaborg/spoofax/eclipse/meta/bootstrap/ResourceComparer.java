@@ -62,7 +62,8 @@ public class ResourceComparer {
                 if(leftIsArchive) {
                     final FileObject leftArchive = toArchiveResource(left);
                     final FileObject rightArchive = toArchiveResource(right);
-                    compareDirectories(leftRoot, leftArchive, rightRoot, rightArchive, diffs);
+                    // HACK: pass archives as roots to shorten paths
+                    compareDirectories(leftArchive, leftArchive, rightArchive, rightArchive, diffs);
                 } else {
                     compareFiles(leftRoot, left, rightRoot, right, diffs);
                 }
