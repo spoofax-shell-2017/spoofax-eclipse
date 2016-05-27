@@ -47,6 +47,9 @@ import com.google.inject.assistedinject.Assisted;
 public class BootstrapJob extends Job {
     private static final ILogger logger = LoggerUtils.logger(BootstrapJob.class);
 
+    private static final int maxIterations = 100;
+
+
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
     private final ILanguageDiscoveryService languageDiscoveryService;
@@ -80,7 +83,7 @@ public class BootstrapJob extends Job {
 
     @Override protected IStatus run(IProgressMonitor rootMonitor) {
         final SubMonitor monitor = SubMonitor.convert(rootMonitor);
-        monitor.setWorkRemaining(7);
+        monitor.setWorkRemaining(4);
 
 
         // Gather all projects
@@ -88,34 +91,11 @@ public class BootstrapJob extends Job {
             return StatusUtils.cancel();
         }
         monitor.setTaskName("Gathering language specification projects");
-        final Map<String, BootstrapProject> projects = Maps.newHashMap();
-        for(org.eclipse.core.resources.IProject eclipseProject : workspaceRoot.getProjects()) {
-            if(monitor.isCanceled()) {
-                return StatusUtils.cancel();
-            }
-
-            if(!eclipseProject.isOpen()) {
-                continue;
-            }
-
-            final BootstrapProject bootstrapProject;
-            try {
-                bootstrapProject = toBootstrapProject(eclipseProject);
-                if(bootstrapProject == null) {
-                    // Project is not a language specification, skip.
-                    continue;
-                }
-            } catch(ConfigException e) {
-                return error("Cannot get language specification config for {}", e, eclipseProject);
-            }
-            final String id = bootstrapProject.idNoVersion();
-
-            if(projects.containsKey(id)) {
-                return error("Project {} already exists", bootstrapProject);
-            }
-
-            logger.info("Adding project {}", bootstrapProject);
-            projects.put(id, bootstrapProject);
+        final Map<String, BootstrapProject> projects;
+        try {
+            projects = projects(workspaceRoot.getProjects());
+        } catch(ConfigException | CoreException e) {
+            return error("Cannot gather bootstrapping projects", e);
         }
         monitor.worked(1);
 
@@ -127,18 +107,9 @@ public class BootstrapJob extends Job {
         monitor.setTaskName("Checking target project");
         final BootstrapProject targetProject;
         try {
-            final BootstrapProject tempTargetProject = toBootstrapProject(targetEclipseProject);
-            if(tempTargetProject == null) {
-                return error("Target project {} is not a language specification project", targetEclipseProject);
-            }
-            if(!projects.containsValue(tempTargetProject)) {
-                return error("Target project {} was not found in the workspace", tempTargetProject);
-            }
-            // Get target project from projects map, such that the instance is shared.
-            // This is important because the language specification inside a bootstrap project can be updated later.
-            targetProject = projects.get(tempTargetProject.idNoVersion());
-        } catch(ConfigException e) {
-            return error("Cannot get language specification config for target project {}", e, targetEclipseProject);
+            targetProject = targetProject(projects);
+        } catch(ConfigException | CoreException e) {
+            return error("Cannot get target project", e);
         }
         monitor.worked(1);
 
@@ -148,75 +119,14 @@ public class BootstrapJob extends Job {
             return StatusUtils.cancel();
         }
         monitor.setTaskName("Creating dependency graph");
-        final BiSetMultimap<BootstrapProject, BootstrapProject> dependencies = new BiLinkedHashMultimap<>();
-        for(BootstrapProject project : projects.values()) {
-            if(monitor.isCanceled()) {
-                return StatusUtils.cancel();
-            }
-            final ISpoofaxLanguageSpecConfig config = project.config();
-            for(LanguageIdentifier dep : config.compileDeps()) {
-                if(monitor.isCanceled()) {
-                    return StatusUtils.cancel();
-                }
-                final String id = BootstrapProject.toNoVersionId(dep);
-                if(!projects.containsKey(id)) {
-                    logger.warn("Project with id {} does not exist, skipping", id);
-                    continue;
-                }
-                final BootstrapProject depProject = projects.get(id);
-                logger.info("Adding dependency from {} -> {}", project.idNoVersion(), id);
-                dependencies.put(project, depProject);
-            }
-        }
-        // TODO: calculate transitive dependencies.
-        final BiSetMultimap<BootstrapProject, BootstrapProject> transDependencies = dependencies;
-        final Set<BootstrapProject> targetDependents = transDependencies.getInverse(targetProject);
-        monitor.worked(1);
-
-
-        // Set target project version.
-        if(monitor.isCanceled()) {
-            return StatusUtils.cancel();
-        }
-        monitor.setTaskName("Setting new version for target project");
-        final LanguageVersion nextVersion = nextVersion(targetProject);
-        logger.info("Next version is {}", nextVersion);
+        final BiSetMultimap<BootstrapProject, BootstrapProject> deps;
         try {
-            setVersion(targetProject, nextVersion);
-        } catch(ConfigException e) {
-            return error("Unable to set version to {} for target project {}", e, nextVersion, targetProject);
+            deps = deps(projects, monitor);
+        } catch(CoreException e) {
+            return error("Cannot get dependencies", e);
         }
-        monitor.worked(1);
-
-
-        // Clean, build, reload
-        if(monitor.isCanceled()) {
-            return StatusUtils.cancel();
-        }
-        monitor.setTaskName("Clean, build, and reload target project");
-        try {
-            final SubMonitor subMonitor = monitor.newChild(1);
-            final FileObject binary = build(targetProject, subMonitor);
-            final FileObject storedBinary = storeBinary(targetProject, binary);
-            reloadLanguage(storedBinary);
-            targetProject.updateBinary(storedBinary);
-            subMonitor.done();
-        } catch(CoreException | IOException | MetaborgException e) {
-            return error("Cleaning, building, reloading {} failed ", e, targetProject);
-        }
-
-
-        // Set dependency versions.
-        if(monitor.isCanceled()) {
-            return StatusUtils.cancel();
-        }
-        monitor.setTaskName("Setting new version for dependencies");
-        try {
-            setDependencyVersions(projects.values(), targetProject.identifier().groupId, targetProject.identifier().id,
-                nextVersion);
-        } catch(ConfigException e) {
-            return error("Unable to set version to {} for dependencies", e, nextVersion);
-        }
+        final BiSetMultimap<BootstrapProject, BootstrapProject> transDeps = allTansDeps(deps);
+        final Set<BootstrapProject> targetTransDependants = transDeps.getInverse(targetProject);
         monitor.worked(1);
 
 
@@ -228,33 +138,54 @@ public class BootstrapJob extends Job {
         logger.info("Starting bootstrapping fixpoint");
         try {
             final SubMonitor fixpointMonitor = monitor.newChild(1);
-            fixpointMonitor.setWorkRemaining(200);
+            fixpointMonitor.setWorkRemaining(maxIterations * 2);
             int iteration = 1;
-            while(iteration <= 100) {
+            while(iteration <= maxIterations) {
                 logger.info("Fixpoint iteration {}", iteration);
-                if(fixpointMonitor.isCanceled()) {
+                if(monitor.isCanceled()) {
                     return StatusUtils.cancel();
                 }
 
                 boolean fixpoint = true;
-                for(BootstrapProject project : targetDependents) {
+                for(BootstrapProject project : targetTransDependants) {
+                    logger.info("Boostrapping {}", project);
                     final SubMonitor projectMonitor = fixpointMonitor.newChild(2);
-                    if(projectMonitor.isCanceled()) {
+                    if(monitor.isCanceled()) {
                         return StatusUtils.cancel();
                     }
 
                     final FileObject prevBinary = project.binary();
+
+                    final LanguageVersion nextVersion;
+                    if(prevBinary == null) {
+                        // No previous binary available, so has not been bootstrapped yet.
+                        logger.info("First build for {}", project);
+
+                        // Set version of the project to the next version.
+                        nextVersion = nextVersion(project);
+                        setVersion(project, nextVersion);
+                    } else {
+                        nextVersion = null;
+                    }
+
+                    // Build
                     final FileObject binary = build(project, projectMonitor.newChild(1));
 
                     if(prevBinary == null) {
-                        // Always redo fixpoint if there is no binary for a project yet.
-                        logger.warn("No previous binary to compare with, another fixpoint iteration required");
+                        // Set dependencies to this project to the next version.
+                        setDependencyVersions(projects.values(), project.identifier().groupId, project.identifier().id,
+                            nextVersion);
+
+                        // Don't reach fixpoint if there was no previous binary for a project.
+                        logger.warn("No previous binary to compare with, another fixpoint iteration is required");
                         fixpoint = false;
                     } else {
-                        fixpoint = fixpoint && compare(prevBinary, binary);
+                        // Don't reach fixpoint if the new binary is not stable.
+                        // Compare on left side of logical and operation to avoid short circuiting.
+                        fixpoint = compare(prevBinary, binary) && fixpoint;
                     }
 
-                    // Story binary and reload after comparison, to avoid overwriting existing stored binary.
+                    // Store binary and reload after comparison, to avoid overwriting existing stored binary.
                     final FileObject storedBinary = storeBinary(project, binary);
                     reloadLanguage(storedBinary);
                     project.updateBinary(storedBinary);
@@ -270,12 +201,102 @@ public class BootstrapJob extends Job {
             }
             fixpointMonitor.done();
         } catch(CoreException | IOException | MetaborgException e) {
-            return error("Cleaning, building, reloading a project failed ", e);
+            return error("Cleaning, building, reloading a project failed", e);
         }
 
 
         monitor.done();
         return StatusUtils.success();
+    }
+
+
+    private @Nullable BootstrapProject toBootstrapProject(org.eclipse.core.resources.IProject eclipseProject)
+        throws ConfigException {
+        final FileObject projectLocation = resourceService.resolve(eclipseProject);
+        final IProject project = projectService.get(projectLocation);
+
+        final ISpoofaxLanguageSpec languageSpec = languageSpecService.get(project);
+        if(languageSpec == null) {
+            return null;
+        }
+
+        final BootstrapProject bootstrapProject = new BootstrapProject(eclipseProject, languageSpec);
+        return bootstrapProject;
+    }
+
+
+    private Map<String, BootstrapProject> projects(org.eclipse.core.resources.IProject[] eclipseProjects)
+        throws CoreException, ConfigException {
+        final Map<String, BootstrapProject> projects = Maps.newHashMap();
+        for(org.eclipse.core.resources.IProject eclipseProject : eclipseProjects) {
+            if(!eclipseProject.isOpen()) {
+                continue;
+            }
+
+            final BootstrapProject bootstrapProject = toBootstrapProject(eclipseProject);
+            if(bootstrapProject == null) {
+                // Project is not a language specification, skip.
+                continue;
+            }
+            final String id = bootstrapProject.idNoVersion();
+
+            if(projects.containsKey(id)) {
+                throw new CoreException(error("Project {} already exists", bootstrapProject));
+            }
+
+            logger.info("Adding project {}", bootstrapProject);
+            projects.put(id, bootstrapProject);
+        }
+        return projects;
+    }
+
+    private BootstrapProject targetProject(Map<String, BootstrapProject> projects)
+        throws ConfigException, CoreException {
+        final BootstrapProject targetProject;
+        final BootstrapProject tempTargetProject = toBootstrapProject(targetEclipseProject);
+        if(tempTargetProject == null) {
+            throw new CoreException(
+                error("Target project {} is not a language specification project", targetEclipseProject));
+        }
+        if(!projects.containsValue(tempTargetProject)) {
+            throw new CoreException(error("Target project {} was not found in the workspace", tempTargetProject));
+        }
+        // Get target project from projects map, such that the instance is shared.
+        // This is important because the language specification inside a bootstrap project can be updated later.
+        targetProject = projects.get(tempTargetProject.idNoVersion());
+        return targetProject;
+    }
+
+
+    private BiSetMultimap<BootstrapProject, BootstrapProject> deps(Map<String, BootstrapProject> projects,
+        SubMonitor monitor) throws CoreException {
+        final BiSetMultimap<BootstrapProject, BootstrapProject> dependencies = new BiLinkedHashMultimap<>();
+        for(BootstrapProject project : projects.values()) {
+            if(monitor.isCanceled()) {
+                throw new CoreException(StatusUtils.cancel());
+            }
+            final ISpoofaxLanguageSpecConfig config = project.config();
+            for(LanguageIdentifier dep : config.compileDeps()) {
+                if(monitor.isCanceled()) {
+                    throw new CoreException(StatusUtils.cancel());
+                }
+                final String id = BootstrapProject.toNoVersionId(dep);
+                if(!projects.containsKey(id)) {
+                    logger.warn("Project with id {} does not exist, skipping", id);
+                    continue;
+                }
+                final BootstrapProject depProject = projects.get(id);
+                logger.info("Adding dependency from {} -> {}", project.idNoVersion(), id);
+                dependencies.put(project, depProject);
+            }
+        }
+        return dependencies;
+    }
+
+    private BiSetMultimap<BootstrapProject, BootstrapProject>
+        allTansDeps(BiSetMultimap<BootstrapProject, BootstrapProject> deps) {
+        // TODO: calculate transitive dependencies
+        return deps;
     }
 
 
@@ -405,7 +426,6 @@ public class BootstrapJob extends Job {
     }
 
 
-
     private IStatus error(String fmt, Object... args) {
         final String message = logger.format(fmt, args);
         logger.error(message);
@@ -416,20 +436,5 @@ public class BootstrapJob extends Job {
         final String message = logger.format(fmt, args);
         logger.error(message, e);
         return StatusUtils.error(message, e);
-    }
-
-
-    private @Nullable BootstrapProject toBootstrapProject(org.eclipse.core.resources.IProject eclipseProject)
-        throws ConfigException {
-        final FileObject projectLocation = resourceService.resolve(eclipseProject);
-        final IProject project = projectService.get(projectLocation);
-
-        final ISpoofaxLanguageSpec languageSpec = languageSpecService.get(project);
-        if(languageSpec == null) {
-            return null;
-        }
-
-        final BootstrapProject bootstrapProject = new BootstrapProject(eclipseProject, languageSpec);
-        return bootstrapProject;
     }
 }
