@@ -173,27 +173,42 @@ public class BootstrapJob extends Job {
                         nextVersion = null;
                     }
 
-                    // Build
-                    final FileObject binary = build(project, projectMonitor.newChild(1));
+                    try {
+                        // Build
+                        final FileObject binary = build(project, projectMonitor.newChild(1));
 
-                    if(prevBinary == null) {
-                        // Set dependencies to this project to the next version.
-                        setDependencyVersions(projects.values(), project.identifier().groupId, project.identifier().id,
-                            nextVersion);
+                        if(prevBinary == null) {
+                            // Set dependencies to this project to the next version.
+                            setDependencyVersions(projects.values(), project.identifier().groupId,
+                                project.identifier().id, nextVersion);
 
-                        // Don't reach fixpoint if there was no previous binary for a project.
-                        logger.warn("No previous binary to compare with, another fixpoint iteration is required");
+                            // Don't reach fixpoint if there was no previous binary for a project.
+                            logger.warn("No previous binary to compare with, another fixpoint iteration is required");
+                            fixpoint = false;
+                        } else {
+                            // Compare binaries. Don't reach fixpoint if the new binary is not stable.
+                            // Compare on left side of logical and operation to avoid short circuiting.
+                            fixpoint = compare(prevBinary, binary) && fixpoint;
+                        }
+
+                        // Store binary and reload after comparison, to avoid overwriting existing stored binary.
+                        final FileObject storedBinary = storeBinary(project, binary);
+                        try {
+                            reloadLanguage(storedBinary);
+                            project.updateBinary(storedBinary);
+                        } catch(MetaborgException e) {
+                            // Don't reach fixpoint if reloading language failed.
+                            logger.error("Reloading language for {} failed", e, project);
+                            logger.warn("Reloading failed, another fixpoint iteration is required");
+                            fixpoint = false;
+                        }
+                    } catch(CoreException e) {
+                        // Don't reach fixpoint if build failed.
+                        logger.error("Building language specification for {} failed", e, project);
+                        logger.warn("Build failed, another fixpoint iteration is required");
                         fixpoint = false;
-                    } else {
-                        // Don't reach fixpoint if the new binary is not stable.
-                        // Compare on left side of logical and operation to avoid short circuiting.
-                        fixpoint = compare(prevBinary, binary) && fixpoint;
                     }
 
-                    // Store binary and reload after comparison, to avoid overwriting existing stored binary.
-                    final FileObject storedBinary = storeBinary(project, binary);
-                    reloadLanguage(storedBinary);
-                    project.updateBinary(storedBinary);
 
                     projectMonitor.worked(1);
                     projectMonitor.done();
@@ -205,8 +220,8 @@ public class BootstrapJob extends Job {
                 ++iteration;
             }
             fixpointMonitor.done();
-        } catch(CoreException | IOException | MetaborgException e) {
-            return error("Cleaning, building, reloading a project failed", e);
+        } catch(IOException | ConfigException e) {
+            return error("Cleaning, building, or reloading a project failed unexpectedly", e);
         }
 
 
@@ -413,7 +428,7 @@ public class BootstrapJob extends Job {
     private FileObject build(BootstrapProject project, SubMonitor monitor) throws CoreException {
         monitor.setWorkRemaining(2);
         final org.eclipse.core.resources.IProject eclipseProject = project.eclipseProject;
-        final BuilderConfig config = new BuilderConfig(eclipseProject, false);
+        final BuilderConfig config = new BuilderConfig(eclipseProject, false, true, false);
         logger.info("Cleaning {}", project);
         eclipseProject.build(config, IncrementalProjectBuilder.CLEAN_BUILD, monitor.newChild(1));
         logger.info("Building {}", project);

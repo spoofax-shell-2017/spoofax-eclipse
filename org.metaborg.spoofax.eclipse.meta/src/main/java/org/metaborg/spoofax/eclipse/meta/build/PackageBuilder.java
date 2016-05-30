@@ -25,15 +25,13 @@ public class PackageBuilder extends Builder {
     private static final class PackageRunnable implements IWorkspaceRunnable {
         private final LanguageSpecBuildInput input;
         private final LanguageSpecBuilder builder;
-        private final IProgressMonitor monitor;
 
         private boolean success = false;
 
 
-        private PackageRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder, IProgressMonitor monitor) {
+        private PackageRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder) {
             this.input = input;
             this.builder = builder;
-            this.monitor = monitor;
         }
 
 
@@ -43,8 +41,6 @@ public class PackageBuilder extends Builder {
                 builder.pkg(input);
                 success = true;
             } catch(Exception e) {
-                workspaceMonitor.setCanceled(true);
-                monitor.setCanceled(true);
                 if(e.getCause() != null) {
                     logger.error("Exception thrown during build", e);
                     logger.error("BUILD FAILED");
@@ -62,15 +58,13 @@ public class PackageBuilder extends Builder {
     private static final class ArchiveRunnable implements IWorkspaceRunnable {
         private final LanguageSpecBuildInput input;
         private final LanguageSpecBuilder builder;
-        private final IProgressMonitor monitor;
 
         private boolean success = false;
 
 
-        private ArchiveRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder, IProgressMonitor monitor) {
+        private ArchiveRunnable(LanguageSpecBuildInput input, LanguageSpecBuilder builder) {
             this.input = input;
             this.builder = builder;
-            this.monitor = monitor;
         }
 
 
@@ -80,8 +74,6 @@ public class PackageBuilder extends Builder {
                 builder.archive(input);
                 success = true;
             } catch(Exception e) {
-                workspaceMonitor.setCanceled(true);
-                monitor.setCanceled(true);
                 if(e.getCause() != null) {
                     logger.error("Exception thrown during build", e);
                     logger.error("BUILD FAILED");
@@ -119,21 +111,21 @@ public class PackageBuilder extends Builder {
         throws CoreException, IOException {
         final LanguageSpecBuildInput input = createBuildInput(languageSpec);
 
-        final PackageRunnable packageRunnable = new PackageRunnable(input, builder, monitor);
+        final PackageRunnable packageRunnable = new PackageRunnable(input, builder);
         ResourcesPlugin.getWorkspace().run(packageRunnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
 
         if(!packageRunnable.success) {
-            monitor.setCanceled(true);
+            failure(monitor);
             return;
         }
 
         // Refresh in between to sync Eclipse file system with the local file system.
         getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-        final ArchiveRunnable archiveRunnable = new ArchiveRunnable(input, builder, monitor);
+        final ArchiveRunnable archiveRunnable = new ArchiveRunnable(input, builder);
         ResourcesPlugin.getWorkspace().run(archiveRunnable, getProject(), IWorkspace.AVOID_UPDATE, monitor);
 
         if(!archiveRunnable.success) {
-            monitor.setCanceled(true);
+            failure(monitor);
             return;
         }
 

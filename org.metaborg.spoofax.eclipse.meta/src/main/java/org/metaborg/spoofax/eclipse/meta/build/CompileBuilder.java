@@ -48,8 +48,7 @@ public class CompileBuilder extends Builder {
                     logger.info("Building language project {}", languageSpec);
                     builder.compile(input);
                 } catch(MetaborgException e) {
-                    workspaceMonitor.setCanceled(true);
-                    monitor.setCanceled(true);
+                    failure(workspaceMonitor);
                     if(e.getCause() != null) {
                         logger.error("Exception thrown during build", e);
                         logger.error("BUILD FAILED");

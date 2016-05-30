@@ -48,10 +48,8 @@ public class GenerateSourcesBuilder extends Builder {
                     builder.initialize(input);
                     builder.generateSources(input, new CollectionFileAccess());
                 } catch(Exception e) {
-                    workspaceMonitor.setCanceled(true);
-                    monitor.setCanceled(true);
-                    logger.error("Cannot generate sources for language project {}; build failed unexpectedly", e,
-                        languageSpec);
+                    failure(workspaceMonitor,
+                        "Cannot generate sources for language project {}; build failed unexpectedly", e, languageSpec);
                 }
             }
         };
@@ -70,9 +68,8 @@ public class GenerateSourcesBuilder extends Builder {
                     builder.initialize(input);
                     builder.generateSources(input, new CollectionFileAccess());
                 } catch(Exception e) {
-                    workspaceMonitor.setCanceled(true);
-                    monitor.setCanceled(true);
-                    logger.error("Cannot clean language project {}; build failed unexpectedly", e, languageSpec);
+                    failure(workspaceMonitor, "Cannot clean language project {}; build failed unexpectedly", e,
+                        languageSpec);
                 }
             }
         };

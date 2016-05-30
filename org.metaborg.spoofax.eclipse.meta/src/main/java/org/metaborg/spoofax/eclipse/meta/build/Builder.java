@@ -8,12 +8,14 @@ import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.meta.core.build.LanguageSpecBuildInput;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
@@ -45,9 +47,8 @@ public abstract class Builder extends IncrementalProjectBuilder {
         try {
             final ISpoofaxLanguageSpec languageSpec = languageSpec();
             if(languageSpec == null) {
-                logger.error("Cannot {} language project; cannot retrieve Metaborg project for {}", description(),
+                failure(monitor, "Cannot {} language project; cannot retrieve Metaborg project for {}", description(),
                     getProject());
-                monitor.setCanceled(true);
                 return null;
             }
 
@@ -56,13 +57,11 @@ public abstract class Builder extends IncrementalProjectBuilder {
             } catch(OperationCanceledException e) {
                 // Ignore
             } catch(Exception e) {
-                monitor.setCanceled(true);
-                logger.error("Cannot {} language project {}; build failed unexpectedly", e, description(),
+                failure(monitor, "Cannot {} language project {}; build failed unexpectedly", e, description(),
                     languageSpec);
             }
         } catch(ConfigException e) {
-            monitor.setCanceled(true);
-            logger.error("Cannot get language specification project for project {}", e, getProject());
+            failure(monitor, "Cannot get language specification project for project {}", e, getProject());
         } finally {
             // Always forget last build state to force a full build next time.
             forgetLastBuiltState();
@@ -75,8 +74,8 @@ public abstract class Builder extends IncrementalProjectBuilder {
             final ISpoofaxLanguageSpec languageSpec = languageSpec();
             // final IProject project = project();
             if(languageSpec == null) {
-                logger.error("Cannot clean language project; cannot retrieve Metaborg project for {}", getProject());
-                monitor.setCanceled(true);
+                failure(monitor, "Cannot clean language project; cannot retrieve Metaborg project for {}",
+                    getProject());
                 return;
             }
 
@@ -85,12 +84,10 @@ public abstract class Builder extends IncrementalProjectBuilder {
             } catch(OperationCanceledException e) {
                 // Ignore
             } catch(Exception e) {
-                monitor.setCanceled(true);
-                logger.error("Cannot clean language project {}; build failed unexpectedly", e, languageSpec);
+                failure(monitor, "Cannot clean language project {}; build failed unexpectedly", e, languageSpec);
             }
         } catch(ConfigException e) {
-            monitor.setCanceled(true);
-            logger.error("Cannot get language specification project for project {}", e, getProject());
+            failure(monitor, "Cannot get language specification project for project {}", e, getProject());
         } finally {
             // Always forget last build state to force a full build next time.
             forgetLastBuiltState();
@@ -107,6 +104,52 @@ public abstract class Builder extends IncrementalProjectBuilder {
             return (BuilderConfig) config;
         }
         return null;
+    }
+
+
+    protected void failure(IProgressMonitor monitor) throws CoreException {
+        failure(monitor, null);
+    }
+
+    protected void failure(IProgressMonitor monitor, @Nullable String fmt, Object... objs) throws CoreException {
+        failure(monitor, fmt, null, objs);
+    }
+
+    protected void failure(IProgressMonitor monitor, @Nullable String fmt, @Nullable Throwable e, Object... objs)
+        throws CoreException {
+        final @Nullable String msg;
+        if(fmt != null) {
+            msg = logger.format(fmt, objs);
+            if(e != null) {
+                logger.error(msg, e);
+            } else {
+                logger.error(msg);
+            }
+        } else {
+            msg = null;
+        }
+
+        BuilderConfig config = getConfig();
+        if(config == null) {
+            config = new BuilderConfig(getProject());
+        }
+
+        if(config.stopOnFail) {
+            monitor.setCanceled(true);
+        }
+        if(config.throwOnFail) {
+            final IStatus status;
+            if(fmt != null) {
+                if(e != null) {
+                    status = StatusUtils.buildFailure(msg, e);
+                } else {
+                    status = StatusUtils.buildFailure(msg);
+                }
+            } else {
+                status = StatusUtils.buildFailure();
+            }
+            throw new CoreException(status);
+        }
     }
 
 
