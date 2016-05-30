@@ -15,10 +15,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
+import org.metaborg.spoofax.eclipse.meta.bootstrap.DiscoverLanguagesFromBootstrappingJob;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -30,6 +32,7 @@ public class MetaLanguageLoader implements IResourceChangeListener {
     private static final ILogger logger = LoggerUtils.logger(MetaLanguageLoader.class);
 
     private final IEclipseResourceService resourceService;
+    private final ILanguageDiscoveryService languageDiscoveryService;
     private final IProjectService projectService;
     private final ILanguageSpecService languageSpecService;
 
@@ -38,9 +41,11 @@ public class MetaLanguageLoader implements IResourceChangeListener {
     private final IWorkspaceRoot workspaceRoot;
 
 
-    @Inject public MetaLanguageLoader(IEclipseResourceService resourceService, IProjectService projectService,
+    @Inject public MetaLanguageLoader(IEclipseResourceService resourceService,
+        ILanguageDiscoveryService languageDiscoveryService, IProjectService projectService,
         ILanguageSpecService languageSpecService, GlobalSchedulingRules globalRules, LanguageLoader languageLoader) {
         this.resourceService = resourceService;
+        this.languageDiscoveryService = languageDiscoveryService;
         this.projectService = projectService;
         this.languageSpecService = languageSpecService;
 
@@ -122,6 +127,17 @@ public class MetaLanguageLoader implements IResourceChangeListener {
      */
     public Job loadFromProjectsJob() {
         final Job job = new DiscoverLanguagesFromProjectsJob(this);
+        job.setRule(new MultiRule(new ISchedulingRule[] { workspaceRoot, globalRules.startupWriteLock(),
+            globalRules.languageServiceLock() }));
+        job.schedule();
+        return job;
+    }
+
+    /**
+     * Creates a job that loads all language components and dialects from stored bootstrapped binaries.
+     */
+    public Job loadFromBootstrapJob() {
+        final Job job = new DiscoverLanguagesFromBootstrappingJob(resourceService, languageDiscoveryService);
         job.setRule(new MultiRule(new ISchedulingRule[] { workspaceRoot, globalRules.startupWriteLock(),
             globalRules.languageServiceLock() }));
         job.schedule();

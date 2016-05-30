@@ -43,6 +43,7 @@ import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -65,6 +66,8 @@ public class BootstrapJob extends Job {
 
     private final IWorkspaceRoot workspaceRoot;
     private final org.eclipse.core.resources.IProject targetEclipseProject;
+
+    private final Collection<IBootstrapChange> changes = Lists.newArrayList();
 
 
     @Inject public BootstrapJob(IEclipseResourceService resourceService, IProjectService projectService,
@@ -229,6 +232,21 @@ public class BootstrapJob extends Job {
         return StatusUtils.success();
     }
 
+    @Override protected void canceling() {
+        logger.info("Cancelled bootstrapping process");
+
+        if(!changes.isEmpty()) {
+            logger.info("Reverting changes");
+            for(IBootstrapChange change : changes) {
+                try {
+                    change.unapply();
+                } catch(MetaborgException e) {
+                    logger.error("Reverting change failed unexpectedly", e);
+                }
+            }
+        }
+    }
+
 
     private @Nullable BootstrapProject toBootstrapProject(org.eclipse.core.resources.IProject eclipseProject)
         throws ConfigException {
@@ -357,64 +375,18 @@ public class BootstrapJob extends Job {
     }
 
     private void setVersion(BootstrapProject project, LanguageVersion newVersion) throws ConfigException {
-        logger.info("Setting version of {} to {}", project, newVersion);
-
-        final ISpoofaxLanguageSpecConfig config = project.config();
-        final ISpoofaxLanguageSpecConfigBuilder languageSpecConfigBuilder = languageSpecConfigBuilderProvider.get();
-        languageSpecConfigBuilder.copyFrom(config);
-
-        // Set version
-        final LanguageIdentifier identifier = config.identifier();
-        final LanguageIdentifier newIdentifier = new LanguageIdentifier(identifier.groupId, identifier.id, newVersion);
-        languageSpecConfigBuilder.withIdentifier(newIdentifier);
-
-        // Update configuration
-        updateConfig(project, languageSpecConfigBuilder);
+        final BootstrapSetVersionChange change = new BootstrapSetVersionChange(project, languageSpecConfigWriter,
+            languageSpecService, languageSpecConfigBuilderProvider, newVersion);
+        change.apply();
+        changes.add(change);
     }
 
     private void setDependencyVersion(BootstrapProject project, String groupId, String id, LanguageVersion newVersion)
         throws ConfigException {
-        logger.info("Setting dependency versions of {}:{} in {} to {}", groupId, id, project, newVersion);
-
-        final ISpoofaxLanguageSpecConfig config = project.config();
-        final ISpoofaxLanguageSpecConfigBuilder languageSpecConfigBuilder = languageSpecConfigBuilderProvider.get();
-        languageSpecConfigBuilder.copyFrom(config);
-
-        // Set versions in source dependencies.
-        final Collection<LanguageIdentifier> newSourceDeps = config.sourceDeps();
-        for(LanguageIdentifier depId : config.sourceDeps()) {
-            if(depId.groupId.equals(groupId) && depId.id.equals(id)) {
-                newSourceDeps.remove(depId);
-                newSourceDeps.add(new LanguageIdentifier(depId.groupId, depId.id, newVersion));
-                logger.info("Setting source dependency {}:{} version to {}", groupId, id, newVersion);
-            }
-        }
-        languageSpecConfigBuilder.withSourceDeps(newSourceDeps);
-
-        // Set versions in compile dependencies.
-        final Collection<LanguageIdentifier> newCompileDeps = config.compileDeps();
-        for(LanguageIdentifier depId : config.compileDeps()) {
-            if(depId.groupId.equals(groupId) && depId.id.equals(id)) {
-                newCompileDeps.remove(depId);
-                newCompileDeps.add(new LanguageIdentifier(depId.groupId, depId.id, newVersion));
-                logger.info("Setting compile dependency {}:{} version to {}", groupId, id, newVersion);
-            }
-        }
-        languageSpecConfigBuilder.withCompileDeps(newCompileDeps);
-
-        // Update configuration
-        updateConfig(project, languageSpecConfigBuilder);
-    }
-
-    private void updateConfig(BootstrapProject project, ISpoofaxLanguageSpecConfigBuilder languageSpecConfigBuilder)
-        throws ConfigException {
-        // Write configuration file to disk.
-        final ISpoofaxLanguageSpecConfig newConfig = languageSpecConfigBuilder.build(project.location());
-        languageSpecConfigWriter.write(project.languageSpec(), newConfig, null);
-
-        // Update bootstrap project with new language specification project.
-        final ISpoofaxLanguageSpec newLanguageSpec = languageSpecService.get(project.languageSpec());
-        project.updateLanguageSpec(newLanguageSpec);
+        final BootstrapSetDepVersionChange change = new BootstrapSetDepVersionChange(project, languageSpecConfigWriter,
+            languageSpecService, languageSpecConfigBuilderProvider, groupId, id, newVersion);
+        change.apply();
+        changes.add(change);
     }
 
     private void setDependencyVersions(Iterable<BootstrapProject> projects, String groupId, String id,
