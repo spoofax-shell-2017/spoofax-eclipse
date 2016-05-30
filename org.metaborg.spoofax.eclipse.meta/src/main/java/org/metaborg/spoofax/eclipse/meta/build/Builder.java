@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.vfs2.FileObject;
+import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -12,6 +13,7 @@ import org.metaborg.core.config.ConfigException;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
+import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.build.LanguageSpecBuildInput;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
@@ -97,6 +99,14 @@ public abstract class Builder extends IncrementalProjectBuilder {
 
     protected LanguageSpecBuildInput createBuildInput(ISpoofaxLanguageSpec languageSpec) throws IOException {
         return new LanguageSpecBuildInput(languageSpec);
+    }
+
+    protected @Nullable BuilderConfig getConfig() {
+        final IBuildConfiguration config = getBuildConfig();
+        if(config instanceof BuilderConfig) {
+            return (BuilderConfig) config;
+        }
+        return null;
     }
 
 

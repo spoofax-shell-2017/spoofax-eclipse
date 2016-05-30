@@ -3,6 +3,7 @@ package org.metaborg.spoofax.eclipse.meta.bootstrap;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import org.apache.commons.vfs2.AllFileSelector;
@@ -26,6 +27,7 @@ import org.metaborg.core.language.LanguageVersion;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
+import org.metaborg.spoofax.eclipse.meta.build.BuilderConfig;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
@@ -36,10 +38,13 @@ import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
 import org.metaborg.util.collection.BiLinkedHashMultimap;
 import org.metaborg.util.collection.BiSetMultimap;
+import org.metaborg.util.collection.UniqueQueue;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
@@ -126,7 +131,7 @@ public class BootstrapJob extends Job {
             return error("Cannot get dependencies", e);
         }
         final BiSetMultimap<BootstrapProject, BootstrapProject> transDeps = allTansDeps(deps);
-        final Set<BootstrapProject> targetTransDependants = transDeps.getInverse(targetProject);
+        final Set<BootstrapProject> targetTransDependants = dependents(transDeps, targetProject, true);
         monitor.worked(1);
 
 
@@ -276,7 +281,7 @@ public class BootstrapJob extends Job {
                 throw new CoreException(StatusUtils.cancel());
             }
             final ISpoofaxLanguageSpecConfig config = project.config();
-            for(LanguageIdentifier dep : config.compileDeps()) {
+            for(LanguageIdentifier dep : Iterables.concat(config.compileDeps(), config.sourceDeps())) {
                 if(monitor.isCanceled()) {
                     throw new CoreException(StatusUtils.cancel());
                 }
@@ -293,10 +298,41 @@ public class BootstrapJob extends Job {
         return dependencies;
     }
 
+    private Set<BootstrapProject> oneTansDeps(BiSetMultimap<BootstrapProject, BootstrapProject> deps,
+        BootstrapProject project) {
+        final Set<BootstrapProject> transDeps = Sets.newHashSet();
+        final Queue<BootstrapProject> todo = new UniqueQueue<>();
+        todo.addAll(deps.get(project));
+        while(!todo.isEmpty()) {
+            final BootstrapProject dep = todo.poll();
+            transDeps.add(dep);
+            for(BootstrapProject transDep : deps.get(dep)) {
+                if(!transDeps.contains(transDep)) {
+                    todo.add(transDep);
+                }
+            }
+        }
+        return transDeps;
+    }
+
     private BiSetMultimap<BootstrapProject, BootstrapProject>
         allTansDeps(BiSetMultimap<BootstrapProject, BootstrapProject> deps) {
-        // TODO: calculate transitive dependencies
-        return deps;
+        final BiSetMultimap<BootstrapProject, BootstrapProject> allTransDeps = new BiLinkedHashMultimap<>();
+        for(BootstrapProject dep : deps.values()) {
+            final Set<BootstrapProject> transDeps = oneTansDeps(deps, dep);
+            allTransDeps.putAll(dep, transDeps);
+        }
+        return allTransDeps;
+    }
+
+    private Set<BootstrapProject> dependents(BiSetMultimap<BootstrapProject, BootstrapProject> transDeps,
+        BootstrapProject project, boolean includeSelf) {
+        Set<BootstrapProject> dependents = transDeps.getInverse(project);
+        if(includeSelf) {
+            dependents = Sets.newHashSet(dependents);
+            dependents.add(project);
+        }
+        return dependents;
     }
 
 
@@ -376,10 +412,12 @@ public class BootstrapJob extends Job {
 
     private FileObject build(BootstrapProject project, SubMonitor monitor) throws CoreException {
         monitor.setWorkRemaining(2);
+        final org.eclipse.core.resources.IProject eclipseProject = project.eclipseProject;
+        final BuilderConfig config = new BuilderConfig(eclipseProject, false);
         logger.info("Cleaning {}", project);
-        project.eclipseProject.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor.newChild(1));
+        eclipseProject.build(config, IncrementalProjectBuilder.CLEAN_BUILD, monitor.newChild(1));
         logger.info("Building {}", project);
-        project.eclipseProject.build(IncrementalProjectBuilder.FULL_BUILD, monitor.newChild(1));
+        eclipseProject.build(config, IncrementalProjectBuilder.FULL_BUILD, monitor.newChild(1));
         return project.paths().spxArchiveFile(project.config().identifier().toFileString());
     }
 

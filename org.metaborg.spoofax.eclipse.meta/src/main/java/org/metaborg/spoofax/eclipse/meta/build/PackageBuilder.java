@@ -137,11 +137,14 @@ public class PackageBuilder extends Builder {
             return;
         }
 
-        // Refresh again to sync file systems.
-        getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        final BuilderConfig config = getConfig();
+        if(config == null || config.reloadLanguage) {
+            // Refresh again to sync file systems.
+            getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 
-        logger.info("Reloading language project {}", languageSpec);
-        discoverer.loadJob(languageSpec.location(), false).schedule();
+            logger.info("Reloading language project {}", languageSpec);
+            discoverer.loadJob(languageSpec.location(), false).schedule();
+        }
     }
 
     @Override protected void clean(ISpoofaxLanguageSpec languageSpec, IProgressMonitor monitor) {
