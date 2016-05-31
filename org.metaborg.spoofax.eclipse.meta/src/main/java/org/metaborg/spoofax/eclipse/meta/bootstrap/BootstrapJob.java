@@ -6,27 +6,23 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.apache.commons.vfs2.AllFileSelector;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.config.ConfigException;
-import org.metaborg.core.language.ILanguageComponent;
-import org.metaborg.core.language.ILanguageDiscoveryRequest;
 import org.metaborg.core.language.ILanguageDiscoveryService;
+import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.core.language.LanguageVersion;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.project.IProjectService;
-import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.build.BuilderConfig;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -58,6 +54,7 @@ public class BootstrapJob extends Job {
 
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
+    private final ILanguageService languageService;
     private final ILanguageDiscoveryService languageDiscoveryService;
 
     private final Provider<ISpoofaxLanguageSpecConfigBuilder> languageSpecConfigBuilderProvider;
@@ -71,13 +68,14 @@ public class BootstrapJob extends Job {
 
 
     @Inject public BootstrapJob(IEclipseResourceService resourceService, IProjectService projectService,
-        ILanguageDiscoveryService languageDiscoveryService,
+        ILanguageService languageService, ILanguageDiscoveryService languageDiscoveryService,
         Provider<ISpoofaxLanguageSpecConfigBuilder> languageSpecConfigBuilderProvider,
         ISpoofaxLanguageSpecConfigWriter languageSpecConfigWriter, ISpoofaxLanguageSpecService languageSpecService,
         @Assisted IWorkspaceRoot workspaceRoot, @Assisted org.eclipse.core.resources.IProject targetEclipseProject) {
         super("Bootstrapping " + targetEclipseProject);
         this.resourceService = resourceService;
         this.projectService = projectService;
+        this.languageService = languageService;
         this.languageDiscoveryService = languageDiscoveryService;
 
         this.languageSpecConfigBuilderProvider = languageSpecConfigBuilderProvider;
@@ -240,7 +238,7 @@ public class BootstrapJob extends Job {
             for(IBootstrapChange change : changes) {
                 try {
                     change.unapply();
-                } catch(MetaborgException e) {
+                } catch(Exception e) {
                     logger.error("Reverting change failed unexpectedly", e);
                 }
             }
@@ -409,26 +407,16 @@ public class BootstrapJob extends Job {
     }
 
     private FileObject storeBinary(BootstrapProject project, FileObject binary) throws FileSystemException {
-        final IPath statePath = SpoofaxMetaPlugin.plugin().getStateLocation();
-        final FileObject stateDir = resourceService.resolve(statePath.toString());
-        final LanguageIdentifier id = project.identifier();
-        // @formatter:off
-        final FileObject storeFile = stateDir
-            .resolveFile("bootstrap")
-            .resolveFile(id.groupId)
-            .resolveFile(id.id)
-            .resolveFile(id.version.toString())
-            .resolveFile(binary.getName().getBaseName())
-            ;
-        // @formatter:on
-        logger.info("Storing binary for {} at {}", project, storeFile);
-        storeFile.createFile();
-        storeFile.copyFrom(binary, new AllFileSelector());
-        return storeFile;
+        final BootstrapStoreBinaryChange change = new BootstrapStoreBinaryChange(resourceService, project, binary);
+        change.apply();
+        changes.add(change);
+        return change.storeFile();
     }
 
     private boolean compare(FileObject leftBinary, FileObject rightBinary) throws IOException {
         logger.info("Comparing {} to {}", leftBinary, rightBinary);
+        leftBinary.refresh();
+        rightBinary.refresh();
         final ResourceComparer comparer = new ResourceComparer(resourceService);
         final Collection<ResourceDiff> diffs = comparer.compare(leftBinary, rightBinary);
         if(diffs.isEmpty()) {
@@ -442,12 +430,11 @@ public class BootstrapJob extends Job {
         return false;
     }
 
-    private Iterable<ILanguageComponent> reloadLanguage(FileObject binary) throws MetaborgException {
-        final FileObject zipBinary = resourceService.resolve("zip:" + binary.getName().getURI() + "!/");
-        logger.info("Reloading language implementation at {}", zipBinary);
-        final Iterable<ILanguageDiscoveryRequest> requests = languageDiscoveryService.request(zipBinary);
-        final Iterable<ILanguageComponent> components = languageDiscoveryService.discover(requests);
-        return components;
+    private void reloadLanguage(FileObject binary) throws MetaborgException {
+        final BootstrapLoadLangChange change =
+            new BootstrapLoadLangChange(resourceService, languageService, languageDiscoveryService, binary);
+        change.apply();
+        changes.add(change);
     }
 
 

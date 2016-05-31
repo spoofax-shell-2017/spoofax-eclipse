@@ -1,9 +1,7 @@
 package org.metaborg.spoofax.eclipse.meta.bootstrap;
 
-import org.metaborg.core.MetaborgException;
-
 public interface IBootstrapChange {
-    void apply() throws MetaborgException;
+    void apply() throws Exception;
 
-    void unapply() throws MetaborgException;
+    void unapply() throws Exception;
 }
