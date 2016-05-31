@@ -50,6 +50,7 @@ public class BootstrapJob extends Job {
     private static final ILogger logger = LoggerUtils.logger(BootstrapJob.class);
 
     private static final int maxIterations = 100;
+    private static final boolean stopOnError = true;
 
 
     private final IEclipseResourceService resourceService;
@@ -199,13 +200,21 @@ public class BootstrapJob extends Job {
                             project.updateBinary(storedBinary);
                         } catch(MetaborgException e) {
                             // Don't reach fixpoint if reloading language failed.
-                            logger.error("Reloading language for {} failed", e, project);
+                            final String message = logger.format("Reloading language for {} failed", project);
+                            if(stopOnError) {
+                                return error(message, e);
+                            }
+                            logger.error(message, e);
                             logger.warn("Reloading failed, another fixpoint iteration is required");
                             fixpoint = false;
                         }
                     } catch(CoreException e) {
                         // Don't reach fixpoint if build failed.
-                        logger.error("Building language specification for {} failed", e, project);
+                        final String message = logger.format("Building language specification for {} failed", project);
+                        if(stopOnError) {
+                            return error(message, e);
+                        }
+                        logger.error(message, e);
                         logger.warn("Build failed, another fixpoint iteration is required");
                         fixpoint = false;
                     }
@@ -398,7 +407,7 @@ public class BootstrapJob extends Job {
     private FileObject build(BootstrapProject project, SubMonitor monitor) throws CoreException {
         monitor.setWorkRemaining(2);
         final org.eclipse.core.resources.IProject eclipseProject = project.eclipseProject;
-        final BuilderConfig config = new BuilderConfig(eclipseProject, false, true, false);
+        final BuilderConfig config = new BuilderConfig(eclipseProject, stopOnError, true, false);
         logger.info("Cleaning {}", project);
         eclipseProject.build(config, IncrementalProjectBuilder.CLEAN_BUILD, monitor.newChild(1));
         logger.info("Building {}", project);
@@ -437,6 +446,16 @@ public class BootstrapJob extends Job {
         changes.add(change);
     }
 
+
+    private IStatus error(String message) {
+        logger.error(message);
+        return StatusUtils.error(message);
+    }
+
+    private IStatus error(String message, Throwable e) {
+        logger.error(message, e);
+        return StatusUtils.error(message, e);
+    }
 
     private IStatus error(String fmt, Object... args) {
         final String message = logger.format(fmt, args);
