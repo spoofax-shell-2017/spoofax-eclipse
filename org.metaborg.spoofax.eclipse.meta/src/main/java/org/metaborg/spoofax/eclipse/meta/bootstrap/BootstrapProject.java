@@ -12,6 +12,7 @@ public class BootstrapProject {
 
     private ISpoofaxLanguageSpec languageSpec;
     private @Nullable FileObject binary;
+    private boolean firstIteration = true;
 
 
 
@@ -61,6 +62,14 @@ public class BootstrapProject {
 
     public void updateBinary(FileObject binary) {
         this.binary = binary;
+    }
+
+    public boolean firstIteration() {
+        if(firstIteration) {
+            firstIteration = false;
+            return true;
+        }
+        return false;
     }
 
 

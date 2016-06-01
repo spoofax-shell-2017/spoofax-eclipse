@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.config.ConfigException;
+import org.metaborg.core.language.ILanguageComponent;
 import org.metaborg.core.language.ILanguageDiscoveryService;
 import org.metaborg.core.language.ILanguageService;
 import org.metaborg.core.language.LanguageIdentifier;
@@ -161,13 +162,9 @@ public class BootstrapJob extends Job {
                         return StatusUtils.cancel();
                     }
 
-                    final FileObject prevBinary = project.binary();
-
+                    final boolean firstIteration = project.firstIteration();
                     final LanguageVersion nextVersion;
-                    if(prevBinary == null) {
-                        // No previous binary available, so has not been bootstrapped yet.
-                        logger.info("First build for {}", project);
-
+                    if(firstIteration) {
                         // Set version of the project to the next version.
                         nextVersion = nextVersion(project);
                         setVersion(project, nextVersion);
@@ -177,20 +174,22 @@ public class BootstrapJob extends Job {
 
                     try {
                         // Build
+                        final FileObject prevBinary = project.binary();
                         final FileObject binary = build(project, projectMonitor.newChild(1));
-
-                        if(prevBinary == null) {
+                        if(firstIteration) {
                             // Set dependencies to this project to the next version.
                             setDependencyVersions(projects.values(), project.identifier().groupId,
                                 project.identifier().id, nextVersion);
+                        }
 
-                            // Don't reach fixpoint if there was no previous binary for a project.
-                            logger.warn("No previous binary to compare with, another fixpoint iteration is required");
-                            fixpoint = false;
-                        } else {
+                        if(prevBinary != null) {
                             // Compare binaries. Don't reach fixpoint if the new binary is not stable.
                             // Compare on left side of logical and operation to avoid short circuiting.
                             fixpoint = compare(prevBinary, binary) && fixpoint;
+                        } else {
+                            // Don't reach fixpoint if there was no previous binary for a project.
+                            logger.warn("No previous binary to compare with, another fixpoint iteration is required");
+                            fixpoint = false;
                         }
 
                         // Store binary and reload after comparison, to avoid overwriting existing stored binary.
@@ -266,6 +265,10 @@ public class BootstrapJob extends Job {
         }
 
         final BootstrapProject bootstrapProject = new BootstrapProject(eclipseProject, languageSpec);
+        final ILanguageComponent component = languageService.getComponent(languageSpec.config().identifier());
+        if(component != null) {
+            bootstrapProject.updateBinary(bootstrapProject.location());
+        }
         return bootstrapProject;
     }
 
