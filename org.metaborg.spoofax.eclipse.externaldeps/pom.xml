@@ -148,7 +148,6 @@
             <!-- Embed dependencies into plugin bundle, so they are exportable. -->
             <Embed-Dependency>
               aopalliance,
-              clj-ds,
               commons-configuration2,
               commons-configuration2-jackson,
               commons-io,
@@ -170,8 +169,6 @@
               rxjava-core,
               slf4j-api,
               strategoxt-min-jar,
-              truffle-api,
-              truffle-dsl-processor
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
