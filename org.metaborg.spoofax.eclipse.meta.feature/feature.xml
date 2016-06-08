@@ -62,7 +62,17 @@
     unpack="true"
   />
   <plugin
-    id="org.metaborg.meta.lang.nabl2.eclipse"
+    id="org.metaborg.meta.nabl2.shared.eclipse"
+    version="2.0.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.meta.nabl2.lang.eclipse"
+    version="2.0.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.meta.nabl2.runtime.eclipse"
     version="2.0.0.qualifier"
     unpack="true"
   />
@@ -93,11 +103,6 @@
   />
   <plugin
     id="org.metaborg.meta.lib.analysis.eclipse"
-    version="2.0.0.qualifier"
-    unpack="true"
-  />
-  <plugin
-    id="org.metaborg.meta.lib.analysis2.eclipse"
     version="2.0.0.qualifier"
     unpack="true"
   />
