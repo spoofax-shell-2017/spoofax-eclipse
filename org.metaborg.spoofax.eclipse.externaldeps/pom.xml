@@ -54,6 +54,10 @@
     </dependency>
     <dependency>
       <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-assistedinject</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-multibindings</artifactId>
     </dependency>
     <dependency>
@@ -157,6 +161,7 @@
               fastutil,
               guava,
               guice,
+              guice-assistedinject,
               guice-multibindings,
               jackson-annotations,
               jackson-databind,

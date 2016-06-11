@@ -143,7 +143,8 @@
   <!-- Main menu -->
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="menu:org.eclipse.ui.main.menu">
-      <menu label="Spoofax (meta)">
+      <menu label="Spoofax (meta)"
+               id="org.metaborg.spoofax.eclipse.meta.menu.main">
         <command commandId="org.metaborg.spoofax.eclipse.meta.command.issue.report" />
       </menu>
     </menuContribution>
