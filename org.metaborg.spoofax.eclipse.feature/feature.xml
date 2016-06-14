@@ -74,12 +74,6 @@
     version="2.0.0.qualifier"
     unpack="false"
   />
-  <plugin
-    id="org.metaborg.meta.lang.dynsem.interpreter"
-    version="2.0.0.qualifier"
-    unpack="false"
-  />
-
   <!-- Stratego interpreter and libraries -->
   <plugin
     id="org.spoofax.interpreter.core"

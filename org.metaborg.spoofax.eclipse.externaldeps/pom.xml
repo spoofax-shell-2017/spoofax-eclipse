@@ -29,31 +29,6 @@
       <artifactId>make-permissive</artifactId>
       <version>${metaborg-version}</version>
     </dependency>
-    <!-- Requirements for DynSem meta-interpreter -->
-    <dependency>
-      <groupId>com.github.krukow</groupId>
-      <artifactId>clj-ds</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.oracle.truffle</groupId>
-      <artifactId>truffle-api</artifactId>
-      <version>0.11</version>
-    </dependency>
-    <dependency>
-      <groupId>com.oracle.truffle</groupId>
-      <artifactId>truffle-dsl-processor</artifactId>
-      <version>0.11</version>
-    </dependency>
-    <dependency>
-      <groupId>org.metaborg</groupId>
-      <artifactId>dynsem.lib.stratego.jar</artifactId>
-      <version>${metaborg-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.metaborg</groupId>
-      <artifactId>dynsem.lib.stratego.javastrat</artifactId>
-      <version>${metaborg-version}</version>
-    </dependency>
     <!-- General requirements for several libraries -->
     <!-- Logging -->
     <dependency>
@@ -76,6 +51,10 @@
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-assistedinject</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.inject.extensions</groupId>
@@ -177,15 +156,12 @@
             <!-- Embed dependencies into plugin bundle, so they are exportable. -->
             <Embed-Dependency>
               aopalliance,
-              clj-ds,
               commons-configuration2,
               commons-configuration2-jackson,
               commons-io,
               commons-lang3,
               commons-logging,
               commons-vfs2,
-              dynsem.lib.stratego.jar,
-              dynsem.lib.stratego.javastrat,
               fastutil,
               guava,
               guice,
@@ -202,24 +178,17 @@
               rxjava-core,
               slf4j-api,
               strategoxt-min-jar,
-              truffle-api,
-              truffle-dsl-processor
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
               !com.google.common.base.internal,
               !com.google.inject.internal.*,
               !org.apache.commons.logging.impl,
-              dynsem.*;provider=metaborg;mandatory:=provider,
               ch.qos.logback.classic.*;provider=metaborg;mandatory:=provider,
               ch.qos.logback.core.*;provider=metaborg;mandatory:=provider,
               com.fasterxml.jackson.*;provider=metaborg;mandatory:=provider,
-              com.github.krukow.clj_ds;provider=metaborg;mandatory:=provider,
-              com.github.krukow.clj_lang;provider=metaborg;mandatory:=provider,
               com.google.common.*;provider=metaborg;mandatory:=provider,
               com.google.inject.*;provider=metaborg;mandatory:=provider,
-              com.oracle.truffle.*;provider=metaborg;mandatory:=provider,
-              dynsem.strategies.*;provider=metaborg;mandatory:=provider,
               it.unimi.dsi.fastutil.*;provider=metaborg;mandatory:=provider,
               org.aopalliance*;provider=metaborg;mandatory:=provider,
               org.apache.commons.configuration2.*;provider=metaborg;mandatory:=provider,
