@@ -37,7 +37,8 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin implements IStartup {
 
         // Discover language components and dialects from language specifications of workspace projects at startup.
         final MetaLanguageLoader languageLoader = injector.getInstance(MetaLanguageLoader.class);
-        languageLoader.loadFromProjectsJob().schedule();
+        // HACK: disable loading languages from projects, because projects are loaded from bootstrapped binaries.
+        //languageLoader.loadFromProjectsJob().schedule();
         languageLoader.loadFromBootstrapJob().schedule();
     }
 
