@@ -40,6 +40,13 @@
     unpack="false"
   />
 
+  <!-- Parser -->
+  <plugin
+    id="sdf2table.core"
+    version="2.0.0.qualifier"
+    unpack="false"
+  />
+
   <!-- Meta languages, unpack plugins for access to jar, ctree, and packed.esv files. -->
   <plugin
     id="dynsem.eclipse"
