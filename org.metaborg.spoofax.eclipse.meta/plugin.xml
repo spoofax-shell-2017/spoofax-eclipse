@@ -177,7 +177,6 @@
       <menu id="org.metaborg.spoofax.eclipse.meta.menu.project" label="Spoofax (meta)">
         <visibleWhen>
           <and>
-            <count value="1" />
             <reference definitionId="org.metaborg.spoofax.eclipse.util.expression.isproject" />
           </and>
         </visibleWhen>
@@ -188,7 +187,6 @@
       <menu id="org.metaborg.spoofax.eclipse.meta.menu.project" label="Spoofax (meta)">
         <visibleWhen>
           <and>
-            <count value="1" />
             <reference definitionId="org.metaborg.spoofax.eclipse.util.expression.isproject" />
           </and>
         </visibleWhen>

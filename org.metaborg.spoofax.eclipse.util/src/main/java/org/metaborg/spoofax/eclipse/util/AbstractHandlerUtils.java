@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.metaborg.util.iterators.Iterables2;
 
 /**
  * Utility functions for {@link AbstractHandler}.
@@ -72,5 +73,20 @@ public final class AbstractHandlerUtils {
             return null;
         }
         return SelectionUtils.toProject(selection);
+    }
+    
+    /**
+     * Attempts to retrieve the projects from the selection in given execution event.
+     * 
+     * @param event
+     *            Execution event.
+     * @return Selected projects, or an empty iterable if it could not be retrieved.
+     */
+    public static @Nullable Iterable<IProject> toProjects(ExecutionEvent event) {
+        final IStructuredSelection selection = toStructured(event);
+        if(selection == null) {
+            return Iterables2.empty();
+        }
+        return SelectionUtils.toProjects(selection);
     }
 }

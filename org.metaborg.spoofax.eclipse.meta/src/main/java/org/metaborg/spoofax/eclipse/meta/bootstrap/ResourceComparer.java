@@ -1,5 +1,6 @@
 package org.metaborg.spoofax.eclipse.meta.bootstrap;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -26,7 +27,8 @@ public class ResourceComparer {
     }
 
 
-    public Collection<ResourceDiff> compare(FileObject left, FileObject right) throws IOException {
+    public Collection<ResourceDiff> compare(FileObject left, FileObject right)
+        throws IOException, InterruptedException {
         final Collection<ResourceDiff> diffs = Lists.newArrayList();
         compare(left, left, right, right, diffs);
         return diffs;
@@ -34,7 +36,7 @@ public class ResourceComparer {
 
 
     private void compare(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
-        Collection<ResourceDiff> diffs) throws IOException {
+        Collection<ResourceDiff> diffs) throws IOException, InterruptedException {
         if(!left.exists()) {
             throw new IOException("Left resource " + left + " does not exist");
         }
@@ -113,7 +115,7 @@ public class ResourceComparer {
 
 
     private void compareDirectories(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
-        Collection<ResourceDiff> diffs) throws IOException {
+        Collection<ResourceDiff> diffs) throws IOException, InterruptedException {
         final Set<String> leftChildren = children(left);
         final Set<String> rightChildren = children(right);
 
@@ -147,6 +149,26 @@ public class ResourceComparer {
 
 
     private void compareFiles(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
+        Collection<ResourceDiff> diffs) throws IOException, InterruptedException {
+        final String leftName = left.getName().getBaseName();
+        final String rightName = right.getName().getBaseName();
+        if(!leftName.equals(rightName)) {
+            diffs.add(diff(leftRoot, left, rightRoot, right, "different names", leftName, rightName));
+            return;
+        }
+
+        final String extension = left.getName().getExtension();
+        switch(extension) {
+            case "class":
+                compareClassFiles(leftRoot, left, rightRoot, right, diffs);
+                break;
+            default:
+                compareGenericFiles(leftRoot, left, rightRoot, right, diffs);
+                break;
+        }
+    }
+
+    private void compareGenericFiles(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
         Collection<ResourceDiff> diffs) throws IOException {
         final FileContent leftContent = left.getContent();
         final FileContent rightContent = right.getContent();
@@ -163,6 +185,44 @@ public class ResourceComparer {
         if(!IOUtils.contentEquals(leftStream, rightStream)) {
             diffs.add(diff(leftRoot, left, rightRoot, right, "different content"));
         }
+    }
+
+    private void compareClassFiles(FileObject leftRoot, FileObject left, FileObject rightRoot, FileObject right,
+        Collection<ResourceDiff> diffs) throws IOException, InterruptedException {
+        final FileContent leftContent = left.getContent();
+        final FileContent rightContent = right.getContent();
+
+        final long leftSize = leftContent.getSize();
+        final long rightSize = rightContent.getSize();
+        if(leftSize == rightSize) {
+            return;
+        }
+
+        final InputStream leftStream = leftContent.getInputStream();
+        final InputStream rightStream = rightContent.getInputStream();
+        if(IOUtils.contentEquals(leftStream, rightStream)) {
+            return;
+        }
+
+        /*
+         * Some Java compilers are not completely deterministic, they sometimes generate less, more, or different bytes
+         * for the exact same Java source files. To make sure that those class files are not marked as different, we
+         * first disassemble them with the javap tool, and compare the disassembled output.
+         */
+        final String leftDisassembly = disassembleClassFile(left);
+        final String rightDisassembly = disassembleClassFile(right);
+        if(!leftDisassembly.equals(rightDisassembly)) {
+            diffs.add(diff(leftRoot, left, rightRoot, right, "different content (after disassembly)"));
+        }
+    }
+
+    private String disassembleClassFile(FileObject classFile) throws InterruptedException, IOException {
+        final File file = resourceService.localFile(classFile);
+        // Run javap with -c to disassemble code within methods, and -p to disassemble all private members.
+        final Process process = Runtime.getRuntime().exec("javap -c -p " + file);
+        process.waitFor();
+        final String disassembly = IOUtils.toString(process.getInputStream());
+        return disassembly;
     }
 
 

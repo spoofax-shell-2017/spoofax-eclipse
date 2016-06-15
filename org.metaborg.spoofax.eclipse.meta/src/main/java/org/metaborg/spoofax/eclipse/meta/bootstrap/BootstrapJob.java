@@ -64,7 +64,7 @@ public class BootstrapJob extends Job {
     private final ISpoofaxLanguageSpecService languageSpecService;
 
     private final IWorkspaceRoot workspaceRoot;
-    private final org.eclipse.core.resources.IProject targetEclipseProject;
+    private final Iterable<org.eclipse.core.resources.IProject> targetEclipseProjects;
 
     private final Collection<IBootstrapChange> changes = Lists.newArrayList();
 
@@ -73,8 +73,9 @@ public class BootstrapJob extends Job {
         ILanguageService languageService, ILanguageDiscoveryService languageDiscoveryService,
         Provider<ISpoofaxLanguageSpecConfigBuilder> languageSpecConfigBuilderProvider,
         ISpoofaxLanguageSpecConfigWriter languageSpecConfigWriter, ISpoofaxLanguageSpecService languageSpecService,
-        @Assisted IWorkspaceRoot workspaceRoot, @Assisted org.eclipse.core.resources.IProject targetEclipseProject) {
-        super("Bootstrapping " + targetEclipseProject);
+        @Assisted IWorkspaceRoot workspaceRoot,
+        @Assisted Iterable<org.eclipse.core.resources.IProject> targetEclipseProjects) {
+        super("Bootstrapping " + targetEclipseProjects);
         this.resourceService = resourceService;
         this.projectService = projectService;
         this.languageService = languageService;
@@ -85,7 +86,7 @@ public class BootstrapJob extends Job {
         this.languageSpecService = languageSpecService;
 
         this.workspaceRoot = workspaceRoot;
-        this.targetEclipseProject = targetEclipseProject;
+        this.targetEclipseProjects = targetEclipseProjects;
     }
 
 
@@ -113,9 +114,9 @@ public class BootstrapJob extends Job {
             return StatusUtils.cancel();
         }
         monitor.setTaskName("Checking target project");
-        final BootstrapProject targetProject;
+        final Collection<BootstrapProject> targetProjects;
         try {
-            targetProject = targetProject(projects);
+            targetProjects = targetProjects(projects);
         } catch(ConfigException | CoreException e) {
             return error("Cannot get target project", e);
         }
@@ -134,13 +135,17 @@ public class BootstrapJob extends Job {
             return error("Cannot get dependencies", e);
         }
         final BiSetMultimap<BootstrapProject, BootstrapProject> transDeps = allTansDeps(deps);
-        final Set<BootstrapProject> targetTransDependants = dependents(transDeps, targetProject, true);
+        final Set<BootstrapProject> targetTransDependants = dependents(transDeps, targetProjects, true);
         monitor.worked(1);
 
 
         // Fixpoint
         if(monitor.isCanceled()) {
             return StatusUtils.cancel();
+        }
+        logger.info("Bootstrapping following projects: ");
+        for(BootstrapProject project : targetTransDependants) {
+            logger.info("  {}", project);
         }
         monitor.setTaskName("Bootstrapping fixpoint");
         logger.info("Starting bootstrapping fixpoint");
@@ -207,7 +212,7 @@ public class BootstrapJob extends Job {
                             logger.warn("Reloading failed, another fixpoint iteration is required");
                             fixpoint = false;
                         }
-                    } catch(CoreException e) {
+                    } catch(CoreException | InterruptedException e) {
                         // Don't reach fixpoint if build failed.
                         final String message = logger.format("Building language specification for {} failed", project);
                         if(stopOnError) {
@@ -217,7 +222,6 @@ public class BootstrapJob extends Job {
                         logger.warn("Build failed, another fixpoint iteration is required");
                         fixpoint = false;
                     }
-
 
                     projectMonitor.worked(1);
                     projectMonitor.done();
@@ -298,21 +302,25 @@ public class BootstrapJob extends Job {
         return projects;
     }
 
-    private BootstrapProject targetProject(Map<String, BootstrapProject> projects)
+    private Collection<BootstrapProject> targetProjects(Map<String, BootstrapProject> projects)
         throws ConfigException, CoreException {
-        final BootstrapProject targetProject;
-        final BootstrapProject tempTargetProject = toBootstrapProject(targetEclipseProject);
-        if(tempTargetProject == null) {
-            throw new CoreException(
-                error("Target project {} is not a language specification project", targetEclipseProject));
+        final Collection<BootstrapProject> targetProjects = Lists.newArrayList();
+        for(org.eclipse.core.resources.IProject targetEclipseProject : targetEclipseProjects) {
+            final BootstrapProject targetProject;
+            final BootstrapProject tempTargetProject = toBootstrapProject(targetEclipseProject);
+            if(tempTargetProject == null) {
+                throw new CoreException(
+                    error("Target project {} is not a language specification project", targetEclipseProject));
+            }
+            if(!projects.containsValue(tempTargetProject)) {
+                throw new CoreException(error("Target project {} was not found in the workspace", tempTargetProject));
+            }
+            // Get target project from projects map, such that the instance is shared.
+            // This is important because the language specification inside a bootstrap project can be updated later.
+            targetProject = projects.get(tempTargetProject.idNoVersion());
+            targetProjects.add(targetProject);
         }
-        if(!projects.containsValue(tempTargetProject)) {
-            throw new CoreException(error("Target project {} was not found in the workspace", tempTargetProject));
-        }
-        // Get target project from projects map, such that the instance is shared.
-        // This is important because the language specification inside a bootstrap project can be updated later.
-        targetProject = projects.get(tempTargetProject.idNoVersion());
-        return targetProject;
+        return targetProjects;
     }
 
 
@@ -369,19 +377,23 @@ public class BootstrapJob extends Job {
     }
 
     private Set<BootstrapProject> dependents(BiSetMultimap<BootstrapProject, BootstrapProject> transDeps,
-        BootstrapProject project, boolean includeSelf) {
-        Set<BootstrapProject> dependents = transDeps.getInverse(project);
-        if(includeSelf) {
-            dependents = Sets.newHashSet(dependents);
-            dependents.add(project);
+        Iterable<BootstrapProject> projects, boolean includeSelf) {
+        final Set<BootstrapProject> dependents = Sets.newHashSet();
+        for(BootstrapProject project : projects) {
+            dependents.addAll(transDeps.getInverse(project));
+            if(includeSelf) {
+                dependents.add(project);
+            }
         }
         return dependents;
     }
 
 
     private LanguageVersion nextVersion(BootstrapProject project) {
-        final LanguageVersion version = project.config().identifier().version;
-        return new LanguageVersion(version.major, version.minor, version.patch + 1, "");
+        // HACK: fix version
+        return new LanguageVersion(2, 1, 0, "");
+        // final LanguageVersion version = project.config().identifier().version;
+        // return new LanguageVersion(version.major, version.minor, version.patch + 1, "");
     }
 
     private void setVersion(BootstrapProject project, LanguageVersion newVersion) throws ConfigException {
@@ -425,7 +437,7 @@ public class BootstrapJob extends Job {
         return change.storeFile();
     }
 
-    private boolean compare(FileObject leftBinary, FileObject rightBinary) throws IOException {
+    private boolean compare(FileObject leftBinary, FileObject rightBinary) throws IOException, InterruptedException {
         logger.info("Comparing {} to {}", leftBinary, rightBinary);
         leftBinary.refresh();
         rightBinary.refresh();
@@ -437,7 +449,7 @@ public class BootstrapJob extends Job {
         }
         logger.warn("Binaries are different", leftBinary, rightBinary);
         for(ResourceDiff diff : diffs) {
-            logger.warn(diff.toString());
+            logger.warn("  {}", diff.toString());
         }
         return false;
     }
@@ -450,7 +462,7 @@ public class BootstrapJob extends Job {
     }
 
 
-    private IStatus error(String message) {
+    @SuppressWarnings("unused") private IStatus error(String message) {
         logger.error(message);
         return StatusUtils.error(message);
     }
@@ -466,7 +478,7 @@ public class BootstrapJob extends Job {
         return StatusUtils.error(message);
     }
 
-    private IStatus error(String fmt, Throwable e, Object... args) {
+    @SuppressWarnings("unused") private IStatus error(String fmt, Throwable e, Object... args) {
         final String message = logger.format(fmt, args);
         logger.error(message, e);
         return StatusUtils.error(message, e);

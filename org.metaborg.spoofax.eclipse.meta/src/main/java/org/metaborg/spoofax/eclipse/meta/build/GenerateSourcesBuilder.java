@@ -65,8 +65,9 @@ public class GenerateSourcesBuilder extends Builder {
                 try {
                     logger.info("Cleaning and generating sources for language project {}", languageSpec);
                     builder.clean(input);
-                    builder.initialize(input);
-                    builder.generateSources(input, new CollectionFileAccess());
+                    // HACK: don't generate sources after cleaning.
+                    //builder.initialize(input);
+                    //builder.generateSources(input, new CollectionFileAccess());
                 } catch(Exception e) {
                     failure(workspaceMonitor, "Cannot clean language project {}; build failed unexpectedly", e,
                         languageSpec);

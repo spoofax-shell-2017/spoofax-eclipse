@@ -8,6 +8,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
 
+import com.google.common.collect.Iterables;
 import com.google.inject.Injector;
 
 public class BootstrapHandler extends AbstractHandler {
@@ -25,12 +26,12 @@ public class BootstrapHandler extends AbstractHandler {
 
 
     @Override public Object execute(ExecutionEvent event) throws ExecutionException {
-        final org.eclipse.core.resources.IProject eclipseProject = AbstractHandlerUtils.toProject(event);
-        if(eclipseProject == null) {
+        final Iterable<org.eclipse.core.resources.IProject> eclipseProjects = AbstractHandlerUtils.toProjects(event);
+        if(Iterables.isEmpty(eclipseProjects)) {
             return null;
         }
 
-        final BootstrapJob job = bootstrapJobFactory.create(workspaceRoot, eclipseProject);
+        final BootstrapJob job = bootstrapJobFactory.create(workspaceRoot, eclipseProjects);
         job.setRule(workspaceRoot);
         job.schedule();
 

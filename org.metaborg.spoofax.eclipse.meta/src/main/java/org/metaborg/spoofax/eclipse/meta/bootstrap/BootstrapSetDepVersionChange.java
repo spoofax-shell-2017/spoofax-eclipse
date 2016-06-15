@@ -51,7 +51,7 @@ public class BootstrapSetDepVersionChange extends BootstrapConfigChange {
                 prevSourceVersion = depId.version;
                 newSourceDeps.remove(depId);
                 newSourceDeps.add(new LanguageIdentifier(depId.groupId, depId.id, newVersion));
-                logger.info("Setting source dependency {}:{} version to {}", groupId, id, newVersion);
+                logger.info("  Setting source dependency {}:{} version to {}", groupId, id, newVersion);
                 break;
             }
         }
@@ -64,7 +64,7 @@ public class BootstrapSetDepVersionChange extends BootstrapConfigChange {
                 prevCompileVersion = depId.version;
                 newCompileDeps.remove(depId);
                 newCompileDeps.add(new LanguageIdentifier(depId.groupId, depId.id, newVersion));
-                logger.info("Setting compile dependency {}:{} version to {}", groupId, id, newVersion);
+                logger.info("  Setting compile dependency {}:{} version to {}", groupId, id, newVersion);
                 break;
             }
         }
@@ -88,7 +88,7 @@ public class BootstrapSetDepVersionChange extends BootstrapConfigChange {
             if(depId.groupId.equals(groupId) && depId.id.equals(id)) {
                 newSourceDeps.remove(depId);
                 newSourceDeps.add(new LanguageIdentifier(depId.groupId, depId.id, prevSourceVersion));
-                logger.info("Reverting source dependency {}:{} version to {}", groupId, id, prevSourceVersion);
+                logger.info("  Reverting source dependency {}:{} version to {}", groupId, id, prevSourceVersion);
                 prevSourceVersion = null;
                 break;
             }
@@ -101,7 +101,7 @@ public class BootstrapSetDepVersionChange extends BootstrapConfigChange {
             if(depId.groupId.equals(groupId) && depId.id.equals(id)) {
                 newCompileDeps.remove(depId);
                 newCompileDeps.add(new LanguageIdentifier(depId.groupId, depId.id, prevCompileVersion));
-                logger.info("Reverting compile dependency {}:{} version to {}", groupId, id, prevCompileVersion);
+                logger.info("  Reverting compile dependency {}:{} version to {}", groupId, id, prevCompileVersion);
                 prevCompileVersion = null;
                 break;
             }
