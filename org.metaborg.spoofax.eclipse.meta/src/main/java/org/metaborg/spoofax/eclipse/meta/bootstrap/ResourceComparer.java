@@ -218,10 +218,13 @@ public class ResourceComparer {
 
     private String disassembleClassFile(FileObject classFile) throws InterruptedException, IOException {
         final File file = resourceService.localFile(classFile);
+
         // Run javap with -c to disassemble code within methods, and -p to disassemble all private members.
-        final Process process = Runtime.getRuntime().exec("javap -c -p " + file);
-        process.waitFor();
+        final ProcessBuilder processBuilder = new ProcessBuilder("javap -c -p " + file);
+        final Process process = processBuilder.start();
         final String disassembly = IOUtils.toString(process.getInputStream());
+        process.waitFor();
+
         return disassembly;
     }
 
