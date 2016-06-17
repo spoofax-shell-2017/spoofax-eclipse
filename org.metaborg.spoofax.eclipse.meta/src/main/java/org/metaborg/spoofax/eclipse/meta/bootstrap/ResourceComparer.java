@@ -207,7 +207,7 @@ public class ResourceComparer {
         /*
          * Some Java compilers are not completely deterministic, they sometimes generate less, more, or different bytes
          * for the exact same Java source files. To make sure that those class files are not marked as different, we
-         * first disassemble them with the javap tool, and compare the disassembled output.
+         * first disassemble them, and compare the disassembled output.
          */
         final String leftDisassembly = disassembleClassFile(left);
         final String rightDisassembly = disassembleClassFile(right);
@@ -220,7 +220,7 @@ public class ResourceComparer {
         final File file = resourceService.localFile(classFile);
 
         // Run javap with -c to disassemble code within methods, and -p to disassemble all private members.
-        final ProcessBuilder processBuilder = new ProcessBuilder("javap -c -p " + file);
+        final ProcessBuilder processBuilder = new ProcessBuilder("javap", "-c", "-p", file.toString());
         final Process process = processBuilder.start();
         final String disassembly = IOUtils.toString(process.getInputStream());
         process.waitFor();
