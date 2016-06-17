@@ -4,5 +4,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 
 public interface BootstrapJobFactory {
-    BootstrapJob create(IWorkspaceRoot workspaceRoot, Iterable<IProject> targetEclipseProjects);
+    BootstrapJob create(IWorkspaceRoot workspaceRoot, Iterable<IProject> targetEclipseProjects,
+        boolean singleIteration);
 }

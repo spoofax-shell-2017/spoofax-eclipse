@@ -108,7 +108,9 @@
 
   <!-- Language project commands -->
   <extension point="org.eclipse.ui.commands">
-    <command id="org.metaborg.spoofax.eclipse.meta.command.bootstrap" name="Bootstrap"/>
+    <command id="org.metaborg.spoofax.eclipse.meta.command.bootstrap" name="Bootstrap">
+      <commandParameter id="singleIteration" name="Single iteration" optional="true"/>
+    </command>
     <command id="org.metaborg.spoofax.eclipse.meta.command.language.load" name="Load language"/>
     <command id="org.metaborg.spoofax.eclipse.meta.command.language.unload" name="Unload language"/>
     <command id="org.metaborg.spoofax.eclipse.meta.command.language.upgrade" name="Upgrade language project"/>
@@ -208,7 +210,14 @@
         </visibleWhen>
       </command>
       <separator name="separator1" visible="true "/>
-      <command commandId="org.metaborg.spoofax.eclipse.meta.command.bootstrap">
+      <command commandId="org.metaborg.spoofax.eclipse.meta.command.bootstrap" label="Bootstrap (fixpoint)">
+        <parameter name="singleIteration" value="false"/>
+        <visibleWhen>
+          <reference definitionId="org.metaborg.spoofax.eclipse.meta.expression.hasnature" />
+        </visibleWhen>
+      </command>
+      <command commandId="org.metaborg.spoofax.eclipse.meta.command.bootstrap" label="Bootstrap (single iteration)">
+        <parameter name="singleIteration" value="true"/>
         <visibleWhen>
           <reference definitionId="org.metaborg.spoofax.eclipse.meta.expression.hasnature" />
         </visibleWhen>

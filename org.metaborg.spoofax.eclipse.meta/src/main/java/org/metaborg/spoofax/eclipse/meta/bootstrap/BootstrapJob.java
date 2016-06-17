@@ -65,6 +65,7 @@ public class BootstrapJob extends Job {
 
     private final IWorkspaceRoot workspaceRoot;
     private final Iterable<org.eclipse.core.resources.IProject> targetEclipseProjects;
+    private final boolean singleIteration;
 
     private final Collection<IBootstrapChange> changes = Lists.newArrayList();
 
@@ -74,7 +75,8 @@ public class BootstrapJob extends Job {
         Provider<ISpoofaxLanguageSpecConfigBuilder> languageSpecConfigBuilderProvider,
         ISpoofaxLanguageSpecConfigWriter languageSpecConfigWriter, ISpoofaxLanguageSpecService languageSpecService,
         @Assisted IWorkspaceRoot workspaceRoot,
-        @Assisted Iterable<org.eclipse.core.resources.IProject> targetEclipseProjects) {
+        @Assisted Iterable<org.eclipse.core.resources.IProject> targetEclipseProjects,
+        @Assisted boolean singleIteration) {
         super("Bootstrapping " + targetEclipseProjects);
         this.resourceService = resourceService;
         this.projectService = projectService;
@@ -87,6 +89,7 @@ public class BootstrapJob extends Job {
 
         this.workspaceRoot = workspaceRoot;
         this.targetEclipseProjects = targetEclipseProjects;
+        this.singleIteration = singleIteration;
     }
 
 
@@ -225,6 +228,10 @@ public class BootstrapJob extends Job {
 
                     projectMonitor.worked(1);
                     projectMonitor.done();
+                }
+                if(singleIteration) {
+                    logger.info("Single iteration completed");
+                    break;
                 }
                 if(fixpoint) {
                     logger.info("Fixpoint was reached");

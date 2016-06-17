@@ -11,15 +11,13 @@ import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
 import com.google.common.collect.Iterables;
 import com.google.inject.Injector;
 
-public class BootstrapHandler extends AbstractHandler {
-    private static final String singleIterationParameter = "singleIteration";
-
+public class BootstrapSingleHandler extends AbstractHandler {
     private final BootstrapJobFactory bootstrapJobFactory;
 
     private final IWorkspaceRoot workspaceRoot;
 
 
-    public BootstrapHandler() {
+    public BootstrapSingleHandler() {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.bootstrapJobFactory = injector.getInstance(BootstrapJobFactory.class);
 
@@ -33,15 +31,7 @@ public class BootstrapHandler extends AbstractHandler {
             return null;
         }
 
-        final String singleIterationStr = event.getParameter(singleIterationParameter);
-        final boolean singleIteration;
-        if(singleIterationStr == null || singleIterationStr.equals("false")) {
-            singleIteration = false;
-        } else {
-            singleIteration = true;
-        }
-
-        final BootstrapJob job = bootstrapJobFactory.create(workspaceRoot, eclipseProjects, singleIteration);
+        final BootstrapJob job = bootstrapJobFactory.create(workspaceRoot, eclipseProjects, false);
         job.setRule(workspaceRoot);
         job.schedule();
 
