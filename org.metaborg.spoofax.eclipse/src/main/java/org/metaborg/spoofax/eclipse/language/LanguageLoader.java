@@ -76,7 +76,7 @@ public class LanguageLoader {
      * Loads language components and dialects at given location.
      * 
      * @param location
-     *            Location to load from.
+     *            Location to load language components from.
      * @param skipUnavailable
      *            If unavailable requests should be skipped.
      */
@@ -99,13 +99,8 @@ public class LanguageLoader {
             logger.error("Could not discover language at location {}", e, location);
         }
 
-        try {
-            final Iterable<FileObject> resources = ResourceUtils.find(location);
-            final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
-            dialectProcessor.update(location, creations);
-        } catch(IOException e) {
-            logger.error("Could not discover dialects at location {}", e, location);
-        }
+        // TODO: make this into a separate call, should be done AFTER all regular languages are loaded.
+        loadDialects(location);
     }
 
     /**
@@ -123,6 +118,35 @@ public class LanguageLoader {
             new ISchedulingRule[] { workspaceRoot, globalRules.startupReadLock(), globalRules.languageServiceLock() }));
         return job;
     }
+
+
+    /**
+     * Loads dialects in given Eclipse project.
+     * 
+     * @param project
+     *            Eclipse project to load from.
+     */
+    public void loadDialects(IProject project) {
+        final FileObject location = resourceService.resolve(project);
+        loadDialects(location);
+    }
+
+    /**
+     * Loads dialects at given location.
+     * 
+     * @param location
+     *            Location to load dialects from.
+     */
+    public void loadDialects(FileObject location) {
+        try {
+            final Iterable<FileObject> resources = ResourceUtils.find(location);
+            final Iterable<ResourceChange> creations = ResourceUtils.toChanges(resources, ResourceChangeKind.Create);
+            dialectProcessor.update(location, creations);
+        } catch(IOException e) {
+            logger.error("Could not discover dialects at location {}", e, location);
+        }
+    }
+
 
     /**
      * Loads all languages and dialects from plugins.

@@ -110,10 +110,11 @@ public class MetaLanguageLoader implements IResourceChangeListener {
         }
     }
 
+
     /**
      * Loads all language components and dialects from language specifications of workspace projects.
      */
-    public void loadFromProjects() {
+    public void loadLanguagesFromProjects() {
         logger.debug("Loading languages and dialects from workspace projects");
         for(final IProject project : workspaceRoot.getProjects()) {
             if(project.isOpen() && isLanguageProject(project)) {
@@ -125,7 +126,7 @@ public class MetaLanguageLoader implements IResourceChangeListener {
     /**
      * Creates a job that loads all language components and dialects from language specifications of workspace projects.
      */
-    public Job loadFromProjectsJob() {
+    public Job loadLanguagesFromProjectsJob() {
         final Job job = new DiscoverLanguagesFromProjectsJob(this);
         job.setRule(new MultiRule(new ISchedulingRule[] { workspaceRoot, globalRules.startupWriteLock(),
             globalRules.languageServiceLock() }));
@@ -133,16 +134,42 @@ public class MetaLanguageLoader implements IResourceChangeListener {
         return job;
     }
 
+
     /**
      * Creates a job that loads all language components and dialects from stored bootstrapped binaries.
      */
-    public Job loadFromBootstrapJob() {
+    public Job loadLanguagesFromBootstrapJob() {
         final Job job = new DiscoverLanguagesFromBootstrappingJob(resourceService, languageDiscoveryService);
         job.setRule(new MultiRule(new ISchedulingRule[] { workspaceRoot, globalRules.startupWriteLock(),
             globalRules.languageServiceLock() }));
         job.schedule();
         return job;
     }
+
+
+    /**
+     * Loads all language components and dialects from language specifications of workspace projects.
+     */
+    public void loadDialectsFromProjects() {
+        logger.debug("Loading dialects from workspace projects");
+        for(final IProject project : workspaceRoot.getProjects()) {
+            if(project.isOpen() && isLanguageProject(project)) {
+                languageLoader.loadDialects(project);
+            }
+        }
+    }
+
+    /**
+     * Creates a job that loads all language components and dialects from language specifications of workspace projects.
+     */
+    public Job loadDialectsFromProjectsJob() {
+        final Job job = new DiscoverDialectsFromProjectsJob(this);
+        job.setRule(new MultiRule(new ISchedulingRule[] { workspaceRoot, globalRules.startupWriteLock(),
+            globalRules.languageServiceLock() }));
+        job.schedule();
+        return job;
+    }
+
 
     /**
      * Checks if given Eclipse project is a language specification project.

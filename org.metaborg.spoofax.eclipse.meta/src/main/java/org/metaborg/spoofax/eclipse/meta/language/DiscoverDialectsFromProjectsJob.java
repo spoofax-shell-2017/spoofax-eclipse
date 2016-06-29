@@ -10,14 +10,14 @@ import org.metaborg.util.log.LoggerUtils;
 /**
  * Job for discovering languages and dialects from plugins.
  */
-public class DiscoverLanguagesFromProjectsJob extends Job {
-    private static final ILogger logger = LoggerUtils.logger(DiscoverLanguagesFromProjectsJob.class);
+public class DiscoverDialectsFromProjectsJob extends Job {
+    private static final ILogger logger = LoggerUtils.logger(DiscoverDialectsFromProjectsJob.class);
 
     private final MetaLanguageLoader metaLanguageLoader;
 
 
-    public DiscoverLanguagesFromProjectsJob(MetaLanguageLoader metaLanguageLoader) {
-        super("Loading all Spoofax languages from open projects");
+    public DiscoverDialectsFromProjectsJob(MetaLanguageLoader metaLanguageLoader) {
+        super("Loading all Spoofax dialects from open projects");
         setPriority(Job.LONG);
 
         this.metaLanguageLoader = metaLanguageLoader;
@@ -25,8 +25,8 @@ public class DiscoverLanguagesFromProjectsJob extends Job {
 
 
     @Override protected IStatus run(IProgressMonitor monitor) {
-        logger.debug("Loading all Spoofax languages from open projects");
-        metaLanguageLoader.loadLanguagesFromProjects();
+        logger.debug("Loading all Spoofax dialects from open projects");
+        metaLanguageLoader.loadDialectsFromProjects();
         return StatusUtils.success();
     }
 }
