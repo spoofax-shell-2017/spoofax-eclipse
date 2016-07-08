@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.metaborg</groupId>
     <artifactId>parent</artifactId>
-    <version>2.0.0-beta1</version>
+    <version>2.0.0-SNAPSHOT</version>
     <relativePath>../../releng/parent</relativePath>
   </parent>
 
@@ -28,11 +28,6 @@
       <groupId>org.metaborg</groupId>
       <artifactId>make-permissive</artifactId>
       <version>${metaborg-version}</version>
-    </dependency>
-    <!-- Requirements for org.metaborg.meta.interpreter.framework -->
-    <dependency>
-      <groupId>com.github.krukow</groupId>
-      <artifactId>clj-ds</artifactId>
     </dependency>
     <!-- General requirements for several libraries -->
     <!-- Logging -->
@@ -59,11 +54,16 @@
     </dependency>
     <dependency>
       <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-assistedinject</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-multibindings</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>aopalliance</groupId>
@@ -116,27 +116,16 @@
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
     </dependency>
     <!-- Reactive Extensions -->
     <dependency>
       <groupId>com.netflix.rxjava</groupId>
       <artifactId>rxjava-core</artifactId>
     </dependency>
-    <!-- Functional Java -->
+    <!-- FastUtil -->
     <dependency>
-      <groupId>org.functionaljava</groupId>
-      <artifactId>functionaljava</artifactId>
-    </dependency>
-    <!-- JGraphT -->
-    <dependency>
-      <groupId>org.javabits.jgrapht</groupId>
-      <artifactId>jgrapht-core</artifactId>
-    </dependency>
-    <!-- High Performance Primitive Collections -->
-    <dependency>
-      <groupId>com.carrotsearch</groupId>
-      <artifactId>hppc</artifactId>
+      <groupId>it.unimi.dsi</groupId>
+      <artifactId>fastutil</artifactId>
     </dependency>
   </dependencies>
 
@@ -163,64 +152,49 @@
             <!-- Embed dependencies into plugin bundle, so they are exportable. -->
             <Embed-Dependency>
               aopalliance,
-              clj-ds,
               commons-configuration2,
               commons-configuration2-jackson,
               commons-io,
               commons-lang3,
               commons-logging,
               commons-vfs2,
-              functionaljava,
+              fastutil,
               guava,
               guice,
+              guice-assistedinject,
               guice-multibindings,
-              hppc,
               jackson-annotations,
               jackson-databind,
               jackson-dataformat-yaml,
               jackson-core,
-              jgrapht-core,
               jcl-over-slf4j,
               logback-classic,
               logback-core,
               make-permissive,
               rxjava-core,
               slf4j-api,
-              strategoxt-min-jar
+              strategoxt-min-jar,
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
               !com.google.common.base.internal,
               !com.google.inject.internal.*,
-              !org.apache.commons.logging.impl,
-              ch.qos.logback.classic*;provider=metaborg;mandatory:=provider,
-              ch.qos.logback.classic;provider=metaborg;mandatory:=provider,
-              ch.qos.logback.core*;provider=metaborg;mandatory:=provider,
-              ch.qos.logback.core;provider=metaborg;mandatory:=provider,
-              com.carrotsearch.hppc;provider=metaborg;mandatory:=provider,
-              com.fasterxml.jackson*;provider=metaborg;mandatory:=provider,
-              com.github.krukow.clj_ds;provider=metaborg;mandatory:=provider,
-              com.github.krukow.clj_lang;provider=metaborg;mandatory:=provider,
-              com.google.common.*;provider=metaborg;mandatory:=provider,
-              com.google.inject.*;provider=metaborg;mandatory:=provider,
-              fj.*;provider=metaborg;mandatory:=provider,
-              org.aopalliance*;provider=metaborg;mandatory:=provider,
-              org.apache.commons.configuration2*;provider=metaborg;mandatory:=provider,
-              org.apache.commons.configuration2;provider=metaborg;mandatory:=provider,
-              org.apache.commons.io*;provider=metaborg;mandatory:=provider,
-              org.apache.commons.io;provider=metaborg;mandatory:=provider,
-              org.apache.commons.lang3*;provider=metaborg;mandatory:=provider,
-              org.apache.commons.lang3;provider=metaborg;mandatory:=provider,
-              org.apache.commons.logging;provider=metaborg;mandatory:=provider,
-              org.apache.commons.vfs2*;provider=metaborg;mandatory:=provider,
-              com.virtlink.commons.configuration2.jackson*;provider=metaborg;mandatory:=provider,
-              com.virtlink.commons.configuration2.jackson;provider=metaborg;mandatory:=provider,
-              org.jgrapht*;provider=metaborg;mandatory:=provider,
-              org.jgrapht;provider=metaborg;mandatory:=provider,
-              org.slf4j*;provider=metaborg;mandatory:=provider,
-              org.slf4j;provider=metaborg;mandatory:=provider,
-              org.strategoxt*,
-              rx.*;provider=metaborg;mandatory:=provider
+              ch.qos.logback.classic.*;provider=metaborg;mandatory:=provider;version=0,
+              ch.qos.logback.core.*;provider=metaborg;mandatory:=provider;version=0,
+              com.fasterxml.jackson.*;provider=metaborg;mandatory:=provider;version=0,
+              com.google.common.*;provider=metaborg;mandatory:=provider;version=0,
+              com.google.inject.*;provider=metaborg;mandatory:=provider;version=0,
+              it.unimi.dsi.fastutil.*;provider=metaborg;mandatory:=provider;version=0,
+              org.aopalliance*;provider=metaborg;mandatory:=provider;version=0,
+              org.apache.commons.configuration2.*;provider=metaborg;mandatory:=provider;version=0,
+              org.apache.commons.io.*;provider=metaborg;mandatory:=provider;version=0,
+              org.apache.commons.lang3.*;provider=metaborg;mandatory:=provider;version=0,
+              org.apache.commons.logging.*;provider=metaborg;mandatory:=provider;version=0,
+              org.apache.commons.vfs2.*;provider=metaborg;mandatory:=provider;version=0,
+              com.virtlink.commons.configuration2.jackson.*;provider=metaborg;mandatory:=provider;version=0,
+              org.slf4j.*;provider=metaborg;mandatory:=provider;version=0,
+              org.strategoxt.*,
+              rx.*;provider=metaborg;mandatory:=provider;version=0
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
             <Import-Package>
@@ -235,6 +209,8 @@
             </Import-Package>
             <!-- Don't generate uses declarations in exported packages. -->
             <_nouses>true</_nouses>
+            <!-- Don't use version of this package if no version can be determined. -->
+            <_nodefaultversion>true</_nodefaultversion>
             <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
               some libraries require. -->
             <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>

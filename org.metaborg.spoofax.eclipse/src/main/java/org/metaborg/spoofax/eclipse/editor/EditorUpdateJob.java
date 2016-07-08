@@ -92,7 +92,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         IOutlineService<P, A> outlineService, IParseResultUpdater<P> parseResultProcessor,
         IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<F> editor, IEditorInput input,
         @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous) {
-        super("Updating Spoofax editor for " + eclipseResource.toString());
+        super("Updating Spoofax editor for " + resource.toString());
         setPriority(Job.SHORT);
 
         this.resourceService = resourceService;
@@ -378,6 +378,18 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
                     if(workspaceMonitor.isCanceled())
                         return;
                     final IResource messagesEclipseResource = resourceService.unresolve(result.source());
+                    if(messagesEclipseResource == null) {
+                        // In case the analysis sends an update for a resource that is not an eclipse resource; ignore.
+                        logger.debug("Cannot perform analysis update for resource {}, it is not an Eclipse resource",
+                            result.source());
+                        continue;
+                    }
+                    if(!messagesEclipseResource.exists()) {
+                        // In case the analysis sends an update for a resource that does not exist; ignore.
+                        logger.debug("Cannot perform analysis update for resource {}, since it does not exist",
+                            messagesEclipseResource);
+                        continue;
+                    }
                     MarkerUtils.clearAnalysis(messagesEclipseResource);
                     for(IMessage message : result.messages()) {
                         if(workspaceMonitor.isCanceled())
