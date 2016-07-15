@@ -48,10 +48,6 @@ public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
     }
 
     @Override public @Nullable ISpoofaxLanguageSpec get(IProject project) throws ConfigException {
-        if(project instanceof EclipseLanguageSpec) {
-            return (EclipseLanguageSpec) project;
-        }
-
         if(!(project instanceof EclipseProject)) {
             logger.error("Project {} is not an Eclipse project, cannot convert to a language specification project",
                 project);

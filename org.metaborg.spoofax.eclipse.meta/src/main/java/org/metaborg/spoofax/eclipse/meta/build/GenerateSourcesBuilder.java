@@ -14,7 +14,7 @@ import org.metaborg.spoofax.meta.core.build.LanguageSpecBuildInput;
 import org.metaborg.spoofax.meta.core.build.LanguageSpecBuilder;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpec;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
-import org.metaborg.util.file.FileAccess;
+import org.metaborg.util.file.CollectionFileAccess;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -46,7 +46,7 @@ public class GenerateSourcesBuilder extends Builder {
                 try {
                     logger.info("Generating sources for language project {}", languageSpec);
                     builder.initialize(input);
-                    builder.generateSources(input, new FileAccess());
+                    builder.generateSources(input, new CollectionFileAccess());
                 } catch(Exception e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
@@ -68,7 +68,7 @@ public class GenerateSourcesBuilder extends Builder {
                     logger.info("Cleaning and generating sources for language project {}", languageSpec);
                     builder.clean(input);
                     builder.initialize(input);
-                    builder.generateSources(input, new FileAccess());
+                    builder.generateSources(input, new CollectionFileAccess());
                 } catch(Exception e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);

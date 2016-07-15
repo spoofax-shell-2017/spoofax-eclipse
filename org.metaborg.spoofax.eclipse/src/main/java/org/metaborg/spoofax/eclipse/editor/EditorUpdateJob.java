@@ -92,7 +92,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         IOutlineService<P, A> outlineService, IParseResultUpdater<P> parseResultProcessor,
         IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<F> editor, IEditorInput input,
         @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous) {
-        super("Updating Spoofax editor for " + eclipseResource.toString());
+        super("Updating Spoofax editor for " + resource.toString());
         setPriority(Job.SHORT);
 
         this.resourceService = resourceService;

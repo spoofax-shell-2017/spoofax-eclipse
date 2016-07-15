@@ -13,7 +13,7 @@
   <parent>
     <groupId>org.metaborg</groupId>
     <artifactId>parent</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <relativePath>../../releng/parent</relativePath>
   </parent>
 
@@ -78,8 +78,8 @@
             <!-- Export dependency packages -->
             <Export-Package>
               com.github.mustachejava.*;provider=metaborg;mandatory:=provider,
-              build.pluto.*;provider=metaborg;mandatory:=provider,
-              org.sugarj.common.*;provider=metaborg;mandatory:=provider,
+              build.pluto.*;version="1.9.0";provider=metaborg;mandatory:=provider,
+              org.sugarj.common.*;version="1.9.0";provider=metaborg;mandatory:=provider,
               com.cedarsoftware.util;provider=metaborg;mandatory:=provider,
               org.objenesis.*;provider=metaborg;mandatory:=provider
             </Export-Package>

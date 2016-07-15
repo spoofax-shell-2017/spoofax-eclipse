@@ -8,8 +8,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.spoofax.eclipse.build.SpoofaxProjectBuilder;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.meta.build.GenerateSourcesBuilder;
-import org.metaborg.spoofax.eclipse.meta.build.PostJavaBuilder;
-import org.metaborg.spoofax.eclipse.meta.build.PreJavaBuilder;
+import org.metaborg.spoofax.eclipse.meta.build.PackageBuilder;
+import org.metaborg.spoofax.eclipse.meta.build.CompileBuilder;
 import org.metaborg.spoofax.eclipse.nature.SpoofaxNature;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
@@ -29,16 +29,16 @@ public class SpoofaxMetaNature implements IProjectNature {
     @Override public void configure() throws CoreException {
         BuilderUtils.append(GenerateSourcesBuilder.id, project, null, IncrementalProjectBuilder.FULL_BUILD,
             IncrementalProjectBuilder.CLEAN_BUILD);
-        BuilderUtils.append(PreJavaBuilder.id, project, null, IncrementalProjectBuilder.FULL_BUILD,
+        BuilderUtils.append(CompileBuilder.id, project, null, IncrementalProjectBuilder.FULL_BUILD,
             IncrementalProjectBuilder.CLEAN_BUILD);
-        BuilderUtils.append(PostJavaBuilder.id, project, null, IncrementalProjectBuilder.FULL_BUILD,
+        BuilderUtils.append(PackageBuilder.id, project, null, IncrementalProjectBuilder.FULL_BUILD,
             IncrementalProjectBuilder.CLEAN_BUILD);
     }
 
     @Override public void deconfigure() throws CoreException {
         BuilderUtils.removeFrom(GenerateSourcesBuilder.id, project, null);
-        BuilderUtils.removeFrom(PreJavaBuilder.id, project, null);
-        BuilderUtils.removeFrom(PostJavaBuilder.id, project, null);
+        BuilderUtils.removeFrom(CompileBuilder.id, project, null);
+        BuilderUtils.removeFrom(PackageBuilder.id, project, null);
     }
 
     @Override public IProject getProject() {
@@ -73,7 +73,7 @@ public class SpoofaxMetaNature implements IProjectNature {
 
     private static void sortBuilders(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
         final String[] buildOrder = new String[] { mavenBuilderId, GenerateSourcesBuilder.id, SpoofaxProjectBuilder.id,
-            PreJavaBuilder.id, javaBuilderId, PostJavaBuilder.id };
+            CompileBuilder.id, javaBuilderId, PackageBuilder.id };
         BuilderUtils.sort(project, monitor, buildOrder);
     }
 
