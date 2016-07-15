@@ -99,6 +99,7 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
             parseResultRequester, resource, document, language);
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
+        assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
         return assistant;
     }
 
