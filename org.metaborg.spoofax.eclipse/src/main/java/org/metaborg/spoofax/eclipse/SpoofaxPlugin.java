@@ -1,5 +1,10 @@
 package org.metaborg.spoofax.eclipse;
 
+import java.net.URL;
+
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.metaborg.core.processing.IProcessorRunner;
@@ -45,6 +50,18 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         doneLoading = true;
     }
 
+    @Override protected void initializeImageRegistry(ImageRegistry reg) {
+        reg.put("expansion-icon", createImageFromURL("icons/completion-expansion.png"));
+        reg.put("recovery-icon", createImageFromURL("icons/completion-recovery.png"));
+    }
+
+    private Image createImageFromURL(String URL) {
+        final URL imageURL = plugin.getBundle().getEntry(URL);
+        final ImageDescriptor descriptor = ImageDescriptor.createFromURL(imageURL);
+        final Image image = descriptor.createImage();
+        return image;
+    }
+
     @Override public void stop(BundleContext context) throws Exception {
         logger.debug("Stopping Spoofax plugin");
         doneLoading = false;
@@ -78,5 +95,9 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
 
     public static boolean doneLoading() {
         return doneLoading;
+    }
+    
+    public static ImageRegistry imageRegistry() {
+        return plugin.getImageRegistry();
     }
 }

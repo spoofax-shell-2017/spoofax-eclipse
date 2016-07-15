@@ -11,12 +11,12 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
-import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.metaborg.core.MetaborgException;
+import org.metaborg.core.completion.CompletionKind;
 import org.metaborg.core.completion.ICompletion;
 import org.metaborg.core.completion.ICompletionItem;
 import org.metaborg.core.completion.ICompletionService;
@@ -32,7 +32,6 @@ import org.metaborg.spoofax.core.unit.ISpoofaxInputUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.core.unit.ISpoofaxTransformUnit;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
-import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoAppl;
@@ -266,8 +265,81 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
     }
 
     @Override public String getAdditionalProposalInfo() {
-        System.out.println(completion.text());
-        return "<code>" + completion.text() + "</code>";
+        if(completion.kind() == CompletionKind.expansion) {
+            return escapeHtml(completion.text());
+        } else if(completion.kind() == CompletionKind.recovery) {
+            return highlightProposal(escapeHtml(completion.text()), completion.prefix(), completion.suffix());
+        }
+        return null;
+    }
+
+    private String highlightProposal(String text, String prefix, String suffix) {
+        String highlightedText = text;
+        
+        if(prefix != null) {
+            highlightedText = highlightPrefix(prefix, text);
+        }
+        
+        if(suffix != null) {
+            highlightedText = highlightSuffix(suffix, highlightedText);
+        }
+        return highlightedText;
+    }
+
+    private String highlightPrefix(String prefix, String description) {
+        String highlightedDescription = "<b>";
+        int prefixIndex = 0;
+        int descriptionIndex;
+        for(descriptionIndex = 0; descriptionIndex < description.length(); descriptionIndex++) {
+            if(description.charAt(descriptionIndex) == prefix.charAt(prefixIndex)) {
+                highlightedDescription += description.charAt(descriptionIndex);
+                prefixIndex++;
+                if(prefixIndex >= prefix.length())
+                    break;
+            } else if(description.charAt(descriptionIndex) == '\n' || description.charAt(descriptionIndex) == '\t'
+                || description.charAt(descriptionIndex) == ' ') {
+                highlightedDescription += description.charAt(descriptionIndex);
+            } else {
+                break;
+            }
+        }
+
+        highlightedDescription += "</b>" + description.substring(descriptionIndex + 1);
+
+        return highlightedDescription;
+    }
+    
+    private String highlightSuffix(String suffix, String description) {
+        String highlightedDescription = "</b>";
+        int suffixIndex = suffix.length() - 1;
+        int descriptionIndex;
+        for(descriptionIndex = description.length() - 1; descriptionIndex >= 0 ; descriptionIndex--) {
+            if(description.charAt(descriptionIndex) == suffix.charAt(suffixIndex)) {
+                highlightedDescription = description.charAt(descriptionIndex) + highlightedDescription;
+                suffixIndex--;
+                if(suffixIndex < 0)
+                    break;
+            } else if(description.charAt(descriptionIndex) == '\n' || description.charAt(descriptionIndex) == '\t'
+                || description.charAt(descriptionIndex) == ' ') {
+                highlightedDescription = description.charAt(descriptionIndex) + highlightedDescription;
+            } else {
+                break;
+            }
+        }
+
+        highlightedDescription = description.substring(0, descriptionIndex + 1) + "<b>" + highlightedDescription;
+
+        return highlightedDescription;
+    }
+
+
+
+
+    private String escapeHtml(String input) {
+        if(input == null)
+            return null;
+        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+
     }
 
     @Override public String getDisplayString() {
@@ -275,6 +347,11 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
     }
 
     @Override public Image getImage() {
+        if(completion.kind() == CompletionKind.expansion) {
+            return SpoofaxPlugin.imageRegistry().get("expansion-icon");
+        } else if(completion.kind() == CompletionKind.recovery) {
+            return SpoofaxPlugin.imageRegistry().get("recovery-icon");
+        }
         return null;
     }
 
