@@ -17,7 +17,7 @@ import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
 
 import com.google.inject.Injector;
 
-public class UpgradeLanguageProjectHandler extends AbstractHandler {
+public class UpgradeLangSpecHandler extends AbstractHandler {
     private final IEclipseResourceService resourceService;
     private final IProjectService projectService;
     private final ILanguageSpecService languageSpecService;
@@ -25,7 +25,7 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
     private final ITermFactoryService termFactoryService;
 
 
-    public UpgradeLanguageProjectHandler() {
+    public UpgradeLangSpecHandler() {
         final Injector injector = SpoofaxMetaPlugin.injector();
         this.resourceService = injector.getInstance(IEclipseResourceService.class);
         this.projectService = injector.getInstance(IProjectService.class);
@@ -41,7 +41,7 @@ public class UpgradeLanguageProjectHandler extends AbstractHandler {
             return null;
         }
 
-        final UpgradeLanguageProjectWizard wizard = new UpgradeLanguageProjectWizard(resourceService, projectService,
+        final UpgradeLangSpecWizard wizard = new UpgradeLangSpecWizard(resourceService, projectService,
             languageSpecService, configBuilder, termFactoryService, project);
         final Shell shell = HandlerUtil.getActiveWorkbenchWindow(event).getShell();
         final WizardDialog dialog = new WizardDialog(shell, wizard);

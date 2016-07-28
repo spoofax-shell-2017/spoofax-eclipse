@@ -34,10 +34,14 @@ import com.google.inject.name.Named;
 public class EclipseResourceService extends ResourceService implements IEclipseResourceService {
     private static final ILogger logger = LoggerUtils.logger(EclipseResourceService.class);
 
+    private final IWorkspaceRoot root;
+
 
     @Inject public EclipseResourceService(FileSystemManager fileSystemManager,
         @Named("ResourceClassLoader") ClassLoader classLoader) {
         super(fileSystemManager, classLoader);
+
+        this.root = ResourcesPlugin.getWorkspace().getRoot();
     }
 
 
@@ -49,6 +53,9 @@ public class EclipseResourceService extends ResourceService implements IEclipseR
         return resolve("eclipse://" + path.toString());
     }
 
+    @Override public FileObject resolveWorkspaceRoot() {
+        return resolve(root);
+    }
 
     @Override public @Nullable FileObject resolve(IEditorInput input) {
         if(input instanceof IFileEditorInput) {

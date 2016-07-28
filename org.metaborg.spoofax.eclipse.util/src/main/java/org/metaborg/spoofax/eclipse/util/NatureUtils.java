@@ -22,7 +22,7 @@ public class NatureUtils {
         final String[] natures = description.getNatureIds();
         return natureIndex(id, natures) != -1;
     }
-    
+
     /**
      * Adds nature to given project. Does nothing if this nature has already been added to the project.
      * 
@@ -57,7 +57,8 @@ public class NatureUtils {
      * @throws CoreException
      *             When {@link IProject#getDescription} or {@link IProject#setDescription} throws a CoreException.
      */
-    public static void removeFrom(String id, IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
+    public static void removeFrom(String id, IProject project, @Nullable IProgressMonitor monitor)
+        throws CoreException {
         final IProjectDescription description = project.getDescription();
         final String[] natures = description.getNatureIds();
         final int natureIndex = natureIndex(id, natures);

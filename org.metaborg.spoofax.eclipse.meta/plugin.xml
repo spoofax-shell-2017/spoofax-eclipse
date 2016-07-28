@@ -123,7 +123,7 @@
     />
     <handler 
       commandId="org.metaborg.spoofax.eclipse.meta.command.language.upgrade"
-      class="org.metaborg.spoofax.eclipse.meta.wizard.UpgradeLanguageProjectHandler"
+      class="org.metaborg.spoofax.eclipse.meta.wizard.UpgradeLangSpecHandler"
     />
   </extension>
 
@@ -234,7 +234,7 @@
       category="org.metaborg.spoofax.eclipse.meta.newwizard.category"
       project="true"
       hasPages="true"
-      class="org.metaborg.spoofax.eclipse.meta.wizard.GenerateLanguageProjectWizard"
+      class="org.metaborg.spoofax.eclipse.meta.wizard.CreateLangSpecWizard"
     >
     </wizard>
   </extension>
