@@ -2,12 +2,19 @@ package org.metaborg.spoofax.eclipse.editor.completion;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.vfs2.FileObject;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension3;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
@@ -43,8 +50,9 @@ import org.spoofax.terms.visitor.StrategoTermVisitee;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.io.BaseEncoding;
 
-public class SpoofaxCompletionProposal implements ICompletionProposal {
+public class SpoofaxCompletionProposal implements ICompletionProposal, ICompletionProposalExtension3, ICompletionProposalExtension5 {
     private static class CompletionData {
         public final String text;
         public final Multimap<String, ProposalPosition> placeholders;
@@ -54,7 +62,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
 
 
         public CompletionData(IDocument document, String text, ITextViewer viewer, int offset, ICompletion completion,
-            ICompletionService<ISpoofaxParseUnit> completionService, ISpoofaxParseUnit parseResult) {
+            ICompletionService<ISpoofaxParseUnit> completionService, ISpoofaxParseUnit parseResult,
+            IInformationControlCreator informationControlCreator) {
             placeholders = ArrayListMultimap.create();
             this.text = text;
 
@@ -88,7 +97,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                     final ProposalPosition position =
                         new ProposalPosition(document, placeholderItem.startOffset(), placeholderLenght,
                             (sequenceNumber < sequenceSize) ? sequenceNumber++ : 0, getProposals(completionService,
-                                parseResult, viewer, cursorPosition, placeholderItem));
+                                parseResult, viewer, informationControlCreator, cursorPosition, placeholderItem));
                     placeholders.put(name, position);
                 }
             }
@@ -99,7 +108,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
         }
 
         private ICompletionProposal[] getProposals(ICompletionService<ISpoofaxParseUnit> completionService,
-            ISpoofaxParseUnit parseResult, ITextViewer viewer, int offset, IPlaceholderCompletionItem placeholderItem) {
+            ISpoofaxParseUnit parseResult, ITextViewer viewer, IInformationControlCreator informationControlCreator,
+            int offset, IPlaceholderCompletionItem placeholderItem) {
             // call the completion proposer to calculate the proposals
             final Iterable<ICompletion> completions;
             try {
@@ -112,10 +122,11 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
             final ICompletionProposal[] proposals = new ICompletionProposal[numCompletions];
             int i = 0;
             for(ICompletion completion : completions) {
-                completion.setNested(true && !placeholderItem.optional());
+                completion.setNested(true);
+                completion.setOptionalPlaceholder(placeholderItem.optional());
                 proposals[i] =
                     new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input()
-                        .langImpl());
+                        .langImpl(), informationControlCreator);
                 ++i;
             }
             return proposals;
@@ -133,11 +144,12 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
     private final ITracingService<ISpoofaxParseUnit, ISpoofaxAnalyzeUnit, ISpoofaxTransformUnit<?>, IStrategoTerm> tracingService;
     private final FileObject source;
     private final ILanguageImpl language;
+    private final IInformationControlCreator informationControlCreator;
 
     private CompletionData data;
 
     public SpoofaxCompletionProposal(ITextViewer textViewer, int offset, ICompletion completion, FileObject source,
-        ILanguageImpl language) {
+        ILanguageImpl language, IInformationControlCreator informationControlCreator) {
         this.textViewer = textViewer;
         this.offset = offset;
         this.completion = completion;
@@ -147,6 +159,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
         this.tracingService = SpoofaxPlugin.spoofax().tracingService;
         this.source = source;
         this.language = language;
+        this.informationControlCreator = informationControlCreator;
     }
 
     @Override public void apply(IDocument document) {
@@ -156,7 +169,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
         int endingCursorOffset;
 
         // if completion is nested, replace the selected text
-        if(completion.isNested()) {
+        if(completion.isNested() && !completion.fromOptionalPlaceholder()) {
             startOffset = textViewer.getSelectedRange().x;
             endOffset = startOffset + textViewer.getSelectedRange().y;
             offset = startOffset;
@@ -167,29 +180,30 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
 
         // final text after applying completions
         String finalText = document.get().substring(0, startOffset);
-        finalText += completion.text();
+        finalText += completion.text().replace("##CURSOR##", "");
+        String beforeCursorText = trimTrailing(finalText);
+        endingCursorOffset = beforeCursorText.length();
         finalText += document.get().substring(endOffset);
-
-
-        endingCursorOffset = finalText.length();
 
         // re-parse to get the new AST to calculate nested completions
         ISpoofaxParseUnit completedParseResult = null;
 
         try {
             final ISpoofaxInputUnit input =
-                (ISpoofaxInputUnit) unitService.inputUnit(source, finalText, language, null);
+                unitService.inputUnit(source, finalText, language, null);
             completedParseResult = syntaxService.parse(input);
         } catch(ParseException e1) {
             e1.printStackTrace();
         }
 
-        final Collection<ICompletionItem> completionItems = createItemsFromAST(completedParseResult);
+        Collection<ICompletionItem> completionItems = createItemsFromAST(completedParseResult);
+        completionItems.addAll(createOptionalItemsFromText(completion.text(), startOffset));
+
         completion.setItems(completionItems);
 
         this.data =
             new CompletionData(document, finalText, textViewer, startOffset, completion, completionService,
-                completedParseResult);
+                completedParseResult, informationControlCreator);
 
         try {
             document.replace(0, document.getLength(), finalText);
@@ -209,10 +223,26 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                 ui.enter();
             }
         } catch(BadLocationException e) {
-            final String message =
-                String.format("Cannot apply completion at offset %s, length %s", offset, data.text.length());
+            final String message = String.format("Cannot apply completion at offset %s, text\n%s", offset, data.text);
             logger.error(message, e);
         }
+    }
+
+    private Collection<ICompletionItem> createOptionalItemsFromText(String text, int startOffset) {
+        final Collection<ICompletionItem> result = new LinkedList<ICompletionItem>();
+        Pattern pattern = Pattern.compile("(.*?)(##CURSOR##)(.*)");
+        Matcher matcher = pattern.matcher(text);
+        int number = 0;
+        while(matcher.find()) {
+            int offset = matcher.start(2);
+            // add the offset of the completion the offset of the substring and remove the length of strings matched
+            // previously
+            result.add(new PlaceholderCompletionItem("", startOffset + offset - (number * 10)  , startOffset + offset
+                - (number * 10), true));
+            number++;
+        }
+
+        return result;
     }
 
     private Collection<ICompletionItem> createItemsFromAST(ISpoofaxParseUnit completedParseResult) {
@@ -233,16 +263,14 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
                     if(constructor.contains("-Plhdr")) {
                         String placeholderName = constructor.substring(0, constructor.length() - 6);
                         result.add(new PlaceholderCompletionItem(placeholderName, startOffset, endOffset, false));
-                    }
-                    // else if(startOffset > endOffset){ // optional
-                    // result.add(new PlaceholderCompletionItem("", startOffset, startOffset, true));
-                    // }
+                    } // else if(startOffset > endOffset) { // optional
+                      // result.add(new PlaceholderCompletionItem("", startOffset, startOffset, true));
+                      // }
 
 
-                }
-                // else if(startOffset > endOffset){ // empty list
-                // result.add(new PlaceholderCompletionItem("", startOffset, startOffset, true));
-                // }
+                } // else if(startOffset > endOffset) { // empty list
+                  // result.add(new PlaceholderCompletionItem("", startOffset, startOffset, true));
+                  // }
 
 
 
@@ -265,81 +293,17 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
     }
 
     @Override public String getAdditionalProposalInfo() {
-        if(completion.kind() == CompletionKind.expansion) {
-            return escapeHtml(completion.text());
-        } else if(completion.kind() == CompletionKind.recovery) {
-            return highlightProposal(escapeHtml(completion.text()), completion.prefix(), completion.suffix());
-        }
-        return null;
+        return BaseEncoding.base64().encode(SerializationUtils.serialize(completion));
     }
 
-    private String highlightProposal(String text, String prefix, String suffix) {
-        String highlightedText = text;
-        
-        if(prefix != null) {
-            highlightedText = highlightPrefix(prefix, text);
-        }
-        
-        if(suffix != null) {
-            highlightedText = highlightSuffix(suffix, highlightedText);
-        }
-        return highlightedText;
-    }
-
-    private String highlightPrefix(String prefix, String description) {
-        String highlightedDescription = "<b>";
-        int prefixIndex = 0;
-        int descriptionIndex;
-        for(descriptionIndex = 0; descriptionIndex < description.length(); descriptionIndex++) {
-            if(description.charAt(descriptionIndex) == prefix.charAt(prefixIndex)) {
-                highlightedDescription += description.charAt(descriptionIndex);
-                prefixIndex++;
-                if(prefixIndex >= prefix.length())
-                    break;
-            } else if(description.charAt(descriptionIndex) == '\n' || description.charAt(descriptionIndex) == '\t'
-                || description.charAt(descriptionIndex) == ' ') {
-                highlightedDescription += description.charAt(descriptionIndex);
-            } else {
-                break;
-            }
-        }
-
-        highlightedDescription += "</b>" + description.substring(descriptionIndex + 1);
-
-        return highlightedDescription;
-    }
     
-    private String highlightSuffix(String suffix, String description) {
-        String highlightedDescription = "</b>";
-        int suffixIndex = suffix.length() - 1;
-        int descriptionIndex;
-        for(descriptionIndex = description.length() - 1; descriptionIndex >= 0 ; descriptionIndex--) {
-            if(description.charAt(descriptionIndex) == suffix.charAt(suffixIndex)) {
-                highlightedDescription = description.charAt(descriptionIndex) + highlightedDescription;
-                suffixIndex--;
-                if(suffixIndex < 0)
-                    break;
-            } else if(description.charAt(descriptionIndex) == '\n' || description.charAt(descriptionIndex) == '\t'
-                || description.charAt(descriptionIndex) == ' ') {
-                highlightedDescription = description.charAt(descriptionIndex) + highlightedDescription;
-            } else {
-                break;
-            }
+    public static String trimTrailing(String source) {
+        int pos = source.length() - 1;
+        while((pos >= 0) && Character.isWhitespace(source.charAt(pos))) {
+            pos--;
         }
-
-        highlightedDescription = description.substring(0, descriptionIndex + 1) + "<b>" + highlightedDescription;
-
-        return highlightedDescription;
-    }
-
-
-
-
-    private String escapeHtml(String input) {
-        if(input == null)
-            return null;
-        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-
+        pos++;
+        return (pos < source.length()) ? source.substring(0, pos) : source;
     }
 
     @Override public String getDisplayString() {
@@ -357,6 +321,27 @@ public class SpoofaxCompletionProposal implements ICompletionProposal {
 
     @Override public IContextInformation getContextInformation() {
         return null;
+    }
+
+    @Override public IInformationControlCreator getInformationControlCreator() {
+        return informationControlCreator;
+    }
+
+    @Override public CharSequence getPrefixCompletionText(IDocument document, int completionOffset) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override public int getPrefixCompletionStart(IDocument document, int completionOffset) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
+        if(monitor.isCanceled()) {
+            return null;
+        }
+        return completion;
     }
 
 

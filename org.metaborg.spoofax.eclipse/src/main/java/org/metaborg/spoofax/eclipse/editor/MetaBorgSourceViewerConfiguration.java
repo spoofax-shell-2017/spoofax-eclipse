@@ -57,7 +57,7 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
     public MetaBorgSourceViewerConfiguration(IEclipseResourceService resourceService, IInputUnitService<I> unitService,
         ISyntaxService<I, P> syntaxService,  IParseResultRequester<I, P> parseResultRequester,
         IAnalysisResultRequester<I, A> analysisResultRequester, IResolverService<P, A> referenceResolver,
-        IHoverService<P, A> hoverService,  IPreferenceStore preferenceStore,
+        IHoverService<P, A> hoverService, IPreferenceStore preferenceStore,
         IEclipseEditor<F> editor) {
         super(preferenceStore);
 
@@ -95,12 +95,21 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
         }
 
         final ContentAssistant assistant = new ContentAssistant();
+        final IInformationControlCreator informationControlCreator = getCompletionInformationControlCreator();
         final SpoofaxContentAssistProcessor<I, P> processor = new SpoofaxContentAssistProcessor<>(unitService, 
-            parseResultRequester, resource, document, language);
+            parseResultRequester, informationControlCreator, resource, document, language);
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
-        assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+        assistant.setInformationControlCreator(informationControlCreator);
         return assistant;
+    }
+
+    private IInformationControlCreator getCompletionInformationControlCreator() {
+        return new IInformationControlCreator() {
+            public IInformationControl createInformationControl(Shell parent) {
+                return new SpoofaxInformationControl(parent, false, null, editor.language());
+            }
+        };
     }
 
     @Override public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {

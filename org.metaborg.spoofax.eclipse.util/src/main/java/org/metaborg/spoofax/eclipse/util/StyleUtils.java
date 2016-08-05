@@ -100,6 +100,9 @@ public final class StyleUtils {
         if(style.underscore()) {
             styleRange.underline = true;
         }
+        if(style.strikeout()) {
+            styleRange.strikeout = true;
+        }
 
         styleRange.start = region.startOffset();
         styleRange.length = region.endOffset() - region.startOffset() + 1;

@@ -2,6 +2,7 @@ package org.metaborg.spoofax.eclipse.editor.completion;
 
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -29,27 +30,27 @@ import rx.schedulers.Schedulers;
 
 import com.google.common.collect.Iterables;
 
-public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IParseUnit>
-    implements IContentAssistProcessor {
+public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IParseUnit> implements
+    IContentAssistProcessor {
     private final IInputUnitService<I> unitService;
     private final ICompletionService<ISpoofaxParseUnit> completionService;
     private final IParseResultRequester<I, P> parseResultRequester;
     private final FileObject resource;
     private final IDocument document;
     private final ILanguageImpl language;
+    private final IInformationControlCreator informationControlCreator;
 
     private Subscription parseResultSubscription;
     private volatile ICompletionProposal[] cachedProposals;
 
 
-    public SpoofaxContentAssistProcessor(IInputUnitService<I> unitService, 
-        IParseResultRequester<I, P> parseResultRequester, FileObject resource, IDocument document,
+    public SpoofaxContentAssistProcessor(IInputUnitService<I> unitService,
+        IParseResultRequester<I, P> parseResultRequester, IInformationControlCreator informationControlCreator, FileObject resource, IDocument document,
         ILanguageImpl language) {
         this.unitService = unitService;
         this.completionService = SpoofaxPlugin.spoofax().completionService;
-       
         this.parseResultRequester = parseResultRequester;
-
+        this.informationControlCreator = informationControlCreator;
         this.resource = resource;
         this.document = document;
         this.language = language;
@@ -77,7 +78,8 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
                 }
                 // TODO: support dialects
 
-                final ISpoofaxParseUnit parseResult = (ISpoofaxParseUnit) parseResultRequester.request(input).toBlocking().first();
+                final ISpoofaxParseUnit parseResult =
+                    (ISpoofaxParseUnit) parseResultRequester.request(input).toBlocking().first();
 
                 if(subscriber.isUnsubscribed()) {
                     return;
@@ -117,10 +119,11 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         int i = 0;
         for(ICompletion completion : completions) {
             proposals[i] =
-                new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input().langImpl());
-            
-            //(viewer, offset, completion, parseResult.source(), parseResult.input()
-            //        .langImpl(), unitService, tracingService);
+                new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input()
+                    .langImpl(), informationControlCreator);
+
+            // (viewer, offset, completion, parseResult.source(), parseResult.input()
+            // .langImpl(), unitService, tracingService);
             ++i;
         }
         return proposals;
