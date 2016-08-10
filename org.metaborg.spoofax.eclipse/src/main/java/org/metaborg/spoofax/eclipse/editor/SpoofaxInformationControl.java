@@ -319,7 +319,7 @@ class SpoofaxInformationControl implements IInformationControl, IInformationCont
 
         Collection<IRegionStyle<IStrategoTerm>> stylesPrefixSuffix = Lists.newLinkedList();
 
-        Style style = new Style(null, null, false, false, false, true);
+        Style style = new Style(new java.awt.Color(196, 196, 196), null, false, false, false, false);
 
         if(prefixRegion != null) {
             RegionStyle<IStrategoTerm> prefixRegionStyle = new RegionStyle<IStrategoTerm>(prefixRegion, style, null);
@@ -334,10 +334,7 @@ class SpoofaxInformationControl implements IInformationControl, IInformationCont
             final TextPresentation textPresentation = StyleUtils.createTextPresentation(stylesPrefixSuffix, display);
             fViewer.changeTextPresentation(textPresentation, true);
         }
-
-
     }
-
 
     private SourceRegion calculateRegionPrefix(ICompletion input) {
         if(input.prefix().trim().length() == 0) {
@@ -375,7 +372,6 @@ class SpoofaxInformationControl implements IInformationControl, IInformationCont
         }
         return new SourceRegion(startOffset, endOffset);
     }
-
 
     private SourceRegion calculateRegionSuffix(ICompletion input) {
         if(input.suffix().trim().length() == 0) {
@@ -415,7 +411,6 @@ class SpoofaxInformationControl implements IInformationControl, IInformationCont
         }
         return new SourceRegion(startOffset, endOffset);
     }
-
 
     private String removeCursor(String description) {
         return description.replace("##CURSOR##", "");

@@ -52,7 +52,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.io.BaseEncoding;
 
-public class SpoofaxCompletionProposal implements ICompletionProposal, ICompletionProposalExtension3, ICompletionProposalExtension5 {
+public class SpoofaxCompletionProposal implements ICompletionProposal, ICompletionProposalExtension3,
+    ICompletionProposalExtension5 {
     private static class CompletionData {
         public final String text;
         public final Multimap<String, ProposalPosition> placeholders;
@@ -189,8 +190,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
         ISpoofaxParseUnit completedParseResult = null;
 
         try {
-            final ISpoofaxInputUnit input =
-                unitService.inputUnit(source, finalText, language, null);
+            final ISpoofaxInputUnit input = unitService.inputUnit(source, finalText, language, null);
             completedParseResult = syntaxService.parse(input);
         } catch(ParseException e1) {
             e1.printStackTrace();
@@ -237,7 +237,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
             int offset = matcher.start(2);
             // add the offset of the completion the offset of the substring and remove the length of strings matched
             // previously
-            result.add(new PlaceholderCompletionItem("", startOffset + offset - (number * 10)  , startOffset + offset
+            result.add(new PlaceholderCompletionItem("", startOffset + offset - (number * 10), startOffset + offset
                 - (number * 10), true));
             number++;
         }
@@ -296,7 +296,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
         return BaseEncoding.base64().encode(SerializationUtils.serialize(completion));
     }
 
-    
+
     public static String trimTrailing(String source) {
         int pos = source.length() - 1;
         while((pos >= 0) && Character.isWhitespace(source.charAt(pos))) {
@@ -315,6 +315,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
             return SpoofaxPlugin.imageRegistry().get("expansion-icon");
         } else if(completion.kind() == CompletionKind.recovery) {
             return SpoofaxPlugin.imageRegistry().get("recovery-icon");
+        } else if(completion.kind() == CompletionKind.expansionEditing) {
+            return SpoofaxPlugin.imageRegistry().get("expansion-editing-icon");
         }
         return null;
     }

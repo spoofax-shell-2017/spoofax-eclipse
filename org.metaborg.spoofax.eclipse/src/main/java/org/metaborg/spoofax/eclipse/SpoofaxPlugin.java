@@ -52,7 +52,8 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
 
     @Override protected void initializeImageRegistry(ImageRegistry reg) {
         reg.put("expansion-icon", createImageFromURL("icons/completion-expansion.png"));
-        reg.put("recovery-icon", createImageFromURL("icons/completion-recovery.png"));
+        reg.put("expansion-editing-icon", createImageFromURL("icons/completion-expansion-editing.png"));
+        reg.put("recovery-icon", createImageFromURL("icons/completion-recovery.png"));        
     }
 
     private Image createImageFromURL(String URL) {

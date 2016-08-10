@@ -45,8 +45,8 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
 
 
     public SpoofaxContentAssistProcessor(IInputUnitService<I> unitService,
-        IParseResultRequester<I, P> parseResultRequester, IInformationControlCreator informationControlCreator, FileObject resource, IDocument document,
-        ILanguageImpl language) {
+        IParseResultRequester<I, P> parseResultRequester, IInformationControlCreator informationControlCreator,
+        FileObject resource, IDocument document, ILanguageImpl language) {
         this.unitService = unitService;
         this.completionService = SpoofaxPlugin.spoofax().completionService;
         this.parseResultRequester = parseResultRequester;
@@ -121,9 +121,6 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
             proposals[i] =
                 new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input()
                     .langImpl(), informationControlCreator);
-
-            // (viewer, offset, completion, parseResult.source(), parseResult.input()
-            // .langImpl(), unitService, tracingService);
             ++i;
         }
         return proposals;
