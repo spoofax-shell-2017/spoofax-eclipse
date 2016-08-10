@@ -12,7 +12,6 @@ import org.apache.commons.vfs2.FileSystem;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.provider.AbstractFileName;
 import org.apache.commons.vfs2.provider.AbstractFileObject;
-import org.apache.commons.vfs2.provider.AbstractFileSystem;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -30,7 +29,7 @@ import org.spoofax.terms.util.NotImplementedException;
 
 import rx.functions.Action1;
 
-public class EclipseResourceFileObject extends AbstractFileObject {
+public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourceFileSystem> {
     private final AbstractFileName name;
     private final IWorkspaceRoot root;
 
@@ -39,7 +38,7 @@ public class EclipseResourceFileObject extends AbstractFileObject {
     private IFileInfo info;
 
 
-    public EclipseResourceFileObject(AbstractFileName name, IWorkspaceRoot root, AbstractFileSystem fs) {
+    public EclipseResourceFileObject(AbstractFileName name, IWorkspaceRoot root, EclipseResourceFileSystem fs) {
         super(name, fs);
         this.name = name;
         this.root = root;
