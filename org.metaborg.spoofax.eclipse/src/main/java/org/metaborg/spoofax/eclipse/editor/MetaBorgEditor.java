@@ -36,7 +36,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.analysis.IAnalyzeUnitUpdate;
-import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
@@ -82,7 +81,6 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     protected ICategorizerService<P, A, F> categorizerService;
     protected IStylerService<F> stylerService;
     protected IOutlineService<P, A> outlineService;
-    protected ICompletionService<P> completionService;
     protected IResolverService<P, A> resolverService;
     protected IHoverService<P, A> hoverService;
     protected IParseResultProcessor<I, P> parseResultProcessor;
@@ -317,8 +315,8 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     protected abstract void injectGenericServices(Injector injectors);
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
-        return new MetaBorgSourceViewerConfiguration<>(resourceService, unitService, syntaxService,
-            parseResultProcessor, analysisResultProcessor, resolverService, hoverService, completionService,
+        return new MetaBorgSourceViewerConfiguration<>(resourceService, unitService, syntaxService, 
+            parseResultProcessor, analysisResultProcessor, resolverService, hoverService, 
             getPreferenceStore(), this);
     }
 
@@ -390,8 +388,9 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
             pairMatcherChars.add(close.charAt(0));
         }
 
-        final ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(
-            ArrayUtils.toPrimitive(pairMatcherChars.toArray(new Character[pairMatcherChars.size()])));
+        final ICharacterPairMatcher matcher =
+            new DefaultCharacterPairMatcher(ArrayUtils.toPrimitive(pairMatcherChars
+                .toArray(new Character[pairMatcherChars.size()])));
         support.setCharacterPairMatcher(matcher);
         EditorPreferences.setPairMatcherKeys(support);
     }
@@ -451,8 +450,9 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
 
         final Job job =
             new EditorUpdateJob<>(resourceService, languageIdentifier, contextService, projectService, unitService,
-                syntaxService, analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
-                analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
+                syntaxService, analysisService, categorizerService, stylerService, outlineService,
+                parseResultProcessor, analysisResultProcessor, this, input, eclipseResource, resource, document.get(),
+                instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),

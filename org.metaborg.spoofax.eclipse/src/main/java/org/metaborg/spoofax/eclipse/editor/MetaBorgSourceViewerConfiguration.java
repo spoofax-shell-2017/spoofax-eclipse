@@ -20,7 +20,6 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.metaborg.core.analysis.IAnalyzeUnit;
-import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.processing.analyze.IAnalysisResultRequester;
 import org.metaborg.core.processing.parse.IParseResultRequester;
@@ -51,26 +50,26 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
     private final IAnalysisResultRequester<I, A> analysisResultRequester;
     private final IResolverService<P, A> referenceResolver;
     private final IHoverService<P, A> hoverService;
-    private final ICompletionService<P> completionService;
 
     private final IEclipseEditor<F> editor;
 
 
     public MetaBorgSourceViewerConfiguration(IEclipseResourceService resourceService, IInputUnitService<I> unitService,
-        ISyntaxService<I, P> syntaxService, IParseResultRequester<I, P> parseResultRequester,
+        ISyntaxService<I, P> syntaxService,  IParseResultRequester<I, P> parseResultRequester,
         IAnalysisResultRequester<I, A> analysisResultRequester, IResolverService<P, A> referenceResolver,
-        IHoverService<P, A> hoverService, ICompletionService<P> completionService, IPreferenceStore preferenceStore,
+        IHoverService<P, A> hoverService, IPreferenceStore preferenceStore,
         IEclipseEditor<F> editor) {
         super(preferenceStore);
 
         this.resourceService = resourceService;
         this.unitService = unitService;
         this.syntaxService = syntaxService;
+       
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
         this.referenceResolver = referenceResolver;
         this.hoverService = hoverService;
-        this.completionService = completionService;
+        
 
         this.editor = editor;
     }
@@ -96,11 +95,21 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
         }
 
         final ContentAssistant assistant = new ContentAssistant();
-        final SpoofaxContentAssistProcessor<I, P> processor = new SpoofaxContentAssistProcessor<>(unitService, completionService,
-            syntaxService, parseResultRequester, resource, document, language);
+        final IInformationControlCreator informationControlCreator = getCompletionInformationControlCreator();
+        final SpoofaxContentAssistProcessor<I, P> processor = new SpoofaxContentAssistProcessor<>(unitService, 
+            parseResultRequester, informationControlCreator, resource, document, language);
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
+        assistant.setInformationControlCreator(informationControlCreator);
         return assistant;
+    }
+
+    private IInformationControlCreator getCompletionInformationControlCreator() {
+        return new IInformationControlCreator() {
+            public IInformationControl createInformationControl(Shell parent) {
+                return new SpoofaxInformationControl(parent, false, null, editor.language());
+            }
+        };
     }
 
     @Override public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
