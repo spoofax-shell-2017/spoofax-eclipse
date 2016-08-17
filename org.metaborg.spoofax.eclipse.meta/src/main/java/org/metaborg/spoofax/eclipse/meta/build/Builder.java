@@ -53,7 +53,7 @@ public abstract class Builder extends IncrementalProjectBuilder {
                 build(languageSpec, monitor);
             } catch(OperationCanceledException e) {
                 // Ignore
-            } catch(Exception e) {
+            } catch(CoreException | IOException e) {
                 monitor.setCanceled(true);
                 logger.error("Cannot {} language project {}; build failed unexpectedly", e, description(),
                     languageSpec);
@@ -82,7 +82,7 @@ public abstract class Builder extends IncrementalProjectBuilder {
                 clean(languageSpec, monitor);
             } catch(OperationCanceledException e) {
                 // Ignore
-            } catch(Exception e) {
+            } catch(CoreException | IOException e) {
                 monitor.setCanceled(true);
                 logger.error("Cannot clean language project {}; build failed unexpectedly", e, languageSpec);
             }
