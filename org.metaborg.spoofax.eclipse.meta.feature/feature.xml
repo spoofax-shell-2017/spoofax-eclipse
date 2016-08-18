@@ -54,6 +54,16 @@
     unpack="true"
   />
   <plugin
+    id="dynsem2coq.eclipse"
+    version="2.1.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.lang.coq.eclipse"
+    version="2.1.0.qualifier"
+    unpack="true"
+  />
+  <plugin
     id="org.metaborg.meta.lang.aterm.eclipse"
     version="2.1.0.qualifier"
     unpack="true"
