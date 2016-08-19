@@ -148,8 +148,7 @@ public final class StyleUtils {
      */
     public static Collection<StyleRange> deepCopies(TextPresentation presentation) {
         final Collection<StyleRange> styleRanges = Lists.newLinkedList();
-        for(@SuppressWarnings("unchecked") Iterator<StyleRange> iter = presentation.getNonDefaultStyleRangeIterator(); iter
-            .hasNext();) {
+        for(Iterator<StyleRange> iter = presentation.getNonDefaultStyleRangeIterator(); iter.hasNext();) {
             final StyleRange styleRange = iter.next();
             styleRanges.add(deepCopy(styleRange));
         }

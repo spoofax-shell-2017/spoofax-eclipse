@@ -101,7 +101,7 @@ public class SpoofaxTextHover<I extends IInputUnit, P extends IParseUnit, A exte
     }
 
 
-    @SuppressWarnings("unchecked") private StringBuilder annotationHover(IRegion region) {
+    private StringBuilder annotationHover(IRegion region) {
         final IAnnotationModelExtension2 annotationModel =
             (IAnnotationModelExtension2) sourceViewer.getVisualAnnotationModel();
         final StringBuilder stringBuilder = new StringBuilder();

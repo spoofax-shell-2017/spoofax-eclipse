@@ -315,9 +315,8 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     protected abstract void injectGenericServices(Injector injectors);
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
-        return new MetaBorgSourceViewerConfiguration<>(resourceService, unitService, syntaxService, 
-            parseResultProcessor, analysisResultProcessor, resolverService, hoverService, 
-            getPreferenceStore(), this);
+        return new MetaBorgSourceViewerConfiguration<>(resourceService, unitService, syntaxService,
+            parseResultProcessor, analysisResultProcessor, resolverService, hoverService, getPreferenceStore(), this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
@@ -388,9 +387,8 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
             pairMatcherChars.add(close.charAt(0));
         }
 
-        final ICharacterPairMatcher matcher =
-            new DefaultCharacterPairMatcher(ArrayUtils.toPrimitive(pairMatcherChars
-                .toArray(new Character[pairMatcherChars.size()])));
+        final ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(
+            ArrayUtils.toPrimitive(pairMatcherChars.toArray(new Character[pairMatcherChars.size()])));
         support.setCharacterPairMatcher(matcher);
         EditorPreferences.setPairMatcherKeys(support);
     }
@@ -419,7 +417,11 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
         super.dispose();
     }
 
-    @Override public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    /**
+     * DO NOT CHANGE THE SIGNATURE OF THIS METHOD! The signature of this method is such that it is compatible with older
+     * Eclipse versions.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" }) @Override public Object getAdapter(Class adapter) {
         if(IContentOutlinePage.class.equals(adapter)) {
             return outlinePage;
         }
@@ -450,9 +452,8 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
 
         final Job job =
             new EditorUpdateJob<>(resourceService, languageIdentifier, contextService, projectService, unitService,
-                syntaxService, analysisService, categorizerService, stylerService, outlineService,
-                parseResultProcessor, analysisResultProcessor, this, input, eclipseResource, resource, document.get(),
-                instantaneous);
+                syntaxService, analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
+                analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),
