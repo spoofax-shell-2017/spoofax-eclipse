@@ -46,14 +46,15 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.visitor.AStrategoTermVisitor;
 import org.spoofax.terms.visitor.IStrategoTermVisitor;
 import org.spoofax.terms.visitor.StrategoTermVisitee;
+import org.strategoxt.stratego_sglr.throw_get_comment_sorts_1_1;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.io.BaseEncoding;
 
-public class SpoofaxCompletionProposal implements ICompletionProposal, ICompletionProposalExtension3,
-    ICompletionProposalExtension5 {
+public class SpoofaxCompletionProposal
+    implements ICompletionProposal, ICompletionProposalExtension3, ICompletionProposalExtension5 {
     private static class CompletionData {
         public final String text;
         public final Multimap<String, ProposalPosition> placeholders;
@@ -88,12 +89,10 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
                     final IPlaceholderCompletionItem placeholderItem = (IPlaceholderCompletionItem) item;
                     final String name = placeholderItem.name();
 
-                    final int placeholderLenght =
-                        (placeholderItem.endOffset() != placeholderItem.startOffset()) ? placeholderItem.endOffset()
-                            - placeholderItem.startOffset() + 1 : 0;
-                    final int cursorPosition =
-                        (placeholderItem.endOffset() != placeholderItem.startOffset())
-                            ? placeholderItem.startOffset() + 1 : placeholderItem.startOffset();
+                    final int placeholderLenght = (placeholderItem.endOffset() != placeholderItem.startOffset())
+                        ? placeholderItem.endOffset() - placeholderItem.startOffset() + 1 : 0;
+                    final int cursorPosition = (placeholderItem.endOffset() != placeholderItem.startOffset())
+                        ? placeholderItem.startOffset() + 1 : placeholderItem.startOffset();
 
                     final ProposalPosition position =
                         new ProposalPosition(document, placeholderItem.startOffset(), placeholderLenght,
@@ -125,9 +124,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
             for(ICompletion completion : completions) {
                 completion.setNested(true);
                 completion.setOptionalPlaceholder(placeholderItem.optional());
-                proposals[i] =
-                    new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(), parseResult.input()
-                        .langImpl(), informationControlCreator);
+                proposals[i] = new SpoofaxCompletionProposal(viewer, offset, completion, parseResult.source(),
+                    parseResult.input().langImpl(), informationControlCreator);
                 ++i;
             }
             return proposals;
@@ -192,18 +190,25 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
         try {
             final ISpoofaxInputUnit input = unitService.inputUnit(source, finalText, language, null);
             completedParseResult = syntaxService.parse(input);
-        } catch(ParseException e1) {
+            if (completedParseResult == null || completedParseResult.ast() == null){
+                throw new Exception("Could not parse completed text: \n\n" + finalText);
+            }            
+        } catch(Exception e1) {
             e1.printStackTrace();
         }
+
+        
+        
+        
+
 
         Collection<ICompletionItem> completionItems = createItemsFromAST(completedParseResult);
         completionItems.addAll(createOptionalItemsFromText(completion.text(), startOffset));
 
         completion.setItems(completionItems);
 
-        this.data =
-            new CompletionData(document, finalText, textViewer, startOffset, completion, completionService,
-                completedParseResult, informationControlCreator);
+        this.data = new CompletionData(document, finalText, textViewer, startOffset, completion, completionService,
+            completedParseResult, informationControlCreator);
 
         try {
             document.replace(0, document.getLength(), finalText);
@@ -237,8 +242,8 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
             int offset = matcher.start(2);
             // add the offset of the completion the offset of the substring and remove the length of strings matched
             // previously
-            result.add(new PlaceholderCompletionItem("", startOffset + offset - (number * 10), startOffset + offset
-                - (number * 10), true));
+            result.add(new PlaceholderCompletionItem("", startOffset + offset - (number * 10),
+                startOffset + offset - (number * 10), true));
             number++;
         }
 
@@ -249,7 +254,9 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
 
 
         final Collection<ICompletionItem> result = new LinkedList<ICompletionItem>();
-
+        IStrategoTerm ast = completedParseResult.ast();
+        
+        
         final IStrategoTermVisitor visitor = new AStrategoTermVisitor() {
 
             @Override public boolean visit(IStrategoTerm term) {
@@ -277,7 +284,7 @@ public class SpoofaxCompletionProposal implements ICompletionProposal, ICompleti
                 return true;
             }
         };
-        StrategoTermVisitee.topdown(visitor, completedParseResult.ast());
+        StrategoTermVisitee.topdown(visitor, ast);
 
         return result;
     }
