@@ -235,11 +235,22 @@ public class SpoofaxCompletionProposal
 
     private Collection<ICompletionItem> createOptionalItemsFromText(String text, int startOffset) {
         final Collection<ICompletionItem> result = new LinkedList<ICompletionItem>();
-        Pattern pattern = Pattern.compile("(.*?)(##CURSOR##)(.*)");
+        Pattern pattern = Pattern.compile("(.*?)(##CURSOR##)(.*?)");
         Matcher matcher = pattern.matcher(text);
+        
         int number = 0;
+        int cursorInSeq = 0;
+        int previous = -1;
         while(matcher.find()) {
             int offset = matcher.start(2);
+            // more than one ##CURSOR## appearing in sequence
+            if (offset - (cursorInSeq * 10) == previous) {
+                number++;
+                cursorInSeq++;
+                continue;
+            }
+            cursorInSeq = 1;
+            previous = offset;
             // add the offset of the completion the offset of the substring and remove the length of strings matched
             // previously
             result.add(new PlaceholderCompletionItem("", startOffset + offset - (number * 10),
