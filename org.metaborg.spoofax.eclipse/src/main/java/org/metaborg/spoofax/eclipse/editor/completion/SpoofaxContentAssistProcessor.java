@@ -111,6 +111,7 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         try {
             completions = completionService.get(offset, parseResult, false);
         } catch(MetaborgException e) {
+            e.printStackTrace();
             return null;
         }
 
