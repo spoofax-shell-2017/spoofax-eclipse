@@ -30,7 +30,6 @@ import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.completion.IPlaceholderCompletionItem;
 import org.metaborg.core.language.ILanguageImpl;
 import org.metaborg.core.syntax.ISyntaxService;
-import org.metaborg.core.syntax.ParseException;
 import org.metaborg.core.tracing.ITracingService;
 import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.core.completion.PlaceholderCompletionItem;
@@ -46,7 +45,6 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.visitor.AStrategoTermVisitor;
 import org.spoofax.terms.visitor.IStrategoTermVisitor;
 import org.spoofax.terms.visitor.StrategoTermVisitee;
-import org.strategoxt.stratego_sglr.throw_get_comment_sorts_1_1;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
