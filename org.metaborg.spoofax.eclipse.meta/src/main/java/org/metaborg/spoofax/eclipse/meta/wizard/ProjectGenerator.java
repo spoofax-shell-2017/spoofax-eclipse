@@ -24,6 +24,7 @@ import org.metaborg.spoofax.eclipse.util.CommonNatures;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfig;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.spoofax.meta.core.config.SdfVersion;
 import org.metaborg.spoofax.meta.core.generator.GeneratorSettings;
 import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseFeatureGenerator;
 import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator;
@@ -92,8 +93,14 @@ public class ProjectGenerator {
         final LangSpecGeneratorSettings settings = settingsBuilder.build(location, configBuilder);
         final LangSpecGenerator newGenerator = new LangSpecGenerator(settings);
         newGenerator.generateAll();
+        SdfVersion version;
+        if (syntaxType == SyntaxType.SDF2){
+            version = SdfVersion.sdf2;
+        } else {
+            version = SdfVersion.sdf3;
+        }        
         final ContinuousLanguageSpecGenerator generator =
-            new ContinuousLanguageSpecGenerator(settings.generatorSettings);
+            new ContinuousLanguageSpecGenerator(settings.generatorSettings, version);
         generator.generateAll();
         final EclipseLangSpecGenerator eclipseGenerator = new EclipseLangSpecGenerator(settings.generatorSettings);
         eclipseGenerator.generateAll();

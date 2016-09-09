@@ -30,12 +30,14 @@ import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.spoofax.meta.core.config.SdfVersion;
 import org.metaborg.spoofax.meta.core.generator.GeneratorSettings;
 import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.general.ContinuousLanguageSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.general.LangSpecGenerator;
 import org.metaborg.spoofax.meta.core.generator.general.LangSpecGeneratorSettings;
 import org.metaborg.spoofax.meta.core.generator.general.LangSpecGeneratorSettingsBuilder;
+import org.metaborg.spoofax.meta.core.generator.general.SyntaxType;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.metaborg.util.resource.ContainsFileSelector;
@@ -166,8 +168,7 @@ public class UpgradeLangSpecWizard extends Wizard {
                         ;
                     // @formatter:on
 
-                    final LangSpecGeneratorSettings settings =
-                        settingsBuilder.build(projectLocation, configBuilder);
+                    final LangSpecGeneratorSettings settings = settingsBuilder.build(projectLocation, configBuilder);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
@@ -266,8 +267,14 @@ public class UpgradeLangSpecWizard extends Wizard {
         final LangSpecGenerator newGenerator = new LangSpecGenerator(settings);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
+        SdfVersion version;
+        if(settings.syntaxType == SyntaxType.SDF2) {
+            version = SdfVersion.sdf2;
+        } else {
+            version = SdfVersion.sdf3;
+        }
         final ContinuousLanguageSpecGenerator generator =
-            new ContinuousLanguageSpecGenerator(settings.generatorSettings);
+            new ContinuousLanguageSpecGenerator(settings.generatorSettings, version);
         generator.generateAll();
     }
 }
