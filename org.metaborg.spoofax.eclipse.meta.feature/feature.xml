@@ -123,6 +123,11 @@
     version="2.1.0.qualifier"
     unpack="true"
   />
+  <plugin
+    id="meta.lib.spoofax.eclipse"
+    version="2.1.0.qualifier"
+    unpack="true"
+  />
   
   <!-- SPT -->
   <plugin
