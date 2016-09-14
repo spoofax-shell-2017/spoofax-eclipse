@@ -44,6 +44,34 @@
       <groupId>org.objenesis</groupId>
       <artifactId>objenesis</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains.xodus</groupId>
+      <artifactId>xodus-environment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.xodus</groupId>
+      <artifactId>xodus-compress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.xodus</groupId>
+      <artifactId>xodus-openAPI</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.xodus</groupId>
+      <artifactId>xodus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.tukaani</groupId>
+      <artifactId>xz</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -73,15 +101,27 @@
               build-java,
               common,
               java-util-pluto-fixes,
-              objenesis
+              objenesis,
+              xodus-environment,
+              xodus-compress,
+              xodus-openAPI,
+              xodus-utils,
+              commons-compress,
+              xz,
+              annotations
             </Embed-Dependency>
             <!-- Export dependency packages -->
             <Export-Package>
-              com.github.mustachejava.*;provider=metaborg;mandatory:=provider,
-              build.pluto.*;version="1.9.0";provider=metaborg;mandatory:=provider,
-              org.sugarj.common.*;version="1.9.0";provider=metaborg;mandatory:=provider,
-              com.cedarsoftware.util;provider=metaborg;mandatory:=provider,
-              org.objenesis.*;provider=metaborg;mandatory:=provider
+              com.github.mustachejava.*;provider=metaborg;mandatory:=provider;version="0",
+              build.pluto.*;provider=metaborg;mandatory:=provider;version="0",
+              org.sugarj.common.*;provider=metaborg;mandatory:=provider;version="0",
+              com.cedarsoftware.util;provider=metaborg;mandatory:=provider;version="0",
+              org.objenesis.*;provider=metaborg;mandatory:=provider;version="0",
+              jetbrains.exodus.*;provider=metaborg;mandatory:=provider;version="0",
+              org.apache.commons.compress.*;provider=metaborg;mandatory:=provider;version="0",
+              org.tukaani.xz.*;provider=metaborg;mandatory:=provider;version="0",
+              org.intellij.lang.annotations.*;provider=metaborg;mandatory:=provider;version="0",
+              org.jetbrains.annotations.*;provider=metaborg;mandatory:=provider;version="0"
             </Export-Package>
             <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
             <Import-Package>
@@ -98,7 +138,7 @@
             <_nouses>true</_nouses>
             <!-- Don't use version of this package if no version can be determined. -->
             <_nodefaultversion>true</_nodefaultversion>
-            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
+            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which
               some libraries require. -->
             <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
           </instructions>
