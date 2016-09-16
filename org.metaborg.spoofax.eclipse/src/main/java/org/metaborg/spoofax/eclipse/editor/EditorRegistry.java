@@ -41,7 +41,7 @@ public class EditorRegistry<F>
 
     public static final String contextId = SpoofaxEditor.id + ".context";
 
-    private static final int OPENING_EDITORS_THRESHOLD = 3;
+    private static final int OPENING_EDITORS_THRESHOLD = 1;
 
     private final IEclipseResourceService resourceService;
 
