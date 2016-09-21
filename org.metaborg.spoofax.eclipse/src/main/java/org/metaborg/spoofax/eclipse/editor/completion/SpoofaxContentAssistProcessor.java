@@ -21,6 +21,8 @@ import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.core.unit.ISpoofaxParseUnit;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 
 import rx.Observable;
 import rx.Observable.OnSubscribe;
@@ -32,6 +34,9 @@ import com.google.common.collect.Iterables;
 
 public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IParseUnit> implements
     IContentAssistProcessor {
+    
+    private static final ILogger logger = LoggerUtils.logger(SpoofaxContentAssistProcessor.class);
+    
     private final IInputUnitService<I> unitService;
     private final ICompletionService<ISpoofaxParseUnit> completionService;
     private final IParseResultRequester<I, P> parseResultRequester;
@@ -111,6 +116,7 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         try {
             completions = completionService.get(offset, parseResult, false);
         } catch(MetaborgException e) {
+            logger.error("Stratego completions framework failed at offset {}", offset);
             e.printStackTrace();
             return null;
         }
