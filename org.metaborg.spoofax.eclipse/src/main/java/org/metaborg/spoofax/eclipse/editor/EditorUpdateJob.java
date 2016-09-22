@@ -118,7 +118,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
 
 
     @Override public boolean belongsTo(Object family) {
-        return input.equals(family);
+        return input.equals(family) || editor.equals(family);
     }
 
     @Override protected IStatus run(final IProgressMonitor monitor) {

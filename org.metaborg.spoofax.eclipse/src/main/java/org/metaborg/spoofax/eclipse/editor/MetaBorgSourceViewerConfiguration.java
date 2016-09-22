@@ -55,21 +55,20 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
 
 
     public MetaBorgSourceViewerConfiguration(IEclipseResourceService resourceService, IInputUnitService<I> unitService,
-        ISyntaxService<I, P> syntaxService,  IParseResultRequester<I, P> parseResultRequester,
+        ISyntaxService<I, P> syntaxService, IParseResultRequester<I, P> parseResultRequester,
         IAnalysisResultRequester<I, A> analysisResultRequester, IResolverService<P, A> referenceResolver,
-        IHoverService<P, A> hoverService, IPreferenceStore preferenceStore,
-        IEclipseEditor<F> editor) {
+        IHoverService<P, A> hoverService, IPreferenceStore preferenceStore, IEclipseEditor<F> editor) {
         super(preferenceStore);
 
         this.resourceService = resourceService;
         this.unitService = unitService;
         this.syntaxService = syntaxService;
-       
+
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
         this.referenceResolver = referenceResolver;
         this.hoverService = hoverService;
-        
+
 
         this.editor = editor;
     }
@@ -96,7 +95,7 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
 
         final ContentAssistant assistant = new ContentAssistant();
         final IInformationControlCreator informationControlCreator = getCompletionInformationControlCreator();
-        final SpoofaxContentAssistProcessor<I, P> processor = new SpoofaxContentAssistProcessor<>(unitService, 
+        final SpoofaxContentAssistProcessor<I, P> processor = new SpoofaxContentAssistProcessor<>(unitService,
             parseResultRequester, informationControlCreator, resource, document, language);
         assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE);
         assistant.setRepeatedInvocationMode(true);
@@ -123,7 +122,7 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
             return new IHyperlinkDetector[] { new URLHyperlinkDetector() };
         }
 
-        return new IHyperlinkDetector[] { new SpoofaxHyperlinkDetector<I, P, A>(resourceService, parseResultRequester,
+        return new IHyperlinkDetector[] { new SpoofaxHyperlinkDetector<>(resourceService, parseResultRequester,
             analysisResultRequester, referenceResolver, resource, language, editor), new URLHyperlinkDetector() };
     }
 
@@ -138,7 +137,7 @@ public class MetaBorgSourceViewerConfiguration<I extends IInputUnit, P extends I
         }
 
         return new SpoofaxTextHover<>(parseResultRequester, analysisResultRequester, hoverService, resource, language,
-            (ISourceViewerExtension2) editor.sourceViewer());
+            editor, (ISourceViewerExtension2) editor.sourceViewer());
     }
 
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {

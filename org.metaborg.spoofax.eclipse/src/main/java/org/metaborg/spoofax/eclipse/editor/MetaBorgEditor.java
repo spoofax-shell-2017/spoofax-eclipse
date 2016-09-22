@@ -239,6 +239,12 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     }
 
 
+    @Override public boolean editorIsUpdating() {
+        final Job[] existingJobs = jobManager.find(this);
+        return existingJobs.length > 0;
+    }
+
+
     @Override public ISelectionProvider selectionProvider() {
         return getSelectionProvider();
     }

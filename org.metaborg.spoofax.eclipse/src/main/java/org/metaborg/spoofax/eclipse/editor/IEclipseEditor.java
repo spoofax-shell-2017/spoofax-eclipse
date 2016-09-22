@@ -40,6 +40,12 @@ public interface IEclipseEditor<F> extends IEditor, ITextEditor {
      *         disposed.
      */
     @Nullable SourceViewerConfiguration configuration();
+    
+    
+    /**
+     * @return True if the editor is updating. False otherwise.
+     */
+    boolean editorIsUpdating();
 
 
     /**
