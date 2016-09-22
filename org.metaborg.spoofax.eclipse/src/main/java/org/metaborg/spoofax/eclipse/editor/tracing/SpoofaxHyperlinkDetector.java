@@ -50,7 +50,6 @@ public class SpoofaxHyperlinkDetector<I extends IInputUnit, P extends IParseUnit
 
     @Override public @Nullable IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean multiple) {
         if(!resolverService.available(language) || editor.editorIsUpdating()) {
-            logger.info("Skipping reference resolution");
             return null;
         }
 
