@@ -104,13 +104,6 @@
     unpack="false"
   />
   
-  <!-- SPT test runner -->
-  <plugin
-    id="org.metaborg.spt.testrunner.eclipse"
-    version="2.1.0.qualifier"
-    unpack="false"
-  />
-
   <!-- Languages used at runtime by other languages -->
   <plugin
     id="org.metaborg.meta.lang.analysis.eclipse"
