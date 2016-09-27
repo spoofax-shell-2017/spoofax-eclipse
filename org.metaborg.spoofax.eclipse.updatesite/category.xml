@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+  <description name="Spoofax Eclipse">
+    Spoofax Eclipse update site
+  </description>
+  <feature id="org.metaborg.spoofax.eclipse.feature">
+    <category name="org.metaborg.spoofax.eclipse.category" />
+  </feature>
+  <feature id="org.metaborg.spoofax.eclipse.meta.feature">
+    <category name="org.metaborg.spoofax.eclipse.category" />
+  </feature>
+  <feature id="org.metaborg.spoofax.eclipse.meta.m2e.feature">
+    <category name="org.metaborg.spoofax.eclipse.category" />
+  </feature>
+  <category-def
+    name="org.metaborg.spoofax.eclipse.category"
+    label="Spoofax Eclipse"
+  >
+    <description>
+      Spoofax language workbench Eclipse plugin
+    </description>
+  </category-def>
+</site>
