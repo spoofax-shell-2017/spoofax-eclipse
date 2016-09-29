@@ -145,6 +145,11 @@
     version="2.1.0.qualifier"
     unpack="true"
   />
+  <plugin
+    id="org.metaborg.spt.testrunner.eclipse"
+    version="2.1.0.qualifier"
+    unpack="false"
+  />
   
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
