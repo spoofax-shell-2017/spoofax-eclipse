@@ -127,6 +127,11 @@
       <groupId>it.unimi.dsi</groupId>
       <artifactId>fastutil</artifactId>
     </dependency>
+    <!-- PCollections -->
+    <dependency>
+      <groupId>org.pcollections</groupId>
+      <artifactId>pcollections</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -159,6 +164,7 @@
               commons-logging,
               commons-vfs2,
               fastutil,
+              pcollections,
               guava,
               guice,
               guice-assistedinject,
@@ -190,6 +196,7 @@
               org.apache.commons.io.*;provider=metaborg;mandatory:=provider;version=0,
               org.apache.commons.lang3.*;provider=metaborg;mandatory:=provider;version=0,
               org.apache.commons.logging.*;provider=metaborg;mandatory:=provider;version=0,
+              org.pcollections.*;provider=metaborg;mandatory:=provider;version=0,
               org.apache.commons.vfs2.*;provider=metaborg;mandatory:=provider;version=0,
               com.virtlink.commons.configuration2.jackson.*;provider=metaborg;mandatory:=provider;version=0,
               org.slf4j.*;provider=metaborg;mandatory:=provider;version=0,
