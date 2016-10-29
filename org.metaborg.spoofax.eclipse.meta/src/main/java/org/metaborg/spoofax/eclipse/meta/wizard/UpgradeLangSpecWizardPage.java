@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Label;
 import org.metaborg.meta.core.wizard.CreateLanguageSpecWizard;
 import org.metaborg.meta.core.wizard.UpgradeLanguageSpecWizard;
 
-public class UpgradeLanguageProjectWizardPage extends WizardPage {
+public class UpgradeLangSpecWizardPage extends WizardPage {
     private final String initialGroupId;
     private final String initialId;
     private final String initialVersion;
@@ -22,7 +22,7 @@ public class UpgradeLanguageProjectWizardPage extends WizardPage {
     private boolean ignoreEvents = false;
 
 
-    public UpgradeLanguageProjectWizardPage(String initialGroupId, String initialId, String initialVersion,
+    public UpgradeLangSpecWizardPage(String initialGroupId, String initialId, String initialVersion,
         String initialName) {
         super("page1");
 

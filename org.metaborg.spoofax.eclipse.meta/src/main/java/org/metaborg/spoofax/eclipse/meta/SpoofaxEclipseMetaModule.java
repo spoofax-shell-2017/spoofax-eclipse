@@ -4,6 +4,7 @@ import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.eclipse.meta.ant.EclipseAntRunnerService;
 import org.metaborg.spoofax.eclipse.meta.bootstrap.BootstrapJobFactory;
 import org.metaborg.spoofax.eclipse.meta.project.EclipseLanguageSpecService;
+import org.metaborg.spoofax.eclipse.meta.wizard.ProjectGenerator;
 import org.metaborg.spoofax.meta.core.SpoofaxMetaModule;
 import org.metaborg.spoofax.meta.core.ant.IAntRunnerService;
 import org.metaborg.spoofax.meta.core.project.ISpoofaxLanguageSpecService;
@@ -14,6 +15,8 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 public class SpoofaxEclipseMetaModule extends SpoofaxMetaModule {
     @Override protected void configure() {
         super.configure();
+
+        bind(ProjectGenerator.class).in(Singleton.class);
         
         install(new FactoryModuleBuilder().build(BootstrapJobFactory.class));
     }

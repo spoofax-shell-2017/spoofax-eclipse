@@ -8,6 +8,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -16,34 +17,42 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 import org.metaborg.core.language.LanguageIdentifier;
 import org.metaborg.meta.core.wizard.CreateLanguageSpecWizard;
-import org.metaborg.spoofax.meta.core.generator.language.AnalysisType;
-import org.metaborg.spoofax.meta.core.generator.language.SyntaxType;
+import org.metaborg.spoofax.meta.core.generator.general.AnalysisType;
+import org.metaborg.spoofax.meta.core.generator.general.SyntaxType;
 import org.metaborg.spoofax.meta.core.wizard.CreateSpoofaxLanguageSpecWizard;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationPage {
-    private static final ILogger logger = LoggerUtils.logger(GenerateLanguageProjectWizardPage.class);
+public class CreateLangSpecWizardPage extends WizardNewProjectCreationPage {
+    private static final ILogger logger = LoggerUtils.logger(CreateLangSpecWizardPage.class);
 
     private LanguageIdentifierControls languageIdentifierControls;
     private CreateSpoofaxLanguageSpecWizard createLanguageSpecWizard;
 
     private boolean extensionsModified = false;
     private Text extensionsInput;
+
     private boolean syntaxTypeModified = false;
     private Combo syntaxTypeInput;
     private boolean analysisTypeModified = false;
     private Combo analysisTypeInput;
 
+    private Button generateExampleProjectInput;
+    private Button generateTestProjectInput;
+    private Button generateEclipsePluginProjectInput;
+    private Button generateEclipseFeatureProjectInput;
+    private Button generateEclipseUpdatesiteProjectInput;
+
     private boolean ignoreEvents = false;
 
 
-    public GenerateLanguageProjectWizardPage() {
+    public CreateLangSpecWizardPage() {
         super("page1");
 
         setTitle("Create Spoofax language specification project");
         setDescription("This wizard creates a Spoofax language specification project");
     }
+
 
     public String languageName() {
         return createLanguageSpecWizard.languageName();
@@ -53,9 +62,11 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
         return createLanguageSpecWizard.languageIdentifier();
     }
 
+
     public Collection<String> extensions() {
         return createLanguageSpecWizard.extensions();
     }
+
 
     public SyntaxType syntaxType() {
         return createLanguageSpecWizard.syntaxType();
@@ -63,6 +74,27 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
 
     public AnalysisType analysisType() {
         return createLanguageSpecWizard.analysisType();
+    }
+
+
+    public boolean generateExampleProject() {
+        return createLanguageSpecWizard.generateExampleProject();
+    }
+
+    public boolean generateTestProject() {
+        return createLanguageSpecWizard.generateTestProject();
+    }
+
+    public boolean generateEclipsePluginProject() {
+        return createLanguageSpecWizard.generateEclipsePluginProject();
+    }
+
+    public boolean generateEclipseFeatureProject() {
+        return createLanguageSpecWizard.generateEclipseFeatureProject();
+    }
+
+    public boolean generateEclipseUpdatesiteProject() {
+        return createLanguageSpecWizard.generateEclipseUpdatesiteProject();
     }
 
 
@@ -141,6 +173,32 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
                 analysisTypeModified = true;
             }
         });
+
+
+        // Add project generation options in a new container
+        final Group generationContainer = new Group(container, SWT.NONE);
+        final GridLayout generationLayout = new GridLayout();
+        generationLayout.numColumns = 2;
+        generationContainer.setLayout(generationLayout);
+        generationContainer.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        generationContainer.setText("Generation options");
+
+        // Generation options
+        new Label(generationContainer, SWT.NONE).setText("&Generate examples project:");
+        generateExampleProjectInput = new Button(generationContainer, SWT.CHECK);
+        generateExampleProjectInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(generationContainer, SWT.NONE).setText("&Generate unit testing project:");
+        generateTestProjectInput = new Button(generationContainer, SWT.CHECK);
+        generateTestProjectInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(generationContainer, SWT.NONE).setText("&Generate Eclipse plugin project:");
+        generateEclipsePluginProjectInput = new Button(generationContainer, SWT.CHECK);
+        generateEclipsePluginProjectInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(generationContainer, SWT.NONE).setText("&Generate Eclipse feature project:");
+        generateEclipseFeatureProjectInput = new Button(generationContainer, SWT.CHECK);
+        generateEclipseFeatureProjectInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(generationContainer, SWT.NONE).setText("&Generate Eclipse updatesite project:");
+        generateEclipseUpdatesiteProjectInput = new Button(generationContainer, SWT.CHECK);
+        generateEclipseUpdatesiteProjectInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 
         // Instantiate and implement 'create language specification' wizard helper.
@@ -248,6 +306,47 @@ public class GenerateLanguageProjectWizardPage extends WizardNewProjectCreationP
 
             @Override protected void setAnalysisType(String analysisTypeString) {
                 analysisTypeInput.setText(analysisTypeString);
+            }
+
+
+            @Override public boolean generateExampleProject() {
+                return generateExampleProjectInput.getSelection();
+            }
+
+            @Override public boolean generateTestProject() {
+                return generateTestProjectInput.getSelection();
+            }
+
+            @Override public boolean generateEclipsePluginProject() {
+                return generateEclipsePluginProjectInput.getSelection();
+            }
+
+            @Override public boolean generateEclipseFeatureProject() {
+                return generateEclipseFeatureProjectInput.getSelection();
+            }
+
+            @Override public boolean generateEclipseUpdatesiteProject() {
+                return generateEclipseUpdatesiteProjectInput.getSelection();
+            }
+
+            @Override protected void setGenerateExampleProject(boolean generate) {
+                generateExampleProjectInput.setSelection(generate);
+            }
+
+            @Override protected void setGenerateTestProject(boolean generate) {
+                generateTestProjectInput.setSelection(generate);
+            }
+
+            @Override protected void setGenerateEclipsePluginProject(boolean generate) {
+                generateEclipsePluginProjectInput.setSelection(generate);
+            }
+
+            @Override protected void setGenerateEclipseFeatureProject(boolean generate) {
+                generateEclipseFeatureProjectInput.setSelection(generate);
+            }
+
+            @Override protected void setGenerateEclipseUpdatesiteProject(boolean generate) {
+                generateEclipseUpdatesiteProjectInput.setSelection(generate);
             }
         };
         createLanguageSpecWizard.setDefaults();

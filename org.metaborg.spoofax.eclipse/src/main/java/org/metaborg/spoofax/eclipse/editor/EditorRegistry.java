@@ -24,6 +24,7 @@ import org.metaborg.core.project.IProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.EditorUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -39,6 +40,8 @@ public class EditorRegistry<F>
     private static final ILogger logger = LoggerUtils.logger(EditorRegistry.class);
 
     public static final String contextId = SpoofaxEditor.id + ".context";
+
+    private static final int OPENING_EDITORS_THRESHOLD = 1;
 
     private final IEclipseResourceService resourceService;
 
@@ -101,13 +104,20 @@ public class EditorRegistry<F>
     }
 
     @Override public void open(FileObject resource, IProject project) {
-        final IResource eclipseResource = resourceService.unresolve(resource);
-        if(eclipseResource instanceof IFile) {
-            final IFile file = (IFile) eclipseResource;
-            EditorUtils.open(file);
-        }
+        open(Iterables2.singleton(resource), project);
     }
 
+    @Override public void open(Iterable<FileObject> resources, IProject project) {
+        Set<IFile> files = Sets.newHashSet();
+        for(FileObject resource : resources) {
+            final IResource eclipseResource = resourceService.unresolve(resource);
+            if(eclipseResource instanceof IFile) {
+                final IFile file = (IFile) eclipseResource;
+                files.add(file);
+            }
+        }
+        EditorUtils.open(files, OPENING_EDITORS_THRESHOLD);
+    }
 
     @Override public Iterable<IEclipseEditor<F>> openEclipseEditors() {
         return editors;

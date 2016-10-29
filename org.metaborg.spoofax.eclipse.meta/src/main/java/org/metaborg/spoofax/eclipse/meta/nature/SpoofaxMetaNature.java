@@ -7,21 +7,18 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.spoofax.eclipse.build.SpoofaxProjectBuilder;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
+import org.metaborg.spoofax.eclipse.meta.build.CompileBuilder;
 import org.metaborg.spoofax.eclipse.meta.build.GenerateSourcesBuilder;
 import org.metaborg.spoofax.eclipse.meta.build.PackageBuilder;
-import org.metaborg.spoofax.eclipse.meta.build.CompileBuilder;
 import org.metaborg.spoofax.eclipse.nature.SpoofaxNature;
 import org.metaborg.spoofax.eclipse.util.BuilderUtils;
+import org.metaborg.spoofax.eclipse.util.CommonBuilders;
+import org.metaborg.spoofax.eclipse.util.CommonNatures;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 public class SpoofaxMetaNature implements IProjectNature {
     public static final String id = SpoofaxMetaPlugin.id + ".nature";
-
-    private static final String javaNatureId = "org.eclipse.jdt.core.javanature";
-    private static final String javaBuilderId = "org.eclipse.jdt.core.javabuilder";
-    private static final String mavenNatureId = "org.eclipse.m2e.core.maven2Nature";
-    private static final String mavenBuilderId = "org.eclipse.m2e.core.maven2Builder";
 
     private IProject project;
 
@@ -59,21 +56,21 @@ public class SpoofaxMetaNature implements IProjectNature {
 
     private static void addDependencyNatures(IProject project, @Nullable IProgressMonitor monitor)
         throws CoreException {
-        NatureUtils.addTo(mavenNatureId, project, monitor);
-        NatureUtils.addTo(javaNatureId, project, monitor);
-        NatureUtils.addTo(SpoofaxNature.id, project, monitor);
+        CommonNatures.addMavenNature(project, monitor);
+        CommonNatures.addJavaNature(project, monitor);
+        SpoofaxNature.add(project, monitor);
     }
 
     private static void addDependencyBuilders(IProject project, @Nullable IProgressMonitor monitor)
         throws CoreException {
         // Ensure the Java and m2e builders are actually there, sometimes they are not, or have been removed by a user.
-        BuilderUtils.append(javaBuilderId, project, monitor);
-        BuilderUtils.append(mavenBuilderId, project, monitor);
+        CommonBuilders.appendJavaBuilder(project, monitor);
+        CommonBuilders.appendMavenBuilder(project, monitor);
     }
 
     private static void sortBuilders(IProject project, @Nullable IProgressMonitor monitor) throws CoreException {
-        final String[] buildOrder = new String[] { mavenBuilderId, GenerateSourcesBuilder.id, SpoofaxProjectBuilder.id,
-            CompileBuilder.id, javaBuilderId, PackageBuilder.id };
+        final String[] buildOrder = new String[] { CommonBuilders.mavenBuilderId, GenerateSourcesBuilder.id,
+            SpoofaxProjectBuilder.id, CompileBuilder.id, CommonBuilders.javaBuilderId, PackageBuilder.id };
         BuilderUtils.sort(project, monitor, buildOrder);
     }
 

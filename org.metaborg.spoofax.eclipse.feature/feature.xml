@@ -2,7 +2,7 @@
 <feature
   id="org.metaborg.spoofax.eclipse.feature"
   plugin="org.metaborg.spoofax.eclipse"
-  version="2.0.0.qualifier"
+  version="2.1.0.qualifier"
   label="Spoofax Eclipse runtime"
 >
   <requires>
@@ -24,106 +24,107 @@
   <!-- Spoofax  -->
   <plugin
     id="org.metaborg.core"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.spoofax.core"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.spoofax.eclipse"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.spoofax.eclipse.util"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
 
   <!-- Metaborg libraries -->
   <plugin
     id="org.metaborg.util"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.terms"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.terms.typesmart"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.scopegraph"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.interpreter.library.index"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.runtime.task"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
+  
   <!-- Stratego interpreter and libraries -->
   <plugin
     id="org.spoofax.interpreter.core"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.interpreter.library.java"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.interpreter.library.xml"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
 
   <!-- Parser -->
   <plugin
     id="org.spoofax.jsglr"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.spoofax.interpreter.library.jsglr"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="false"
   />
-
+  
   <!-- Languages used at runtime by other languages -->
   <plugin
     id="org.metaborg.meta.lang.analysis.eclipse"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="true"
   />
 
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
     id="org.metaborg.spoofax.eclipse.externaldeps"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.spoofax.nativebundle"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.strategoxt.strj"
-    version="2.0.0.qualifier"
+    version="2.1.0.qualifier"
     unpack="true"
   />
 </feature>

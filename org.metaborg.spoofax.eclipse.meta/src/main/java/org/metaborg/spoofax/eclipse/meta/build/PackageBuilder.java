@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
@@ -40,16 +41,19 @@ public class PackageBuilder extends Builder {
                 logger.info("Packaging language project {}", input.languageSpec());
                 builder.pkg(input);
                 success = true;
-            } catch(Exception e) {
+            } catch(MetaborgException e) {
+                // HACK: disable cancellation for bootstrapping.
+                //workspaceMonitor.setCanceled(true);
+                //monitor.setCanceled(true);
                 if(e.getCause() != null) {
-                    logger.error("Exception thrown during build", e);
-                    logger.error("BUILD FAILED");
+                    logger.error("Exception thrown during packaging", e);
+                    logger.error("PACKAGING FAILED");
                 } else {
                     final String message = e.getMessage();
                     if(message != null && !message.isEmpty()) {
                         logger.error(message);
                     }
-                    logger.error("BUILD FAILED");
+                    logger.error("PACKAGING FAILED");
                 }
             }
         }
@@ -73,16 +77,19 @@ public class PackageBuilder extends Builder {
                 logger.info("Archiving language project {}", input.languageSpec());
                 builder.archive(input);
                 success = true;
-            } catch(Exception e) {
+            } catch(MetaborgException e) {
+                // HACK: disable cancellation for bootstrapping.
+                //workspaceMonitor.setCanceled(true);
+                //monitor.setCanceled(true);
                 if(e.getCause() != null) {
-                    logger.error("Exception thrown during build", e);
-                    logger.error("BUILD FAILED");
+                    logger.error("Exception thrown during archiving", e);
+                    logger.error("ARCHIVING FAILED");
                 } else {
                     final String message = e.getMessage();
                     if(message != null && !message.isEmpty()) {
                         logger.error(message);
                     }
-                    logger.error("BUILD FAILED");
+                    logger.error("ARCHIVING FAILED");
                 }
             }
         }
