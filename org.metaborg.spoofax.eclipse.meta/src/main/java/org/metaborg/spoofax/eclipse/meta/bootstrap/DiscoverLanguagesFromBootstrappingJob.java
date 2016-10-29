@@ -52,6 +52,10 @@ public class DiscoverLanguagesFromBootstrappingJob extends Job {
             return StatusUtils.silentError(message, e);
         }
 
+        if(binaries == null) {
+            return StatusUtils.success();
+        }
+
         for(FileObject binary : binaries) {
             try {
                 final FileObject zipBinary = resourceService.resolve("zip:" + binary.getName().getURI() + "!/");
