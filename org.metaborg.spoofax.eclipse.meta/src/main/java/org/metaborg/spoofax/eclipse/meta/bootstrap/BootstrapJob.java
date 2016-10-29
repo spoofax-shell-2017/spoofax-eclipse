@@ -398,7 +398,7 @@ public class BootstrapJob extends Job {
 
     private LanguageVersion nextVersion(BootstrapProject project) {
         final LanguageVersion version = project.config().identifier().version;
-        return new LanguageVersion(version.major, version.minor, version.patch + 1, "");
+        return new LanguageVersion(version.major, version.minor, version.patch + 1, null);
     }
 
     private void setVersion(BootstrapProject project, LanguageVersion newVersion) throws ConfigException {
