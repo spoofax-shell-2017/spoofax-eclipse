@@ -116,7 +116,8 @@ public class SpoofaxContentAssistProcessor<I extends IInputUnit, P extends IPars
         try {
             completions = completionService.get(offset, parseResult, false);
         } catch(MetaborgException e) {
-            logger.error("Stratego completions framework failed at offset {}", offset);
+            logger.error("Stratego completions framework failed at offset {}\n", offset);
+            logger.error(e.toString());
             e.printStackTrace();
             return null;
         }
