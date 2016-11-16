@@ -2,6 +2,7 @@ package org.metaborg.spoofax.eclipse.meta;
 
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.spoofax.eclipse.EclipseModulePluginLoader;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.meta.language.MetaLanguageLoader;
@@ -31,8 +32,13 @@ public class SpoofaxMetaPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxMetaPlugin.class);
         logger.debug("Starting Spoofax meta plugin");
 
-        spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax(), new EclipseModulePluginLoader(id + ".module"),
-            new SpoofaxEclipseMetaModule());
+        try {
+            spoofaxMeta = new SpoofaxMeta(SpoofaxPlugin.spoofax(), new EclipseModulePluginLoader(id + ".module"),
+                new SpoofaxEclipseMetaModule());
+        } catch(MetaborgException e) {
+            logger.error("Instantiating Spoofax meta failed", e);
+            throw e;
+        }
         injector = spoofaxMeta.injector;
 
         // Discover language components and dialects from language specifications of workspace projects at startup.
