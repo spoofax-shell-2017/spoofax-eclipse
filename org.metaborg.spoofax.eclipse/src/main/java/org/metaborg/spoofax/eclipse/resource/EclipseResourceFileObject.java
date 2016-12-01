@@ -5,10 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.FileSystemException;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystem;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.provider.AbstractFileName;
 import org.apache.commons.vfs2.provider.AbstractFileObject;
@@ -45,7 +45,7 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
     }
 
 
-    public IResource resource() throws Exception {
+    public IResource resource() throws CoreException {
         if(resource == null)
             update();
 
@@ -53,7 +53,7 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
     }
 
 
-    private void update() throws Exception {
+    private void update() throws CoreException {
         updateResource();
         updateFileInfo();
     }
@@ -92,7 +92,7 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
         }
     }
 
-    private void updateFileInfo() throws Exception {
+    private void updateFileInfo() throws CoreException {
         if(resource == null) {
             return;
         }
@@ -109,24 +109,24 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
     }
 
 
-    @Override protected void doAttach() throws Exception {
+    @Override protected void doAttach() throws CoreException {
         if(attached)
             return;
         update();
         attached = true;
     }
 
-    @Override protected void onChange() throws Exception {
+    @Override protected void onChange() throws CoreException {
         update();
     }
 
-    @Override protected void doDetach() throws Exception {
+    @Override protected void doDetach() {
         info = null;
         resource = null;
         attached = false;
     }
 
-    @Override protected FileType doGetType() throws Exception {
+    @Override protected FileType doGetType() {
         if(resource == null || !resource.exists())
             return FileType.IMAGINARY;
 
@@ -142,21 +142,21 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
         }
     }
 
-    @Override protected boolean doIsHidden() throws Exception {
+    @Override protected boolean doIsHidden() {
         return info.getAttribute(EFS.ATTRIBUTE_HIDDEN);
     }
 
-    @Override protected boolean doIsReadable() throws Exception {
+    @Override protected boolean doIsReadable() {
         return info.getAttribute(EFS.ATTRIBUTE_OWNER_READ) || info.getAttribute(EFS.ATTRIBUTE_GROUP_READ)
             || info.getAttribute(EFS.ATTRIBUTE_OTHER_READ);
     }
 
-    @Override protected boolean doIsWriteable() throws Exception {
+    @Override protected boolean doIsWriteable() {
         return info.getAttribute(EFS.ATTRIBUTE_OWNER_WRITE) || info.getAttribute(EFS.ATTRIBUTE_GROUP_WRITE)
             || info.getAttribute(EFS.ATTRIBUTE_OTHER_WRITE);
     }
 
-    @Override protected String[] doListChildren() throws Exception {
+    @Override protected String[] doListChildren() throws CoreException {
         final IContainer container = (IContainer) resource;
         final IResource[] members = container.members();
         final String[] memberNames = new String[members.length];
@@ -166,7 +166,7 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
         return memberNames;
     }
 
-    @Override protected FileObject[] doListChildrenResolved() throws Exception {
+    @Override protected FileObject[] doListChildrenResolved() throws CoreException, FileSystemException {
         final String[] children = doListChildren();
         final FileSystem fileSystem = getFileSystem();
         final FileObject[] files = new FileObject[children.length];
@@ -176,19 +176,19 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
         return files;
     }
 
-    @Override protected long doGetContentSize() throws Exception {
+    @Override protected long doGetContentSize() {
         return info.getLength();
     }
 
-    @Override protected void doDelete() throws Exception {
+    @Override protected void doDelete() throws CoreException {
         resource.delete(true, null);
     }
 
-    @Override protected void doRename(FileObject newfile) throws Exception {
+    @Override protected void doRename(FileObject newfile) {
         throw new NotImplementedException();
     }
 
-    @Override protected void doCreateFolder() throws Exception {
+    @Override protected void doCreateFolder() throws CoreException, FileSystemException {
         final IPath path = getPath();
         if(path.segmentCount() == 1) {
             final IProject project = root.getProject(path.segment(0));
@@ -201,12 +201,12 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
         }
     }
 
-    @Override protected OutputStream doGetOutputStream(boolean bAppend) throws Exception {
+    @Override protected OutputStream doGetOutputStream(boolean bAppend) throws CoreException, FileSystemException {
         final IFile file;
         if(resource == null) {
             final IPath path = getPath();
             if(path.segmentCount() == 1) {
-                throw new FileSystemException("Cannot create a file under the workspace root.");
+                throw new FileSystemException("Cannot create a file under the workspace root");
             }
             getParent().createFolder();
             file = root.getFile(path);
@@ -230,12 +230,12 @@ public class EclipseResourceFileObject extends AbstractFileObject<EclipseResourc
         });
     }
 
-    @Override protected InputStream doGetInputStream() throws Exception {
+    @Override protected InputStream doGetInputStream() throws CoreException {
         final IFile file = (IFile) resource;
         return file.getContents();
     }
 
-    @Override protected long doGetLastModifiedTime() throws Exception {
+    @Override protected long doGetLastModifiedTime() {
         return resource.getModificationStamp();
     }
 }

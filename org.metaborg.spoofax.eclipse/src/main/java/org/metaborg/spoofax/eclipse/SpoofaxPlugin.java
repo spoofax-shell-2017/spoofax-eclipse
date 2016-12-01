@@ -7,6 +7,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.processing.IProcessorRunner;
 import org.metaborg.spoofax.core.Spoofax;
 import org.metaborg.spoofax.eclipse.editor.IEclipseEditorRegistryInternal;
@@ -37,7 +38,12 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
         logger = LoggerFactory.getLogger(SpoofaxPlugin.class);
         logger.debug("Starting Spoofax plugin");
 
-        spoofax = new Spoofax(new EclipseModulePluginLoader(id + ".module"), new SpoofaxEclipseModule());
+        try {
+            spoofax = new Spoofax(new EclipseModulePluginLoader(id + ".module"), new SpoofaxEclipseModule());
+        } catch(MetaborgException e) {
+            logger.error("Instantiating Spoofax failed", e);
+            throw e;
+        }
         injector = spoofax.injector;
 
         // Eagerly initialize processor runner so that language changes are processed.
@@ -53,7 +59,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     @Override protected void initializeImageRegistry(ImageRegistry reg) {
         reg.put("expansion-icon", createImageFromURL("icons/completion-expansion.png"));
         reg.put("expansion-editing-icon", createImageFromURL("icons/completion-expansion-editing.png"));
-        reg.put("recovery-icon", createImageFromURL("icons/completion-recovery.png"));        
+        reg.put("recovery-icon", createImageFromURL("icons/completion-recovery.png"));
     }
 
     private Image createImageFromURL(String URL) {
@@ -97,7 +103,7 @@ public class SpoofaxPlugin extends AbstractUIPlugin implements IStartup {
     public static boolean doneLoading() {
         return doneLoading;
     }
-    
+
     public static ImageRegistry imageRegistry() {
         return plugin.getImageRegistry();
     }
