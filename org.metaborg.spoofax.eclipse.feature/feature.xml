@@ -60,7 +60,7 @@
     unpack="false"
   />
   <plugin
-    id="org.metaborg.scopegraph"
+    id="org.metaborg.meta.nabl2.java"
     version="2.1.0.qualifier"
     unpack="false"
   />
