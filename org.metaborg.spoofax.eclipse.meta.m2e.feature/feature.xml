@@ -2,7 +2,7 @@
 <feature
   id="org.metaborg.spoofax.eclipse.meta.m2e.feature"
   label="Spoofax Eclipse meta-tooling M2E integration"
-  version="2.1.0.qualifier"
+  version="2.1.0"
   plugin="org.metaborg.spoofax.eclipse.meta.m2e"
 >
   <requires>
@@ -11,7 +11,7 @@
 
   <includes
     id="org.metaborg.spoofax.eclipse.meta.feature"
-    version="2.1.0.qualifier"
+    version="2.1.0"
     search-location="both"
   />
 
@@ -19,7 +19,7 @@
     id="org.metaborg.spoofax.eclipse.meta.m2e"
     download-size="0"
     install-size="0"
-    version="2.1.0.qualifier"
+    version="2.1.0"
     unpack="false"
   />
 </feature>
