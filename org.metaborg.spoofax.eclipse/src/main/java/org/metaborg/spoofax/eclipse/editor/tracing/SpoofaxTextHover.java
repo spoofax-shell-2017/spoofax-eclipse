@@ -17,12 +17,13 @@ import org.metaborg.core.syntax.IInputUnit;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.tracing.Hover;
 import org.metaborg.core.tracing.IHoverService;
+import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class SpoofaxTextHover<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit>
+public class SpoofaxTextHover<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit, F>
     implements ITextHover {
     private static final ILogger logger = LoggerUtils.logger(SpoofaxTextHover.class);
 
@@ -32,25 +33,27 @@ public class SpoofaxTextHover<I extends IInputUnit, P extends IParseUnit, A exte
 
     private final FileObject resource;
     private final ILanguageImpl language;
+    private final IEclipseEditor<F> editor;
     private final ISourceViewerExtension2 sourceViewer;
 
 
     public SpoofaxTextHover(IParseResultRequester<I, P> parseResultRequester,
         IAnalysisResultRequester<I, A> analysisResultRequester, IHoverService<P, A> hoverService, FileObject resource,
-        ILanguageImpl language, ISourceViewerExtension2 sourceViewer) {
+        ILanguageImpl language, IEclipseEditor<F> editor, ISourceViewerExtension2 sourceViewer) {
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
         this.hoverService = hoverService;
 
         this.resource = resource;
         this.language = language;
+        this.editor = editor;
         this.sourceViewer = sourceViewer;
     }
 
 
     @Override public String getHoverInfo(ITextViewer viewer, IRegion region) {
         final StringBuilder stringBuilder = annotationHover(region);
-        if(hoverService.available(language)) {
+        if(hoverService.available(language) && !editor.editorIsUpdating()) {
             final int offset = region.getOffset();
 
             Hover hover = null;
@@ -101,7 +104,7 @@ public class SpoofaxTextHover<I extends IInputUnit, P extends IParseUnit, A exte
     }
 
 
-    @SuppressWarnings("unchecked") private StringBuilder annotationHover(IRegion region) {
+    private StringBuilder annotationHover(IRegion region) {
         final IAnnotationModelExtension2 annotationModel =
             (IAnnotationModelExtension2) sourceViewer.getVisualAnnotationModel();
         final StringBuilder stringBuilder = new StringBuilder();

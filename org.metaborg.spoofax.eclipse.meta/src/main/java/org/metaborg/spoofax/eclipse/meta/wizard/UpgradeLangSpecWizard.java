@@ -30,12 +30,14 @@ import org.metaborg.spoofax.eclipse.util.BuilderUtils;
 import org.metaborg.spoofax.eclipse.util.NatureUtils;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
+import org.metaborg.spoofax.meta.core.config.SdfVersion;
 import org.metaborg.spoofax.meta.core.generator.GeneratorSettings;
 import org.metaborg.spoofax.meta.core.generator.eclipse.EclipseLangSpecGenerator;
-import org.metaborg.spoofax.meta.core.generator.language.ContinuousLanguageSpecGenerator;
-import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGeneratorSettingsBuilder;
-import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGenerator;
-import org.metaborg.spoofax.meta.core.generator.language.LanguageSpecGeneratorSettings;
+import org.metaborg.spoofax.meta.core.generator.general.ContinuousLanguageSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.general.LangSpecGenerator;
+import org.metaborg.spoofax.meta.core.generator.general.LangSpecGeneratorSettings;
+import org.metaborg.spoofax.meta.core.generator.general.LangSpecGeneratorSettingsBuilder;
+import org.metaborg.spoofax.meta.core.generator.general.SyntaxType;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.metaborg.util.resource.ContainsFileSelector;
@@ -47,17 +49,17 @@ import org.spoofax.terms.io.binary.TermReader;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-public class UpgradeLanguageProjectWizard extends Wizard {
-    private static final ILogger logger = LoggerUtils.logger(UpgradeLanguageProjectWizard.class);
+public class UpgradeLangSpecWizard extends Wizard {
+    private static final ILogger logger = LoggerUtils.logger(UpgradeLangSpecWizard.class);
 
     private final IProject eclipseProject;
     private final FileObject projectLocation;
-    private final UpgradeLanguageProjectWizardPage page;
+    private final UpgradeLangSpecWizardPage page;
 
     private final ISpoofaxLanguageSpecConfigBuilder configBuilder;
 
 
-    public UpgradeLanguageProjectWizard(IEclipseResourceService resourceService, IProjectService projectService,
+    public UpgradeLangSpecWizard(IEclipseResourceService resourceService, IProjectService projectService,
         ILanguageSpecService languageSpecService, ISpoofaxLanguageSpecConfigBuilder configBuilder,
         ITermFactoryService termFactoryService, IProject eclipseProject) {
         this.configBuilder = configBuilder;
@@ -109,7 +111,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
             // Ignore
         }
 
-        this.page = new UpgradeLanguageProjectWizardPage(groupId, id, version, name);
+        this.page = new UpgradeLangSpecWizardPage(groupId, id, version, name);
 
         addPage(this.page);
 
@@ -155,7 +157,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                     final LanguageVersion version = LanguageVersion.parse(versionString);
 
                     // @formatter:off
-                    final LanguageSpecGeneratorSettingsBuilder settingsBuilder = new LanguageSpecGeneratorSettingsBuilder()
+                    final LangSpecGeneratorSettingsBuilder settingsBuilder = new LangSpecGeneratorSettingsBuilder()
                         .withGroupId(groupId)
                         .withId(id)
                         .withVersion(version)
@@ -166,8 +168,7 @@ public class UpgradeLanguageProjectWizard extends Wizard {
                         ;
                     // @formatter:on
 
-                    final LanguageSpecGeneratorSettings settings =
-                        settingsBuilder.build(projectLocation, configBuilder);
+                    final LangSpecGeneratorSettings settings = settingsBuilder.build(projectLocation, configBuilder);
 
                     workspaceMonitor.beginTask("Upgrading language project", 4);
                     deleteUnused(id, name);
@@ -262,12 +263,18 @@ public class UpgradeLanguageProjectWizard extends Wizard {
         generator.generateClasspath();
     }
 
-    private void generateFiles(LanguageSpecGeneratorSettings settings) throws Exception {
-        final LanguageSpecGenerator newGenerator = new LanguageSpecGenerator(settings);
+    private void generateFiles(LangSpecGeneratorSettings settings) throws Exception {
+        final LangSpecGenerator newGenerator = new LangSpecGenerator(settings);
         newGenerator.generateIgnoreFile();
         newGenerator.generatePOM();
+        SdfVersion version;
+        if(settings.syntaxType == SyntaxType.SDF2) {
+            version = SdfVersion.sdf2;
+        } else {
+            version = SdfVersion.sdf3;
+        }
         final ContinuousLanguageSpecGenerator generator =
-            new ContinuousLanguageSpecGenerator(settings.generatorSettings);
+            new ContinuousLanguageSpecGenerator(settings.generatorSettings, version);
         generator.generateAll();
     }
 }

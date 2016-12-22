@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.metaborg.core.MetaborgException;
 import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
@@ -47,11 +48,19 @@ public class GenerateSourcesBuilder extends Builder {
                     logger.info("Generating sources for language project {}", languageSpec);
                     builder.initialize(input);
                     builder.generateSources(input, new CollectionFileAccess());
-                } catch(Exception e) {
+                } catch(MetaborgException | IOException e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
-                    logger.error("Cannot generate sources for language project {}; build failed unexpectedly", e,
-                        languageSpec);
+                    if(e.getCause() != null) {
+                        logger.error("Exception thrown during generation", e);
+                        logger.error("GENERATION FAILED");
+                    } else {
+                        final String message = e.getMessage();
+                        if(message != null && !message.isEmpty()) {
+                            logger.error(message);
+                        }
+                        logger.error("GENERATION FAILED");
+                    }
                 }
             }
         };
@@ -69,10 +78,19 @@ public class GenerateSourcesBuilder extends Builder {
                     builder.clean(input);
                     builder.initialize(input);
                     builder.generateSources(input, new CollectionFileAccess());
-                } catch(Exception e) {
+                } catch(MetaborgException | IOException e) {
                     workspaceMonitor.setCanceled(true);
                     monitor.setCanceled(true);
-                    logger.error("Cannot clean language project {}; build failed unexpectedly", e, languageSpec);
+                    if(e.getCause() != null) {
+                        logger.error("Exception thrown during clean", e);
+                        logger.error("CLEAN FAILED");
+                    } else {
+                        final String message = e.getMessage();
+                        if(message != null && !message.isEmpty()) {
+                            logger.error(message);
+                        }
+                        logger.error("CLEAN FAILED");
+                    }
                 }
             }
         };

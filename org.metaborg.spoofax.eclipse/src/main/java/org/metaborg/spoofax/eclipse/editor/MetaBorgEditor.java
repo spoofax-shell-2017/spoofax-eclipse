@@ -36,7 +36,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.metaborg.core.analysis.IAnalysisService;
 import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.analysis.IAnalyzeUnitUpdate;
-import org.metaborg.core.completion.ICompletionService;
 import org.metaborg.core.context.IContextService;
 import org.metaborg.core.language.ILanguageIdentifierService;
 import org.metaborg.core.language.ILanguageImpl;
@@ -82,7 +81,6 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     protected ICategorizerService<P, A, F> categorizerService;
     protected IStylerService<F> stylerService;
     protected IOutlineService<P, A> outlineService;
-    protected ICompletionService<P> completionService;
     protected IResolverService<P, A> resolverService;
     protected IHoverService<P, A> hoverService;
     protected IParseResultProcessor<I, P> parseResultProcessor;
@@ -241,6 +239,12 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     }
 
 
+    @Override public boolean editorIsUpdating() {
+        final Job[] existingJobs = jobManager.find(this);
+        return existingJobs.length > 0;
+    }
+
+
     @Override public ISelectionProvider selectionProvider() {
         return getSelectionProvider();
     }
@@ -318,8 +322,7 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
 
     private SourceViewerConfiguration createSourceViewerConfiguration() {
         return new MetaBorgSourceViewerConfiguration<>(resourceService, unitService, syntaxService,
-            parseResultProcessor, analysisResultProcessor, resolverService, hoverService, completionService,
-            getPreferenceStore(), this);
+            parseResultProcessor, analysisResultProcessor, resolverService, hoverService, getPreferenceStore(), this);
     }
 
     @Override protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
@@ -420,7 +423,11 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
         super.dispose();
     }
 
-    @Override public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    /**
+     * DO NOT CHANGE THE SIGNATURE OF THIS METHOD! The signature of this method is such that it is compatible with older
+     * Eclipse versions.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" }) @Override public Object getAdapter(Class adapter) {
         if(IContentOutlinePage.class.equals(adapter)) {
             return outlinePage;
         }

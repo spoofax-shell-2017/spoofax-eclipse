@@ -5,7 +5,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.language.ILanguageImpl;
@@ -15,12 +14,13 @@ import org.metaborg.core.syntax.IInputUnit;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.tracing.IResolverService;
 import org.metaborg.core.tracing.Resolution;
+import org.metaborg.spoofax.eclipse.editor.IEclipseEditor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-public class SpoofaxHyperlinkDetector<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit>
+public class SpoofaxHyperlinkDetector<I extends IInputUnit, P extends IParseUnit, A extends IAnalyzeUnit, F>
     extends AbstractHyperlinkDetector {
     private static final ILogger logger = LoggerUtils.logger(SpoofaxHyperlinkDetector.class);
 
@@ -31,12 +31,12 @@ public class SpoofaxHyperlinkDetector<I extends IInputUnit, P extends IParseUnit
 
     private final FileObject resource;
     private final ILanguageImpl language;
-    private final ITextEditor editor;
+    private final IEclipseEditor<F> editor;
 
 
     public SpoofaxHyperlinkDetector(IEclipseResourceService resourceService,
         IParseResultRequester<I, P> parseResultRequester, IAnalysisResultRequester<I, A> analysisResultRequester,
-        IResolverService<P, A> resolverService, FileObject resource, ILanguageImpl language, ITextEditor editor) {
+        IResolverService<P, A> resolverService, FileObject resource, ILanguageImpl language, IEclipseEditor<F> editor) {
         this.resourceService = resourceService;
         this.parseResultRequester = parseResultRequester;
         this.analysisResultRequester = analysisResultRequester;
@@ -49,7 +49,7 @@ public class SpoofaxHyperlinkDetector<I extends IInputUnit, P extends IParseUnit
 
 
     @Override public @Nullable IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean multiple) {
-        if(!resolverService.available(language)) {
+        if(!resolverService.available(language) || editor.editorIsUpdating()) {
             return null;
         }
 

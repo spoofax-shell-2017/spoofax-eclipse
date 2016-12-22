@@ -33,6 +33,13 @@ public interface IEclipseResourceService extends IResourceService {
     FileObject resolve(IPath path);
 
     /**
+     * Converts the Eclipse workspace root into a VFS resource.
+     * 
+     * @return VFS resource.
+     */
+    FileObject resolveWorkspaceRoot();
+
+    /**
      * Converts an Eclipse editor input into a VFS resource, if possible.
      * 
      * @param input

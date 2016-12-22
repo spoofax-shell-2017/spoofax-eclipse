@@ -100,6 +100,9 @@ public final class StyleUtils {
         if(style.underscore()) {
             styleRange.underline = true;
         }
+        if(style.strikeout()) {
+            styleRange.strikeout = true;
+        }
 
         styleRange.start = region.startOffset();
         styleRange.length = region.endOffset() - region.startOffset() + 1;
@@ -145,8 +148,7 @@ public final class StyleUtils {
      */
     public static Collection<StyleRange> deepCopies(TextPresentation presentation) {
         final Collection<StyleRange> styleRanges = Lists.newLinkedList();
-        for(@SuppressWarnings("unchecked") Iterator<StyleRange> iter = presentation.getNonDefaultStyleRangeIterator(); iter
-            .hasNext();) {
+        for(Iterator<StyleRange> iter = presentation.getNonDefaultStyleRangeIterator(); iter.hasNext();) {
             final StyleRange styleRange = iter.next();
             styleRanges.add(deepCopy(styleRange));
         }
