@@ -41,7 +41,7 @@ public class ReportIssueDialog extends Dialog {
         final Composite container = (Composite) super.createDialogArea(parent);
 
         final Link description = new Link(container, SWT.NULL);
-        description.setText("Please report issues at <a>http://yellowgrass.org/project/SpoofaxWithCore</a>.\n"
+        description.setText("Please report issues at <a>http://yellowgrass.org/project/Spoofax</a>.\n"
             + "Use the following information when reporting bugs:");
         description.addSelectionListener(new SelectionAdapter() {
             @Override public void widgetSelected(SelectionEvent event) {
