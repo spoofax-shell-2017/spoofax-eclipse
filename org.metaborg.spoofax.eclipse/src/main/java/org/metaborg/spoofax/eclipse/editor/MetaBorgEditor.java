@@ -55,6 +55,7 @@ import org.metaborg.core.tracing.IHoverService;
 import org.metaborg.core.tracing.IResolverService;
 import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
+import org.metaborg.spoofax.eclipse.SpoofaxPreferences;
 import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePage;
 import org.metaborg.spoofax.eclipse.editor.outline.SpoofaxOutlinePopup;
 import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
@@ -87,6 +88,7 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
     protected IAnalysisResultProcessor<I, P, A> analysisResultProcessor;
 
     protected GlobalSchedulingRules globalRules;
+    protected SpoofaxPreferences preferences;
 
     protected IJobManager jobManager;
 
@@ -316,6 +318,8 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
         this.contextService = injector.getInstance(IContextService.class);
         this.projectService = injector.getInstance(IProjectService.class);
         this.globalRules = injector.getInstance(GlobalSchedulingRules.class);
+        this.preferences = injector.getInstance(SpoofaxPreferences.class);
+
     }
 
     protected abstract void injectGenericServices(Injector injectors);
@@ -456,10 +460,12 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
         parseResultProcessor.invalidate(resource);
         analysisResultProcessor.invalidate(resource);
 
-        final Job job =
-            new EditorUpdateJob<>(resourceService, languageIdentifier, contextService, projectService, unitService,
-                syntaxService, analysisService, categorizerService, stylerService, outlineService, parseResultProcessor,
-                analysisResultProcessor, this, input, eclipseResource, resource, document.get(), instantaneous);
+        final long analysisDelayMs = preferences.delayEditorAnalysis() ? 5000 : 500;
+        final boolean analysis = !preferences.disableEditorAnalysis();
+        final Job job = new EditorUpdateJob<>(resourceService, languageIdentifier, contextService, projectService,
+            unitService, syntaxService, analysisService, categorizerService, stylerService, outlineService,
+            parseResultProcessor, analysisResultProcessor, this, input, eclipseResource, resource, document.get(),
+            instantaneous, analysisDelayMs, analysis);
         final ISchedulingRule rule;
         if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),

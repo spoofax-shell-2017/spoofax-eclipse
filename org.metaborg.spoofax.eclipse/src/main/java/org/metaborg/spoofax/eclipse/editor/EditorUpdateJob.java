@@ -81,6 +81,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
     private final FileObject resource;
     private final String text;
     private final boolean instantaneous;
+    private final long analysisDelayMs;
+    private final boolean analysis;
 
     private ThreadKillerJob threadKiller;
 
@@ -91,7 +93,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         IAnalysisService<P, A, AU> analyzer, ICategorizerService<P, A, F> categorizer, IStylerService<F> styler,
         IOutlineService<P, A> outlineService, IParseResultUpdater<P> parseResultProcessor,
         IAnalysisResultUpdater<P, A> analysisResultProcessor, IEclipseEditor<F> editor, IEditorInput input,
-        @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous) {
+        @Nullable IResource eclipseResource, FileObject resource, String text, boolean instantaneous,
+        long analysisDelayMs, boolean analysis) {
         super("Updating Spoofax editor for " + resource.toString());
         setPriority(Job.SHORT);
 
@@ -114,6 +117,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         this.resource = resource;
         this.text = text;
         this.instantaneous = instantaneous;
+        this.analysisDelayMs = analysisDelayMs;
+        this.analysis = analysis;
     }
 
 
@@ -249,8 +254,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         parseMessages(workspace, monitor.newChild(1), parseResult);
         monitor.worked(1);
 
-        // Stop if parsing produced an invalid result.
-        if(!parseResult.valid()) {
+        // Stop if parsing produced an invalid result, or if analysis is disabled.
+        if(!parseResult.valid() || !analysis) {
             return StatusUtils.silentError();
         }
 
@@ -263,7 +268,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         if(!instantaneous) {
             try {
                 monitor.subTask("Waiting");
-                Thread.sleep(300);
+                Thread.sleep(analysisDelayMs);
             } catch(InterruptedException e) {
                 return StatusUtils.cancel();
             }

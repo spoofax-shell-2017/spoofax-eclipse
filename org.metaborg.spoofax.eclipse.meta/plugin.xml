@@ -142,10 +142,10 @@
   
   <!-- Main menu -->
   <extension point="org.eclipse.ui.menus">
-    <menuContribution locationURI="menu:org.eclipse.ui.main.menu">
-      <menu label="Spoofax (meta)"
-               id="org.metaborg.spoofax.eclipse.meta.menu.main">
+    <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=org.metaborg.spoofax.eclipse.separator">
+      <menu label="Spoofax (meta)" id="org.metaborg.spoofax.eclipse.meta.menu.main">
         <command commandId="org.metaborg.spoofax.eclipse.meta.command.issue.report" />
+        <separator name="org.metaborg.spoofax.eclipse.meta.separator" visible="true "/>
       </menu>
     </menuContribution>
   </extension>

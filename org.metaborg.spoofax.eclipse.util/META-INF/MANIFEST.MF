@@ -6,6 +6,8 @@ Bundle-Version: 2.2.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: metaborg.org
 Export-Package: org.metaborg.spoofax.eclipse.util,
+ org.metaborg.spoofax.eclipse.util.expressions,
+ org.metaborg.spoofax.eclipse.util.handler,
  org.metaborg.spoofax.eclipse.util.ui
 Require-Bundle: org.metaborg.spoofax.core,
  org.spoofax.terms,

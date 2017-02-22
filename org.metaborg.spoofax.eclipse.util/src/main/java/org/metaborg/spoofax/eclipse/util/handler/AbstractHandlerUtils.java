@@ -1,4 +1,4 @@
-package org.metaborg.spoofax.eclipse.util;
+package org.metaborg.spoofax.eclipse.util.handler;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -8,6 +8,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.spoofax.eclipse.util.SelectionUtils;
 
 /**
  * Utility functions for {@link AbstractHandler}.

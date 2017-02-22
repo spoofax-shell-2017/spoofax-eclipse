@@ -8,7 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
+import org.metaborg.spoofax.eclipse.util.handler.AbstractHandlerUtils;
 
 import com.google.inject.Injector;
 

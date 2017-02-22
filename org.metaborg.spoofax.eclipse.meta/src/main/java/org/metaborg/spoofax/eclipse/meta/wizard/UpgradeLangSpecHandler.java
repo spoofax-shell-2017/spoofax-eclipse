@@ -12,7 +12,7 @@ import org.metaborg.meta.core.project.ILanguageSpecService;
 import org.metaborg.spoofax.core.terms.ITermFactoryService;
 import org.metaborg.spoofax.eclipse.meta.SpoofaxMetaPlugin;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
-import org.metaborg.spoofax.eclipse.util.AbstractHandlerUtils;
+import org.metaborg.spoofax.eclipse.util.handler.AbstractHandlerUtils;
 import org.metaborg.spoofax.meta.core.config.ISpoofaxLanguageSpecConfigBuilder;
 
 import com.google.inject.Injector;
