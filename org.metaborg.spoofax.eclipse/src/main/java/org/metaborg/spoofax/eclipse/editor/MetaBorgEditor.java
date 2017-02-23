@@ -475,7 +475,7 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
                 eclipseResource.getProject() });
         }
         job.setRule(rule);
-        job.schedule(instantaneous ? 0 : 100);
+        job.schedule(instantaneous ? 0 : 300);
     }
 
     private void cancelJobs(IEditorInput specificInput) {

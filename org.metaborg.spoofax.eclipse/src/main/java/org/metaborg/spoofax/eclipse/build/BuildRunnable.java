@@ -74,7 +74,7 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
 
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
-                logger.error("Cannot clear markers for {}, resource is not in the Eclipse workspace", resource);
+                logger.debug("Cannot clear markers for {}, resource is not in the Eclipse workspace", resource);
                 continue;
             }
             MarkerUtils.clearAll(eclipseResource);
@@ -93,7 +93,7 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
                 }
                 final IResource eclipseResource = resourceService.unresolve(resource);
                 if(eclipseResource == null) {
-                    logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
+                    logger.debug("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
                     continue;
                 }
                 MarkerUtils.createMarker(eclipseResource, message);
@@ -115,7 +115,7 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
                 }
                 final IResource eclipseResource = resourceService.unresolve(resource);
                 if(eclipseResource == null) {
-                    logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
+                    logger.debug("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
                     continue;
                 }
                 MarkerUtils.createMarker(eclipseResource, message);
@@ -130,7 +130,7 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
             }
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
-                logger.error("Cannot clear or create markers for {}, resource is not in the Eclipse workspace",
+                logger.debug("Cannot clear or create markers for {}, resource is not in the Eclipse workspace",
                     resource);
                 continue;
             }
@@ -149,7 +149,7 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
 
             final IResource eclipseResource = resourceService.unresolve(resource);
             if(eclipseResource == null) {
-                logger.error("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
+                logger.debug("Cannot create marker for {}, resource is not in the Eclipse workspace", resource);
                 continue;
             }
             MarkerUtils.createMarker(eclipseResource, message);
