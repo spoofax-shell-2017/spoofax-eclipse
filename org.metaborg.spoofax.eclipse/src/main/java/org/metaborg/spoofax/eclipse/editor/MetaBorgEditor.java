@@ -467,8 +467,10 @@ public abstract class MetaBorgEditor<I extends IInputUnit, P extends IParseUnit,
             parseResultProcessor, analysisResultProcessor, this, input, eclipseResource, resource, document.get(),
             instantaneous, analysisDelayMs, analysis);
         final ISchedulingRule rule;
-        if(eclipseResource == null || !analysis) {
+        if(eclipseResource == null) {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock() });
+        } else if(!analysis) {
+            rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), eclipseResource });
         } else {
             rule = new MultiRule(new ISchedulingRule[] { globalRules.startupReadLock(), globalRules.strategoLock(),
                 eclipseResource.getProject() });
