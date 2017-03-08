@@ -2,16 +2,16 @@ package org.metaborg.spoofax.eclipse.processing;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.metaborg.core.processing.IProgressReporter;
+import org.metaborg.core.processing.IProgress;
 
 /**
  * Progress reporter implementation from {@link IProgressMonitor}s in Eclipse.
  */
-public class ProgressReporter implements IProgressReporter {
+public class Progress implements IProgress {
     public final SubMonitor monitor;
 
 
-    public ProgressReporter(IProgressMonitor monitor) {
+    public Progress(IProgressMonitor monitor) {
         this.monitor = SubMonitor.convert(monitor);
     }
 
@@ -24,7 +24,7 @@ public class ProgressReporter implements IProgressReporter {
         monitor.setWorkRemaining(ticks);
     }
 
-    @Override public IProgressReporter subProgress(int ticks) {
-        return new ProgressReporter(monitor.newChild(ticks));
+    @Override public IProgress subProgress(int ticks) {
+        return new Progress(monitor.newChild(ticks));
     }
 }

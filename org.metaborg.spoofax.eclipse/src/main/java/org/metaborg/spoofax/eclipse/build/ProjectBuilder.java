@@ -36,8 +36,7 @@ import org.metaborg.spoofax.core.Spoofax;
 import org.metaborg.spoofax.core.resource.SpoofaxIgnoresSelector;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
 import org.metaborg.spoofax.eclipse.SpoofaxPreferences;
-import org.metaborg.spoofax.eclipse.processing.CancellationToken;
-import org.metaborg.spoofax.eclipse.processing.ProgressReporter;
+import org.metaborg.spoofax.eclipse.processing.Monitor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.log.ILogger;
@@ -157,7 +156,8 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
             ;
         // @formatter:on
 
-        return processorRunner.build(input, new ProgressReporter(monitor), new CancellationToken(monitor));
+        final Monitor spxMonitor = new Monitor(monitor);
+        return processorRunner.build(input, spxMonitor, spxMonitor);
     }
 
     private ITask<? extends IBuildOutput<P, A, AU, T>> incrBuild(IProject project, @Nullable BuildState state,
@@ -187,7 +187,8 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
             ;
         // @formatter:on
 
-        return processorRunner.build(input, new ProgressReporter(monitor), new CancellationToken(monitor));
+        final Monitor spxMonitor = new Monitor(monitor);
+        return processorRunner.build(input, spxMonitor, spxMonitor);
     }
 
     private void cancel(IProgressMonitor monitor) {
@@ -228,6 +229,7 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
             ;
         // @formatter:on
 
-        return processorRunner.clean(input, new ProgressReporter(monitor), new CancellationToken(monitor));
+        final Monitor spxMonitor = new Monitor(monitor);
+        return processorRunner.clean(input, spxMonitor, spxMonitor);
     }
 }

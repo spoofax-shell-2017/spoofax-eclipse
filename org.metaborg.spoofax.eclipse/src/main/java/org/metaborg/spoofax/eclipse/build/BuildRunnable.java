@@ -12,11 +12,11 @@ import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.build.IBuilder;
 import org.metaborg.core.messages.IMessage;
-import org.metaborg.core.processing.ICancellationToken;
-import org.metaborg.core.processing.IProgressReporter;
+import org.metaborg.core.processing.ICancel;
+import org.metaborg.core.processing.IProgress;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.transform.ITransformUnit;
-import org.metaborg.spoofax.eclipse.processing.ProgressReporter;
+import org.metaborg.spoofax.eclipse.processing.Progress;
 import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
@@ -32,33 +32,32 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
     private final IEclipseResourceService resourceService;
     private final IBuilder<P, A, AU, T> builder;
     private final BuildInput input;
-    private final ICancellationToken cancellationToken;
+    private final ICancel cancel;
     private final Ref<IBuildOutput<P, A, AU, T>> outputRef;
 
-    private @Nullable IProgressReporter progressReporter;
+    private @Nullable IProgress progress;
 
 
     public BuildRunnable(IEclipseResourceService resourceService, IBuilder<P, A, AU, T> builder, BuildInput input,
-        @Nullable IProgressReporter progressReporter, ICancellationToken cancellationToken,
-        Ref<IBuildOutput<P, A, AU, T>> outputRef) {
+        @Nullable IProgress progress, ICancel cancel, Ref<IBuildOutput<P, A, AU, T>> outputRef) {
         this.resourceService = resourceService;
         this.builder = builder;
         this.input = input;
-        this.cancellationToken = cancellationToken;
+        this.cancel = cancel;
         this.outputRef = outputRef;
 
-        this.progressReporter = progressReporter;
+        this.progress = progress;
     }
 
 
     @Override public void run(IProgressMonitor monitor) throws CoreException {
-        if(progressReporter == null) {
-            progressReporter = new ProgressReporter(monitor);
+        if(progress == null) {
+            progress = new Progress(monitor);
         }
 
         final IBuildOutput<P, A, AU, T> output;
         try {
-            output = builder.build(input, progressReporter, cancellationToken);
+            output = builder.build(input, progress, cancel);
         } catch(InterruptedException e) {
             return;
         }

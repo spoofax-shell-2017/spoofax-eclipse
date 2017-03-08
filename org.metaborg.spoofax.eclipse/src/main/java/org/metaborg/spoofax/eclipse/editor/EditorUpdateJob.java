@@ -46,6 +46,7 @@ import org.metaborg.core.syntax.ParseException;
 import org.metaborg.core.unit.IInputUnitService;
 import org.metaborg.spoofax.core.style.CategorizerValidator;
 import org.metaborg.spoofax.eclipse.job.ThreadKillerJob;
+import org.metaborg.spoofax.eclipse.processing.Monitor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -198,6 +199,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
     private IStatus update(IWorkspace workspace, final IProgressMonitor progressMonitor)
         throws MetaborgException, CoreException {
         final SubMonitor monitor = SubMonitor.convert(progressMonitor, 11);
+        final Monitor spxMonitor = new Monitor(monitor);
 
         monitor.subTask("Identifying language");
         final IProject project = projectService.get(resource);
@@ -212,7 +214,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
             return StatusUtils.cancel();
         monitor.subTask("Parsing");
         final I input = unitService.inputUnit(resource, text, langImpl, identified.dialect);
-        final P parseResult = parse(input);
+        final P parseResult = parse(input, spxMonitor);
         monitor.worked(1);
 
         if(parseResult.valid()) {
@@ -279,7 +281,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
             return StatusUtils.cancel();
         monitor.subTask("Analyzing");
         final IContext context = contextService.get(resource, project, langImpl);
-        final IAnalyzeResult<A, AU> analysisResult = analyze(parseResult, context);
+        final IAnalyzeResult<A, AU> analysisResult = analyze(parseResult, context, spxMonitor);
         monitor.worked(1);
 
         if(monitor.isCanceled())
@@ -292,11 +294,11 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
     }
 
 
-    private P parse(I input) throws ParseException, ThreadDeath {
+    private P parse(I input, Monitor monitor) throws ParseException, ThreadDeath {
         final P parseResult;
         try {
             parseResultProcessor.invalidate(resource);
-            parseResult = syntaxService.parse(input);
+            parseResult = syntaxService.parse(input, monitor, monitor);
             parseResultProcessor.update(resource, parseResult);
         } catch(ParseException e) {
             parseResultProcessor.error(resource, e);
@@ -346,12 +348,13 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         workspace.run(parseMarkerUpdater, eclipseResource, IWorkspace.AVOID_UPDATE, monitor);
     }
 
-    private IAnalyzeResult<A, AU> analyze(P parseResult, IContext context) throws AnalysisException, ThreadDeath {
+    private IAnalyzeResult<A, AU> analyze(P parseResult, IContext context, Monitor monitor)
+        throws AnalysisException, ThreadDeath {
         final IAnalyzeResult<A, AU> analysisResult;
         try(IClosableLock lock = context.write()) {
             analysisResultProcessor.invalidate(parseResult.source());
             try {
-                analysisResult = analyzer.analyze(parseResult, context);
+                analysisResult = analyzer.analyze(parseResult, context, monitor, monitor);
             } catch(AnalysisException e) {
                 analysisResultProcessor.error(resource, e);
                 throw e;

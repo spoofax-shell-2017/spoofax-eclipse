@@ -6,7 +6,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.metaborg.core.processing.ICancellationToken;
+import org.metaborg.core.processing.ICancel;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
@@ -20,7 +20,7 @@ public class RunnableTask<T> implements ITask<T> {
     private final IWorkspaceRunnable runnable;
     private final @Nullable ISchedulingRule rule;
     private final @Nullable IProgressMonitor monitor;
-    private final ICancellationToken cancellationToken;
+    private final ICancel cancel;
     private final @Nullable Ref<T> valueRef;
     private final @Nullable IResource refreshResource;
 
@@ -28,13 +28,13 @@ public class RunnableTask<T> implements ITask<T> {
 
 
     public RunnableTask(IWorkspace workspace, IWorkspaceRunnable runnable, @Nullable ISchedulingRule rule,
-        @Nullable IProgressMonitor monitor, ICancellationToken cancellationToken, @Nullable Ref<T> valueRef,
+        @Nullable IProgressMonitor monitor, ICancel cancel, @Nullable Ref<T> valueRef,
         @Nullable IResource refreshResource) {
         this.workspace = workspace;
         this.runnable = runnable;
         this.rule = rule;
         this.monitor = monitor;
-        this.cancellationToken = cancellationToken;
+        this.cancel = cancel;
         this.valueRef = valueRef;
         this.refreshResource = refreshResource;
     }
@@ -54,11 +54,11 @@ public class RunnableTask<T> implements ITask<T> {
     }
 
     @Override public void cancel() {
-        cancellationToken.cancel();
+        cancel.cancel();
     }
 
     @Override public void cancel(int forceTimeout) {
-        cancellationToken.cancel();
+        cancel.cancel();
         // TODO: kill after timeout
     }
 
@@ -67,7 +67,7 @@ public class RunnableTask<T> implements ITask<T> {
     }
 
     @Override public boolean cancelled() {
-        return cancellationToken.cancelled();
+        return cancel.cancelled();
     }
 
     @Override public T result() {

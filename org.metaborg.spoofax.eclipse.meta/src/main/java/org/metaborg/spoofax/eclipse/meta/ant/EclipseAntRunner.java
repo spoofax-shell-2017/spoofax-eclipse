@@ -12,7 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.metaborg.core.MetaborgException;
 import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.resource.IResourceService;
-import org.metaborg.spoofax.eclipse.processing.CancellationToken;
+import org.metaborg.spoofax.eclipse.processing.Cancel;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.ant.IAntRunner;
 
@@ -47,9 +47,9 @@ public class EclipseAntRunner implements IAntRunner {
         runner.setExecutionTargets(new String[] { target });
 
         try {
-            if(cancellationToken instanceof CancellationToken) {
-                final CancellationToken eclipseCancellationToken = (CancellationToken) cancellationToken;
-                runner.run(eclipseCancellationToken.monitor);
+            if(cancellationToken instanceof Cancel) {
+                final Cancel eclipseCancel = (Cancel) cancellationToken;
+                runner.run(eclipseCancel.monitor);
             } else {
                 runner.run();
             }
