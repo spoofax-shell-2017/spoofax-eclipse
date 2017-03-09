@@ -172,6 +172,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
             return StatusUtils.silentError(message, e);
         } catch(CancellationException e) {
             return StatusUtils.cancel();
+        } catch(InterruptedException e) {
+            return StatusUtils.cancel();
         } catch(ThreadDeath e) {
             throw e;
         } catch(Throwable e) {
@@ -197,7 +199,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
 
 
     private IStatus update(IWorkspace workspace, final IProgressMonitor progressMonitor)
-        throws MetaborgException, CoreException {
+        throws MetaborgException, CoreException, InterruptedException, ThreadDeath {
         final SubMonitor monitor = SubMonitor.convert(progressMonitor, 95);
         final Monitor spxMonitor = new Monitor(monitor);
 
@@ -288,7 +290,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
     }
 
 
-    private P parse(I input, Monitor monitor) throws ParseException, ThreadDeath {
+    private P parse(I input, Monitor monitor) throws ParseException, InterruptedException, ThreadDeath {
         final P parseResult;
         try {
             parseResultProcessor.invalidate(resource);
@@ -342,7 +344,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
     }
 
     private IAnalyzeResult<A, AU> analyze(P parseResult, IContext context, Monitor monitor)
-        throws AnalysisException, ThreadDeath {
+        throws AnalysisException, InterruptedException, ThreadDeath {
         final IAnalyzeResult<A, AU> analysisResult;
         try(IClosableLock lock = context.write()) {
             analysisResultProcessor.invalidate(parseResult.source());
