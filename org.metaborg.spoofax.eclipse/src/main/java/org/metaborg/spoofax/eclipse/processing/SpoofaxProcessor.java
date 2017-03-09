@@ -2,9 +2,7 @@ package org.metaborg.spoofax.eclipse.processing;
 
 import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.language.dialect.IDialectProcessor;
-import org.metaborg.core.processing.ICancel;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
-import org.metaborg.core.processing.IProgress;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.spoofax.core.build.ISpoofaxBuildOutput;
 import org.metaborg.spoofax.core.build.ISpoofaxBuilder;
@@ -18,6 +16,8 @@ import org.metaborg.spoofax.eclipse.language.LanguageLoader;
 import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.util.task.ICancel;
+import org.metaborg.util.task.IProgress;
 
 import com.google.inject.Inject;
 

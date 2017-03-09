@@ -2,8 +2,8 @@ package org.metaborg.spoofax.eclipse.processing;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.metaborg.core.processing.ICancel;
-import org.metaborg.core.processing.IProgress;
+import org.metaborg.util.task.ICancel;
+import org.metaborg.util.task.IProgress;
 
 public class Monitor implements IProgress, ICancel {
     public final SubMonitor monitor;

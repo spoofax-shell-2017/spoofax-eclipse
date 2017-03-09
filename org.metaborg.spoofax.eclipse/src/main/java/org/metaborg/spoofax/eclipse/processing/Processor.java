@@ -17,10 +17,8 @@ import org.metaborg.core.build.IBuilder;
 import org.metaborg.core.language.LanguageComponentChange;
 import org.metaborg.core.language.LanguageImplChange;
 import org.metaborg.core.language.dialect.IDialectProcessor;
-import org.metaborg.core.processing.ICancel;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProcessor;
-import org.metaborg.core.processing.IProgress;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.core.processing.NullCancellationToken;
 import org.metaborg.core.project.IProject;
@@ -39,6 +37,8 @@ import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
+import org.metaborg.util.task.ICancel;
+import org.metaborg.util.task.IProgress;
 
 import com.google.inject.Inject;
 

@@ -12,8 +12,6 @@ import org.metaborg.core.build.BuildInput;
 import org.metaborg.core.build.IBuildOutput;
 import org.metaborg.core.build.IBuilder;
 import org.metaborg.core.messages.IMessage;
-import org.metaborg.core.processing.ICancel;
-import org.metaborg.core.processing.IProgress;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.transform.ITransformUnit;
 import org.metaborg.spoofax.eclipse.processing.Progress;
@@ -24,6 +22,8 @@ import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.Ref;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
+import org.metaborg.util.task.ICancel;
+import org.metaborg.util.task.IProgress;
 
 public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU extends IAnalyzeUnitUpdate, T extends ITransformUnit<?>>
     implements IWorkspaceRunnable {

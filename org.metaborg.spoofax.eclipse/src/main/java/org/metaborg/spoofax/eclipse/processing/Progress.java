@@ -2,7 +2,7 @@ package org.metaborg.spoofax.eclipse.processing;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.metaborg.core.processing.IProgress;
+import org.metaborg.util.task.IProgress;
 
 /**
  * Progress reporter implementation from {@link IProgressMonitor}s in Eclipse.

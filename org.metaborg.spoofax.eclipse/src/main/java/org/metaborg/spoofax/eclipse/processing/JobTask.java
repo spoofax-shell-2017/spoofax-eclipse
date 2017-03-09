@@ -2,9 +2,9 @@ package org.metaborg.spoofax.eclipse.processing;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.metaborg.core.processing.ICancel;
 import org.metaborg.core.processing.ITask;
 import org.metaborg.spoofax.eclipse.util.ValueStatus;
+import org.metaborg.util.task.ICancel;
 
 /**
  * Task implementation for Eclipse jobs.

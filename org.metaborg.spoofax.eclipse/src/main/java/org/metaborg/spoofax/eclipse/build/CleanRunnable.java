@@ -8,14 +8,14 @@ import org.metaborg.core.analysis.IAnalyzeUnit;
 import org.metaborg.core.analysis.IAnalyzeUnitUpdate;
 import org.metaborg.core.build.CleanInput;
 import org.metaborg.core.build.IBuilder;
-import org.metaborg.core.processing.ICancel;
-import org.metaborg.core.processing.IProgress;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.transform.ITransformUnit;
 import org.metaborg.spoofax.eclipse.processing.Progress;
 import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
+import org.metaborg.util.task.ICancel;
+import org.metaborg.util.task.IProgress;
 
 public class CleanRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU extends IAnalyzeUnitUpdate, T extends ITransformUnit<?>>
     implements IWorkspaceRunnable {
