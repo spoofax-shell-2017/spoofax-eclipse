@@ -20,7 +20,7 @@ import org.metaborg.core.language.dialect.IDialectProcessor;
 import org.metaborg.core.processing.ILanguageChangeProcessor;
 import org.metaborg.core.processing.IProcessor;
 import org.metaborg.core.processing.ITask;
-import org.metaborg.core.processing.NullCancellationToken;
+import org.metaborg.core.processing.NullCancel;
 import org.metaborg.core.project.IProject;
 import org.metaborg.core.resource.ResourceChange;
 import org.metaborg.core.syntax.IParseUnit;
@@ -78,7 +78,7 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
     @Override public ITask<? extends IBuildOutput<P, A, AU, T>> build(BuildInput input, @Nullable IProgress progress,
         @Nullable ICancel cancel) {
         if(cancel == null) {
-            cancel = new NullCancellationToken();
+            cancel = new NullCancel();
         }
         final Ref<IBuildOutput<P, A, AU, T>> outputRef = new Ref<>();
         final IWorkspaceRunnable runnable =
@@ -91,7 +91,7 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
 
     @Override public ITask<?> clean(CleanInput input, @Nullable IProgress progress, @Nullable ICancel cancel) {
         if(cancel == null) {
-            cancel = new NullCancellationToken();
+            cancel = new NullCancel();
         }
         final IWorkspaceRunnable runnable = new CleanRunnable<>(builder, input, progress, cancel);
         final IResource projectResource = getResource(input.project);
@@ -102,9 +102,8 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
 
 
     @Override public ITask<?> updateDialects(FileObject location, Iterable<ResourceChange> changes) {
-        final ICancel cancel = new NullCancellationToken();
-        final IWorkspaceRunnable runnable =
-            new ProcessDialectsRunnable(dialectProcessor, location, changes);
+        final ICancel cancel = new NullCancel();
+        final IWorkspaceRunnable runnable = new ProcessDialectsRunnable(dialectProcessor, location, changes);
         final IResource projectResource = getResource(location);
         final ITask<?> task = new RunnableTask<>(workspace, runnable, projectResource, null, cancel, null, null);
         return task;
@@ -112,7 +111,7 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
 
 
     @Override public ITask<?> languageChange(LanguageComponentChange change) {
-        final ICancel cancel = new NullCancellationToken();
+        final ICancel cancel = new NullCancel();
         final Job job = new LanguageComponentChangeJob(processor, change);
         job.setRule(new MultiRule(new ISchedulingRule[] { workspace.getRoot(), globalRules.startupReadLock(),
             globalRules.languageServiceLock() }));
@@ -121,7 +120,7 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
     }
 
     @Override public ITask<?> languageChange(LanguageImplChange change) {
-        final ICancel cancel = new NullCancellationToken();
+        final ICancel cancel = new NullCancel();
         final Job job = new LanguageImplChangeJob(processor, change);
         job.setRule(new MultiRule(new ISchedulingRule[] { workspace.getRoot(), globalRules.startupReadLock(),
             globalRules.languageServiceLock() }));

@@ -6,7 +6,7 @@ import org.metaborg.util.task.ICancel;
 import org.metaborg.util.task.IProgress;
 
 public class Monitor implements IProgress, ICancel {
-    public final SubMonitor monitor;
+    private final SubMonitor monitor;
 
 
     public Monitor(IProgressMonitor monitor) {
@@ -22,12 +22,16 @@ public class Monitor implements IProgress, ICancel {
         monitor.worked(ticks);
     }
 
+    @Override public void setDescription(String description) {
+        monitor.subTask(description);
+    }
+
     @Override public void setWorkRemaining(int ticks) {
         monitor.setWorkRemaining(ticks);
     }
 
-    @Override public IProgress subProgress(int ticks) {
-        return new Monitor(monitor.newChild(ticks));
+    @Override public Monitor subProgress(int ticks) {
+        return new Monitor(monitor.split(ticks, SubMonitor.SUPPRESS_SETTASKNAME | SubMonitor.SUPPRESS_BEGINTASK));
     }
 
 
@@ -43,5 +47,10 @@ public class Monitor implements IProgress, ICancel {
         if(monitor.isCanceled()) {
             throw new InterruptedException();
         }
+    }
+
+
+    public IProgressMonitor eclipseMonitor() {
+        return monitor;
     }
 }

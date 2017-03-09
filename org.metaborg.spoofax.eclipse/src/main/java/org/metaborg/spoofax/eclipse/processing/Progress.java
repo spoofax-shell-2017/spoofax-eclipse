@@ -8,7 +8,7 @@ import org.metaborg.util.task.IProgress;
  * Progress reporter implementation from {@link IProgressMonitor}s in Eclipse.
  */
 public class Progress implements IProgress {
-    public final SubMonitor monitor;
+    private final SubMonitor monitor;
 
 
     public Progress(IProgressMonitor monitor) {
@@ -20,11 +20,20 @@ public class Progress implements IProgress {
         monitor.worked(ticks);
     }
 
+    @Override public void setDescription(String description) {
+        monitor.subTask(description);
+    }
+
     @Override public void setWorkRemaining(int ticks) {
         monitor.setWorkRemaining(ticks);
     }
 
-    @Override public IProgress subProgress(int ticks) {
-        return new Progress(monitor.newChild(ticks));
+    @Override public Progress subProgress(int ticks) {
+        return new Progress(monitor.split(ticks, SubMonitor.SUPPRESS_SETTASKNAME | SubMonitor.SUPPRESS_BEGINTASK));
+    }
+
+
+    public IProgressMonitor eclipseMonitor() {
+        return monitor;
     }
 }

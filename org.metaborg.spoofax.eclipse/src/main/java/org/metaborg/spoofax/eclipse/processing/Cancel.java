@@ -4,7 +4,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.metaborg.util.task.ICancel;
 
 public class Cancel implements ICancel {
-    public final IProgressMonitor monitor;
+    private final IProgressMonitor monitor;
 
 
     public Cancel(IProgressMonitor monitor) {
@@ -24,5 +24,10 @@ public class Cancel implements ICancel {
         if(monitor.isCanceled()) {
             throw new InterruptedException();
         }
+    }
+
+
+    public IProgressMonitor eclipseMonitor() {
+        return monitor;
     }
 }
