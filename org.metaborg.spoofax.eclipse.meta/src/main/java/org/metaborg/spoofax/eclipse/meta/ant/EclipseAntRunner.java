@@ -10,11 +10,11 @@ import org.apache.tools.ant.BuildLogger;
 import org.eclipse.ant.core.AntRunner;
 import org.eclipse.core.runtime.CoreException;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.processing.ICancel;
 import org.metaborg.core.resource.IResourceService;
 import org.metaborg.spoofax.eclipse.processing.Cancel;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.ant.IAntRunner;
+import org.metaborg.util.task.ICancel;
 
 
 public class EclipseAntRunner implements IAntRunner {
