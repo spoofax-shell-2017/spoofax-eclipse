@@ -6,8 +6,6 @@
 >
   <modelVersion>4.0.0</modelVersion>
   <artifactId>org.metaborg.spoofax.eclipse.updatesite</artifactId>
-  <!-- Eclipse/OSGI version instead of regular Maven version, because Tycho fails to accept a Maven version here -->
-  <version>2.2.0.qualifier</version>
   <packaging>eclipse-update-site</packaging>
   <description>Spoofax Eclipse update site</description>
   <url>https://github.com/metaborg/spoofax-eclipse</url>
