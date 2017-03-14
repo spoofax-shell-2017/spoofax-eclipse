@@ -43,4 +43,10 @@
   <logger
     name="org.metaborg.spoofax.eclipse.editor.SpoofaxEditorListener"
     level="debug" />
+  <logger
+    name="jetbrains.exodus"
+    level="warn" />
+  <logger
+    name="org.apache.commons.vfs2"
+    level="warn" />
 </configuration>

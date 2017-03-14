@@ -123,22 +123,30 @@
               org.intellij.lang.annotations.*;provider=metaborg;mandatory:=provider;version="0",
               org.jetbrains.annotations.*;provider=metaborg;mandatory:=provider;version="0"
             </Export-Package>
-            <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
+            <!-- Don't declare dependency on JDK, internal, non-existent packages, or optional dependencies that 
+              we do not need. -->
             <Import-Package>
-              !sun*,
-              !javax*,
-              !groovy*,
-              !com.google*,
-              !org.apache*,
-              !org.codehaus*,
-              !org.jruby*,
-              *
+              !sun.*,
+              !javax.*,
+              !groovy.*,
+              !com.google.*,
+              !org.apache.*,
+              !org.codehaus.*,
+              !org.jruby.*,
+              !org.w3c.*,
+              !org.xml.*,
+              org.spoofax*,
+              org.metaborg*,
+              org.strategoxt.*,
+              org.apache.tools.ant,
+              org.eclipse.jdt.core.compiler.*,
+              *;provider=metaborg;mandatory:=provider;version=0
             </Import-Package>
             <!-- Don't generate uses declarations in exported packages. -->
             <_nouses>true</_nouses>
             <!-- Don't use version of this package if no version can be determined. -->
             <_nodefaultversion>true</_nodefaultversion>
-            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which
+            <!-- Allow buddy class loading, so that other bundles can merge their classpath with this bundle, which 
               some libraries require. -->
             <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
           </instructions>

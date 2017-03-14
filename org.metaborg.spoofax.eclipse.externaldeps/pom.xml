@@ -191,7 +191,7 @@
               com.google.common.*;provider=metaborg;mandatory:=provider;version=0,
               com.google.inject.*;provider=metaborg;mandatory:=provider;version=0,
               it.unimi.dsi.fastutil.*;provider=metaborg;mandatory:=provider;version=0,
-              org.aopalliance*;provider=metaborg;mandatory:=provider;version=0,
+              org.aopalliance.*;provider=metaborg;mandatory:=provider;version=0,
               org.apache.commons.configuration2.*;provider=metaborg;mandatory:=provider;version=0,
               org.apache.commons.io.*;provider=metaborg;mandatory:=provider;version=0,
               org.apache.commons.lang3.*;provider=metaborg;mandatory:=provider;version=0,
@@ -203,16 +203,24 @@
               org.strategoxt.*,
               rx.*;provider=metaborg;mandatory:=provider;version=0
             </Export-Package>
-            <!-- Don't declare dependency on JDK, internal, or non-existent packages. -->
+            <!-- Don't declare dependency on JDK, internal, non-existent packages, or optional dependencies that 
+              we do not need. -->
             <Import-Package>
-              !sun*,
-              !javax*,
-              !groovy*,
-              !com.google*,
-              !org.apache*,
-              !org.codehaus*,
-              !org.jruby*,
-              *
+              !sun.*,
+              !javax.*,
+              !groovy.*,
+              !com.google.*,
+              !org.apache.*,
+              !org.codehaus.*,
+              !org.jruby.*,
+              !org.w3c.*,
+              !org.xml.*,
+              !com.jcraft.jsch.*,
+              org.spoofax.*,
+              org.metaborg.*,
+              org.strategoxt.*,
+              org.apache.tools.ant,
+              *;provider=metaborg;mandatory:=provider;version=0
             </Import-Package>
             <!-- Don't generate uses declarations in exported packages. -->
             <_nouses>true</_nouses>
