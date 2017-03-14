@@ -42,7 +42,7 @@
 
   <!-- Parser -->
   <plugin
-    id="sdf2table.core"
+    id="sdf2table-new"
     version="2.2.0.qualifier"
     unpack="false"
   />
