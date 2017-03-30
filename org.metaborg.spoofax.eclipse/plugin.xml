@@ -177,6 +177,41 @@
   </extension>
 
 
+  <!-- Disabling long-running operation commands, used in menu of meta-plugin -->
+  <extension point="org.eclipse.ui.commands">
+    <command id="org.metaborg.spoofax.eclipse.command.disable.build" name="Disable builds">
+      <state class="org.eclipse.ui.handlers.RegistryToggleState" id="org.eclipse.ui.commands.toggleState" />
+    </command>
+    <command id="org.metaborg.spoofax.eclipse.command.disable.incrementalbuild" name="Disable incremental builds">
+      <state class="org.eclipse.ui.handlers.RegistryToggleState" id="org.eclipse.ui.commands.toggleState" />
+    </command>
+    <command id="org.metaborg.spoofax.eclipse.command.disable.editoranalysis" name="Disable editor analysis">
+      <state class="org.eclipse.ui.handlers.RegistryToggleState" id="org.eclipse.ui.commands.toggleState" />
+    </command>
+    <command id="org.metaborg.spoofax.eclipse.command.delay.editoranalysis" name="Delay editor analysis by 5s">
+      <state class="org.eclipse.ui.handlers.RegistryToggleState" id="org.eclipse.ui.commands.toggleState" />
+    </command>
+  </extension>
+  <extension point="org.eclipse.ui.handlers">
+    <handler
+      commandId="org.metaborg.spoofax.eclipse.command.disable.build"
+      class="org.metaborg.spoofax.eclipse.util.handler.ToggleHandler"
+    />
+    <handler
+      commandId="org.metaborg.spoofax.eclipse.command.disable.incrementalbuild"
+      class="org.metaborg.spoofax.eclipse.util.handler.ToggleHandler"
+    />
+    <handler
+      commandId="org.metaborg.spoofax.eclipse.command.disable.editoranalysis"
+      class="org.metaborg.spoofax.eclipse.util.handler.ToggleHandler"
+    />
+    <handler
+      commandId="org.metaborg.spoofax.eclipse.command.delay.editoranalysis"
+      class="org.metaborg.spoofax.eclipse.util.handler.ToggleHandler"
+    />
+  </extension>
+
+
   <!-- Main menus -->
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="menu:org.eclipse.ui.main.menu">
