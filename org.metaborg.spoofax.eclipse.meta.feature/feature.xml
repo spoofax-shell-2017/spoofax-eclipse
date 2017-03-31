@@ -128,7 +128,12 @@
     version="2.2.0.qualifier"
     unpack="true"
   />
-  
+  <plugin
+    id="org.metaborg.meta.lang.analysis.eclipse"
+    version="2.2.0.qualifier"
+    unpack="true"
+  />
+
   <!-- SPT -->
   <plugin
     id="org.metaborg.mbt.core"

@@ -103,13 +103,6 @@
     version="2.2.0.qualifier"
     unpack="false"
   />
-  
-  <!-- Languages used at runtime by other languages -->
-  <plugin
-    id="org.metaborg.meta.lang.analysis.eclipse"
-    version="2.2.0.qualifier"
-    unpack="true"
-  />
 
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
