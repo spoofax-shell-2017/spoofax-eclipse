@@ -175,7 +175,7 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
         } catch(InterruptedException e) {
             return StatusUtils.cancel();
         } catch(ThreadDeath e) {
-            throw e;
+            return StatusUtils.cancel();
         } catch(Throwable e) {
             final String message = logger.format("Failed to update editor for {}", resource);
             logger.error(message, e);

@@ -74,7 +74,7 @@
     version="2.2.0.qualifier"
     unpack="false"
   />
-  
+
   <!-- Stratego interpreter and libraries -->
   <plugin
     id="org.spoofax.interpreter.core"
@@ -103,7 +103,7 @@
     version="2.2.0.qualifier"
     unpack="false"
   />
-  
+
   <!-- Shell -->
   <plugin
     id="org.metaborg.spoofax.shell.core"
@@ -119,13 +119,6 @@
     id="org.metaborg.spoofax.shell.eclipse"
     version="2.2.0.qualifier"
     unpack="false"
-  />
-  
-  <!-- Languages used at runtime by other languages -->
-  <plugin
-    id="org.metaborg.meta.lang.analysis.eclipse"
-    version="2.2.0.qualifier"
-    unpack="true"
   />
 
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
