@@ -104,6 +104,18 @@
     unpack="false"
   />
   
+  <!-- Shell -->
+  <plugin
+    id="org.metaborg.spoofax.shell.eclipse.externaldeps"
+    version="2.2.0.qualifier"
+    unpack="false"
+  />
+  <plugin
+    id="org.metaborg.spoofax.shell.eclipse"
+    version="2.2.0.qualifier"
+    unpack="false"
+  />
+  
   <!-- Languages used at runtime by other languages -->
   <plugin
     id="org.metaborg.meta.lang.analysis.eclipse"
