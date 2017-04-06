@@ -34,4 +34,6 @@ Export-Package: org.metaborg.spoofax.eclipse,
  org.metaborg.spoofax.eclipse.project,
  org.metaborg.spoofax.eclipse.resource
 Bundle-ActivationPolicy: lazy
-Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps, org.metaborg.util
+Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps,
+ org.metaborg.util,
+ org.metaborg.meta.nabl2.java
