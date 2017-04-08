@@ -123,7 +123,7 @@ public class ProjectGenerator {
     }
 
     public void createExampleProject(ISpoofaxLanguageSpecConfig config, @Nullable String projectId,
-        @Nullable IPath basePath, SubMonitor monitor) throws IOException, ProjectException, CoreException {
+        @Nullable IPath basePath, AnalysisType analysisType, SubMonitor monitor) throws IOException, ProjectException, CoreException {
         monitor.setWorkRemaining(3);
 
         monitor.subTask("Generating example project");
@@ -140,7 +140,7 @@ public class ProjectGenerator {
         }
         createProject(project, basePath);
         final FileObject location = resourceService.resolve(project);
-        final GeneratorSettings settings = new GeneratorSettings(location, config);
+        final GeneratorSettings settings = new GeneratorSettings(location, config, analysisType);
         final LangProjectGenerator generator = new LangProjectGenerator(settings);
         generator.generateAll();
         monitor.worked(1);
