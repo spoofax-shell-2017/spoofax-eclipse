@@ -94,6 +94,11 @@
     unpack="true"
   />
   <plugin
+    id="meta.flowspec.lang.eclipse"
+    version="2.3.0.qualifier"
+    unpack="true"
+  />
+  <plugin
     id="org.metaborg.meta.lang.sdf.eclipse"
     version="2.3.0.qualifier"
     unpack="true"

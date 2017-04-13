@@ -65,6 +65,11 @@
     unpack="false"
   />
   <plugin
+    id="meta.flowspec.java"
+    version="2.3.0.qualifier"
+    unpack="false"
+  />
+  <plugin
     id="org.spoofax.interpreter.library.index"
     version="2.3.0.qualifier"
     unpack="false"

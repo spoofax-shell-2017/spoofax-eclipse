@@ -30,7 +30,8 @@ Require-Bundle: org.eclipse.ui,
  org.metaborg.mbt.core,
  org.metaborg.spt.core,
  org.eclipse.ui.ide,
- org.metaborg.meta.nabl2.java
+ org.metaborg.meta.nabl2.java,
+ meta.flowspec.java
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org
