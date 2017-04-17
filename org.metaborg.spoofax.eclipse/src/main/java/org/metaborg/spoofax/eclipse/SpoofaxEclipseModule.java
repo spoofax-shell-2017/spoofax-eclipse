@@ -46,6 +46,7 @@ public class SpoofaxEclipseModule extends SpoofaxModule {
         bind(GlobalSchedulingRules.class).in(Singleton.class);
         bind(EclipseLanguageChangeProcessor.class).in(Singleton.class);
         bind(LanguageLoader.class).in(Singleton.class);
+        bind(SpoofaxPreferences.class).in(Singleton.class);
     }
 
 

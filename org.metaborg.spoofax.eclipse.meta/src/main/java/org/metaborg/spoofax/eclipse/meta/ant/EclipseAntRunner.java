@@ -10,11 +10,11 @@ import org.apache.tools.ant.BuildLogger;
 import org.eclipse.ant.core.AntRunner;
 import org.eclipse.core.runtime.CoreException;
 import org.metaborg.core.MetaborgException;
-import org.metaborg.core.processing.ICancellationToken;
 import org.metaborg.core.resource.IResourceService;
-import org.metaborg.spoofax.eclipse.processing.CancellationToken;
+import org.metaborg.spoofax.eclipse.processing.Cancel;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.spoofax.meta.core.ant.IAntRunner;
+import org.metaborg.util.task.ICancel;
 
 
 public class EclipseAntRunner implements IAntRunner {
@@ -42,14 +42,13 @@ public class EclipseAntRunner implements IAntRunner {
     }
 
 
-    @Override public void execute(String target, @Nullable ICancellationToken cancellationToken)
-        throws MetaborgException {
+    @Override public void execute(String target, @Nullable ICancel cancel) throws MetaborgException {
         runner.setExecutionTargets(new String[] { target });
 
         try {
-            if(cancellationToken instanceof CancellationToken) {
-                final CancellationToken eclipseCancellationToken = (CancellationToken) cancellationToken;
-                runner.run(eclipseCancellationToken.monitor);
+            if(cancel instanceof Cancel) {
+                final Cancel eclipseCancel = (Cancel) cancel;
+                runner.run(eclipseCancel.eclipseMonitor());
             } else {
                 runner.run();
             }

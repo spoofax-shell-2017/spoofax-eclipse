@@ -35,8 +35,8 @@ import org.metaborg.core.transform.ITransformUnit;
 import org.metaborg.spoofax.core.Spoofax;
 import org.metaborg.spoofax.core.resource.SpoofaxIgnoresSelector;
 import org.metaborg.spoofax.eclipse.SpoofaxPlugin;
-import org.metaborg.spoofax.eclipse.processing.CancellationToken;
-import org.metaborg.spoofax.eclipse.processing.ProgressReporter;
+import org.metaborg.spoofax.eclipse.SpoofaxPreferences;
+import org.metaborg.spoofax.eclipse.processing.Monitor;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.log.ILogger;
@@ -58,6 +58,8 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
     private final IDependencyService dependencyService;
     private final IProcessorRunner<P, A, AU, T> processorRunner;
 
+    private final SpoofaxPreferences preferences;
+
     private final Map<org.eclipse.core.resources.IProject, BuildState> states = Maps.newHashMap();
 
 
@@ -71,11 +73,22 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
         this.languagePathService = spoofax.languagePathService;
         this.projectService = spoofax.projectService;
         this.dependencyService = spoofax.dependencyService;
+
+        this.preferences = injector.getInstance(SpoofaxPreferences.class);
     }
 
 
     @Override protected org.eclipse.core.resources.IProject[] build(int kind, Map<String, String> args,
         IProgressMonitor monitor) throws CoreException {
+        if(preferences.disableBuild()) {
+            logger.debug("Skipping build; builds are disabled");
+            return null;
+        }
+        if((kind == AUTO_BUILD || kind == INCREMENTAL_BUILD) && preferences.disableIncrementalBuild()) {
+            logger.debug("Skipping build; incremental builds are disabled");
+            return null;
+        }
+
         final org.eclipse.core.resources.IProject eclipseProject = getProject();
         final FileObject location = resourceService.resolve(eclipseProject);
         final IProject project = projectService.get(location);
@@ -143,8 +156,8 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
             ;
         // @formatter:on
 
-        return processorRunner.build(input, new ProgressReporter(monitor),
-            new CancellationToken(monitor));
+        final Monitor spxMonitor = new Monitor(monitor);
+        return processorRunner.build(input, spxMonitor, spxMonitor);
     }
 
     private ITask<? extends IBuildOutput<P, A, AU, T>> incrBuild(IProject project, @Nullable BuildState state,
@@ -174,8 +187,8 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
             ;
         // @formatter:on
 
-        return processorRunner.build(input, new ProgressReporter(monitor),
-            new CancellationToken(monitor));
+        final Monitor spxMonitor = new Monitor(monitor);
+        return processorRunner.build(input, spxMonitor, spxMonitor);
     }
 
     private void cancel(IProgressMonitor monitor) {
@@ -216,7 +229,7 @@ public abstract class ProjectBuilder<P extends IParseUnit, A extends IAnalyzeUni
             ;
         // @formatter:on
 
-        return processorRunner.clean(input, new ProgressReporter(monitor),
-            new CancellationToken(monitor));
+        final Monitor spxMonitor = new Monitor(monitor);
+        return processorRunner.clean(input, spxMonitor, spxMonitor);
     }
 }
