@@ -93,14 +93,20 @@ public class ProjectGenerator {
         final LangSpecGeneratorSettings settings = settingsBuilder.build(location, configBuilder);
         final LangSpecGenerator newGenerator = new LangSpecGenerator(settings);
         newGenerator.generateAll();
-        SdfVersion version;
-        if (syntaxType == SyntaxType.SDF2){
+        final @Nullable SdfVersion version;
+        final boolean enabled;
+        if(syntaxType == SyntaxType.SDF2) {
             version = SdfVersion.sdf2;
-        } else {
+            enabled = true;
+        } else if(syntaxType == SyntaxType.SDF3) {
             version = SdfVersion.sdf3;
-        }        
+            enabled = true;
+        } else {
+            version = null;
+            enabled = false;
+        }
         final ContinuousLanguageSpecGenerator generator =
-            new ContinuousLanguageSpecGenerator(settings.generatorSettings, version);
+            new ContinuousLanguageSpecGenerator(settings.generatorSettings, enabled, version);
         generator.generateAll();
         final EclipseLangSpecGenerator eclipseGenerator = new EclipseLangSpecGenerator(settings.generatorSettings);
         eclipseGenerator.generateAll();
@@ -123,7 +129,8 @@ public class ProjectGenerator {
     }
 
     public void createExampleProject(ISpoofaxLanguageSpecConfig config, @Nullable String projectId,
-        @Nullable IPath basePath, AnalysisType analysisType, SubMonitor monitor) throws IOException, ProjectException, CoreException {
+        @Nullable IPath basePath, AnalysisType analysisType, SubMonitor monitor)
+        throws IOException, ProjectException, CoreException {
         monitor.setWorkRemaining(3);
 
         monitor.subTask("Generating example project");
