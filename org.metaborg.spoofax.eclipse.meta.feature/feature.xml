@@ -2,7 +2,7 @@
 <feature
   id="org.metaborg.spoofax.eclipse.meta.feature"
   plugin="org.metaborg.spoofax.eclipse.meta"
-  version="2.2.0.qualifier"
+  version="2.3.0.qualifier"
   label="Spoofax Eclipse meta-tooling"
 >
   <requires>
@@ -19,147 +19,147 @@
 
   <includes
     id="org.metaborg.spoofax.eclipse.feature"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     search-location="both"
   />
 
   <!-- Spoofax meta-tooling -->
   <plugin
     id="org.metaborg.meta.core"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.spoofax.meta.core"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.spoofax.eclipse.meta"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
 
   <!-- Parser -->
   <plugin
     id="sdf2table-new"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
 
   <!-- Meta languages, unpack plugins for access to jar, ctree, and packed.esv files. -->
   <plugin
     id="dynsem.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="dynsem2coq.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.lang.coq.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.aterm.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.esv.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.nabl.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.nabl2.shared.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.nabl2.lang.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.nabl2.runtime.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.sdf.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.stratego.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.template.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.ts.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.spt.interactive.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lib.analysis.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="meta.lib.spoofax.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.meta.lang.analysis.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
 
   <!-- SPT -->
   <plugin
     id="org.metaborg.mbt.core"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.spt.core"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
   <plugin
     id="org.metaborg.meta.lang.spt.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
   <plugin
     id="org.metaborg.spt.testrunner.eclipse"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="false"
   />
   
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
     id="org.metaborg.spoofax.eclipse.meta.externaldeps"
-    version="2.2.0.qualifier"
+    version="2.3.0.qualifier"
     unpack="true"
   />
 </feature>
