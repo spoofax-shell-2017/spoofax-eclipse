@@ -135,14 +135,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
 
         try {
             final IStatus status = update(workspace, monitor);
-            if(threadKiller != null) {
-                threadKiller.cancel();
-            }
             return status;
         } catch(MetaborgRuntimeException | MetaborgException | CoreException e) {
-            if(threadKiller != null) {
-                threadKiller.cancel();
-            }
             if(monitor.isCanceled()) {
                 return StatusUtils.cancel();
             }
@@ -180,6 +174,9 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
             logger.error(message, e);
             return StatusUtils.silentError(message, e);
         } finally {
+            if(threadKiller != null) {
+                threadKiller.cancel();
+            }
             monitor.done();
         }
     }
