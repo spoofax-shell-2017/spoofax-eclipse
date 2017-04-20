@@ -2,7 +2,6 @@ package org.metaborg.spoofax.eclipse.job;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.spoofax.eclipse.util.StatusUtils;
 import org.metaborg.util.log.ILogger;
@@ -47,7 +46,7 @@ public class ThreadKillerJob extends Job {
             return StatusUtils.cancel();
 
         logger.warn("Killing {}", thread);
-        thread.stop(new OperationCanceledException());
+        thread.stop();
 
         return StatusUtils.success();
     }
