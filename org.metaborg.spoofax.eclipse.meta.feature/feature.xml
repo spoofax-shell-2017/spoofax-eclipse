@@ -94,6 +94,16 @@
     unpack="true"
   />
   <plugin
+    id="org.metaborg.meta.nabl2.integration.coq.eclipse"
+    version="2.3.0.qualifier"
+    unpack="true"
+  />
+  <plugin
+    id="org.metaborg.meta.nabl2.integration.dynsem.eclipse"
+    version="2.3.0.qualifier"
+    unpack="true"
+  />
+  <plugin
     id="org.metaborg.meta.lang.sdf.eclipse"
     version="2.3.0.qualifier"
     unpack="true"
