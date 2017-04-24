@@ -70,6 +70,6 @@ public class EclipseLanguageSpecService implements ISpoofaxLanguageSpecService {
             return null;
         }
 
-        return new EclipseLanguageSpec(config, location, eclipseProject.eclipseProject);
+        return new EclipseLanguageSpec(eclipseProject, config);
     }
 }

@@ -1,8 +1,11 @@
 package org.metaborg.spoofax.eclipse.transform;
 
+import java.util.concurrent.CancellationException;
+
 import org.apache.commons.vfs2.FileObject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.metaborg.core.action.ITransformGoal;
@@ -68,7 +71,9 @@ public class TransformJob extends Job {
     @Override protected IStatus run(IProgressMonitor monitor) {
         try {
             return transformAll(monitor);
-        } catch(ThreadDeath e) {
+        } catch(InterruptedException | CancellationException | ThreadDeath e) {
+            return StatusUtils.cancel();
+        } catch(OperationCanceledException e) {
             return StatusUtils.cancel();
         } finally {
             if(threadKiller != null) {
@@ -90,13 +95,13 @@ public class TransformJob extends Job {
         threadKiller.schedule(interruptTimeMillis);
     }
 
-    private IStatus transformAll(IProgressMonitor progressMonitor) {
+    private IStatus transformAll(IProgressMonitor progressMonitor) throws InterruptedException, ThreadDeath {
         final SubMonitor monitor = SubMonitor.convert(progressMonitor);
 
         if(monitor.isCanceled())
             return StatusUtils.cancel();
 
-        final SubMonitor loopMonitor = monitor.newChild(1).setWorkRemaining(Iterables.size(resources));
+        final SubMonitor loopMonitor = monitor.split(1).setWorkRemaining(Iterables.size(resources));
         for(TransformResource transformResource : resources) {
             if(loopMonitor.isCanceled())
                 return StatusUtils.cancel();
@@ -105,7 +110,7 @@ public class TransformJob extends Job {
             loopMonitor.setTaskName("Transforming " + source);
             try {
                 final ISpoofaxInputUnit input = unitService.inputUnit(source, transformResource.text, langImpl, null);
-                transform(input, transformResource.project, loopMonitor.newChild(1));
+                transform(input, transformResource.project, loopMonitor.split(1));
             } catch(ContextException | TransformException e) {
                 final String message = logger.format("Transformation failed for {}", source);
                 logger.error(message, e);

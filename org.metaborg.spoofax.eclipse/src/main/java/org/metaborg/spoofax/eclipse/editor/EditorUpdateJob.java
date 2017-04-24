@@ -11,6 +11,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IEditorInput;
@@ -134,14 +135,8 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
 
         try {
             final IStatus status = update(workspace, monitor);
-            if(threadKiller != null) {
-                threadKiller.cancel();
-            }
             return status;
         } catch(MetaborgRuntimeException | MetaborgException | CoreException e) {
-            if(threadKiller != null) {
-                threadKiller.cancel();
-            }
             if(monitor.isCanceled()) {
                 return StatusUtils.cancel();
             }
@@ -170,17 +165,18 @@ public class EditorUpdateJob<I extends IInputUnit, P extends IParseUnit, A exten
             final String message = logger.format("Failed to update editor for {}", resource);
             logger.error(message, e);
             return StatusUtils.silentError(message, e);
-        } catch(CancellationException e) {
+        } catch(InterruptedException | CancellationException | ThreadDeath e) {
             return StatusUtils.cancel();
-        } catch(InterruptedException e) {
-            return StatusUtils.cancel();
-        } catch(ThreadDeath e) {
+        } catch(OperationCanceledException e) {
             return StatusUtils.cancel();
         } catch(Throwable e) {
             final String message = logger.format("Failed to update editor for {}", resource);
             logger.error(message, e);
             return StatusUtils.silentError(message, e);
         } finally {
+            if(threadKiller != null) {
+                threadKiller.cancel();
+            }
             monitor.done();
         }
     }
