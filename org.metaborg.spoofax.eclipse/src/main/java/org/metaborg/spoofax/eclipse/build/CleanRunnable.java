@@ -11,7 +11,7 @@ import org.metaborg.core.build.IBuilder;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.transform.ITransformUnit;
 import org.metaborg.spoofax.eclipse.processing.Progress;
-import org.metaborg.spoofax.eclipse.project.IEclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 import org.metaborg.util.task.ICancel;
@@ -40,7 +40,7 @@ public class CleanRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
             this.progress = new Progress(monitor);
         }
 
-        final IProject eclipseProject = ((IEclipseProject) input.project).eclipseProject();
+        final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAllRec(eclipseProject);
 
         try {

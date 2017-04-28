@@ -32,7 +32,7 @@ import org.metaborg.spoofax.eclipse.job.GlobalSchedulingRules;
 import org.metaborg.spoofax.eclipse.language.LanguageComponentChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageImplChangeJob;
 import org.metaborg.spoofax.eclipse.language.LanguageLoader;
-import org.metaborg.spoofax.eclipse.project.IEclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.project.IEclipseProjectService;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -135,9 +135,9 @@ public class Processor<P extends IParseUnit, A extends IAnalyzeUnit, AU extends 
 
 
     private @Nullable IResource getResource(IProject project) {
-        final IEclipseProject eclipseProject = projectService.get(project);
+        final EclipseProject eclipseProject = projectService.get(project);
         if(eclipseProject != null) {
-            return eclipseProject.eclipseProject();
+            return eclipseProject.eclipseProject;
         }
         return null;
     }

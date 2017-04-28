@@ -6,7 +6,7 @@ import org.metaborg.core.project.IProjectService;
 import org.metaborg.spoofax.eclipse.util.Nullable;
 
 public interface IEclipseProjectService extends IProjectService {
-    @Nullable IEclipseProject get(FileObject resource);
+    @Nullable EclipseProject get(FileObject resource);
 
-    @Nullable IEclipseProject get(IProject project);
+    @Nullable EclipseProject get(IProject project);
 }

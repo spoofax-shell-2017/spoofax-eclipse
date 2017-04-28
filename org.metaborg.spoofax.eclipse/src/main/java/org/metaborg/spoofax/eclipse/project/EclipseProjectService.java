@@ -30,7 +30,7 @@ public class EclipseProjectService implements IEclipseProjectService {
     }
 
 
-    @Override public IEclipseProject get(FileObject resource) {
+    @Override public EclipseProject get(FileObject resource) {
         final IResource eclipseResource = resourceService.unresolve(resource);
         if(eclipseResource == null) {
             logger.debug("Cannot get project, {} is not an Eclipse resource, or does not exist any more", resource);
@@ -58,9 +58,9 @@ public class EclipseProjectService implements IEclipseProjectService {
     }
 
 
-    @Override public IEclipseProject get(IProject project) {
-        if(project instanceof IEclipseProject) {
-            return (IEclipseProject) project;
+    @Override public EclipseProject get(IProject project) {
+        if(project instanceof EclipseProject) {
+            return (EclipseProject) project;
         }
         return get(project.location());
     }

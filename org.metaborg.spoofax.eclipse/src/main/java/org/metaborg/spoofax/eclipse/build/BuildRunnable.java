@@ -15,7 +15,7 @@ import org.metaborg.core.messages.IMessage;
 import org.metaborg.core.syntax.IParseUnit;
 import org.metaborg.core.transform.ITransformUnit;
 import org.metaborg.spoofax.eclipse.processing.Progress;
-import org.metaborg.spoofax.eclipse.project.IEclipseProject;
+import org.metaborg.spoofax.eclipse.project.EclipseProject;
 import org.metaborg.spoofax.eclipse.resource.IEclipseResourceService;
 import org.metaborg.spoofax.eclipse.util.MarkerUtils;
 import org.metaborg.spoofax.eclipse.util.Nullable;
@@ -62,7 +62,7 @@ public class BuildRunnable<P extends IParseUnit, A extends IAnalyzeUnit, AU exte
             return;
         }
 
-        final IProject eclipseProject = ((IEclipseProject) input.project).eclipseProject();
+        final IProject eclipseProject = ((EclipseProject) input.project).eclipseProject;
         MarkerUtils.clearAll(eclipseProject);
 
         for(FileObject resource : output.changedResources()) {
