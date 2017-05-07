@@ -100,13 +100,11 @@ public class UpgradeLangSpecWizard extends Wizard {
             final ILanguageSpec languageSpec = languageSpecService.get(metaborgProject);
             if(languageSpec != null) {
                 final ILanguageSpecConfig config = languageSpec.config();
-                if(config != null) {
-                    final LanguageIdentifier identifier = config.identifier();
-                    groupId = Strings.isNullOrEmpty(groupId) ? identifier.groupId : groupId;
-                    id = Strings.isNullOrEmpty(id) ? identifier.id : id;
-                    version = Strings.isNullOrEmpty(version) ? identifier.version.toString() : version;
-                    name = Strings.isNullOrEmpty(name) ? config.name() : name;
-                }
+                final LanguageIdentifier identifier = config.identifier();
+                groupId = Strings.isNullOrEmpty(groupId) ? identifier.groupId : groupId;
+                id = Strings.isNullOrEmpty(id) ? identifier.id : id;
+                version = Strings.isNullOrEmpty(version) ? identifier.version.toString() : version;
+                name = Strings.isNullOrEmpty(name) ? config.name() : name;
             }
         } catch(ConfigException e) {
             // Ignore

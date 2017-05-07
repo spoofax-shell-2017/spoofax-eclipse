@@ -53,6 +53,10 @@ public class EclipseProjectService implements IEclipseProjectService {
         }
 
         final IProjectConfig config = configRequest.config();
+        if(config == null) {
+            logger.error("Could not retrieve project configuration from project directory {}", location);
+            return null;
+        }
 
         return new EclipseProject(location, config, eclipseProject);
     }
