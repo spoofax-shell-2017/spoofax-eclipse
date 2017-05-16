@@ -24,7 +24,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.metaborg.core,
  org.eclipse.ui.views,
  org.metaborg.meta.nabl2.java
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: metaborg.org
 Export-Package: org.metaborg.spoofax.eclipse,
  org.metaborg.spoofax.eclipse.build,
