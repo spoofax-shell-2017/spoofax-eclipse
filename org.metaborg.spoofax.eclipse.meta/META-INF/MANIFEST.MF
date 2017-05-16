@@ -30,16 +30,18 @@ Require-Bundle: org.eclipse.ui,
  org.metaborg.mbt.core,
  org.metaborg.spt.core,
  org.eclipse.ui.ide,
- org.metaborg.meta.nabl2.java
+ org.metaborg.meta.nabl2.java,
+ sdf2table
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: metaborg.org
+Export-Package: org.metaborg.spoofax.eclipse.meta,
+ org.metaborg.spoofax.eclipse.meta.nature
 Eclipse-RegisterBuddy: org.metaborg.spoofax.eclipse.externaldeps,
  org.metaborg.spoofax.eclipse.meta.externaldeps,
  org.metaborg.spoofax.core,
  org.metaborg.spoofax.meta.core,
  org.metaborg.mbt.core,
  org.metaborg.spt.core,
- org.metaborg.meta.nabl2.java
-Export-Package: org.metaborg.spoofax.eclipse.meta,
- org.metaborg.spoofax.eclipse.meta.nature
+ org.metaborg.meta.nabl2.java,
+ sdf2table
