@@ -42,7 +42,7 @@
 
   <!-- Parser -->
   <plugin
-    id="sdf2table-new"
+    id="sdf2table"
     version="2.3.0.qualifier"
     unpack="false"
   />
@@ -155,7 +155,7 @@
     version="2.3.0.qualifier"
     unpack="false"
   />
-  
+
   <!-- Other dependencies, unpack some plugins for access to its JAR/native files. -->
   <plugin
     id="org.metaborg.spoofax.eclipse.meta.externaldeps"
